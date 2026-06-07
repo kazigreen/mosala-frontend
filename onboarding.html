@@ -129,26 +129,38 @@
       <div class="grid grid-cols-2 gap-4 mb-8">
         <!-- Freelance -->
         <div class="role-card" :class="form.account_type==='freelance'?'selected':''" @click="form.account_type='freelance'">
-          <div class="icon-wrap" :class="form.account_type==='freelance'?'bg-green-100':'bg-gray-50'">💼</div>
+          <div class="icon-wrap" :class="form.account_type==='freelance'?'bg-green-50':'bg-gray-50'" style="transition:background .2s;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" :stroke="form.account_type==='freelance'?'#00B87C':'#9ca3af'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+              <line x1="12" y1="12" x2="12" y2="12.01"/>
+              <path d="M2 12h20"/>
+            </svg>
+          </div>
           <div>
             <div class="font-bold text-gray-900 text-base">Freelance</div>
             <div class="text-xs text-gray-500 mt-0.5">Je propose mes services</div>
           </div>
           <div class="w-5 h-5 rounded-full border-2 mt-1 flex items-center justify-center"
-               :class="form.account_type==='freelance'?'border-green-600 bg-green-600':'border-gray-300'">
+               style="transition:all .2s;" :style="form.account_type==='freelance'?'border-color:#00B87C;background:#00B87C':'border-color:#d1d5db;background:transparent'">
             <div x-show="form.account_type==='freelance'" class="w-2 h-2 rounded-full bg-white"></div>
           </div>
         </div>
 
         <!-- Client -->
         <div class="role-card" :class="form.account_type==='client'?'selected':''" @click="form.account_type='client'">
-          <div class="icon-wrap" :class="form.account_type==='client'?'bg-green-100':'bg-gray-50'">🏢</div>
+          <div class="icon-wrap" :class="form.account_type==='client'?'bg-green-50':'bg-gray-50'" style="transition:background .2s;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" :stroke="form.account_type==='client'?'#00B87C':'#9ca3af'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
           <div>
             <div class="font-bold text-gray-900 text-base">Client</div>
             <div class="text-xs text-gray-500 mt-0.5">Je cherche des talents</div>
           </div>
           <div class="w-5 h-5 rounded-full border-2 mt-1 flex items-center justify-center"
-               :class="form.account_type==='client'?'border-green-600 bg-green-600':'border-gray-300'">
+               style="transition:all .2s;" :style="form.account_type==='client'?'border-color:#00B87C;background:#00B87C':'border-color:#d1d5db;background:transparent'">
             <div x-show="form.account_type==='client'" class="w-2 h-2 rounded-full bg-white"></div>
           </div>
         </div>
