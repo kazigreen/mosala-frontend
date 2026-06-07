@@ -488,7 +488,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
 </head>
 
-<body class="bg-kv-bg min-h-screen" x-data="app()" x-cloak>
+<body class="min-h-screen" style="background:#fafafa;" x-data="app()">
+  <!-- SPLASH SCREEN — visible avant Alpine init -->
+  <div id="kv-splash" style="position:fixed;inset:0;z-index:9999;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+    <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#00B87C,#00D68F);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,184,124,.3);">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div style="font-weight:900;font-size:1.3rem;color:#111;">Mosala</div>
+    <div style="width:36px;height:3px;background:#ebebeb;border-radius:9999px;overflow:hidden;">
+      <div style="height:100%;background:linear-gradient(90deg,#00B87C,#00D68F);border-radius:9999px;animation:kvLoad 1.2s ease infinite alternate;"></div>
+    </div>
+  </div>
+  <style>
+    @keyframes kvLoad { from{width:0%} to{width:100%} }
+  </style>
+
+
       </div><!-- /lg:p-6 -->
     </div><!-- /lg:ml-64 content wrapper -->
 
@@ -5732,6 +5747,9 @@
             this.loadDashboard();
             this._startInactivityTimer();
           }
+          // Supprimer le splash screen
+          const splash = document.getElementById('kv-splash');
+          if (splash) { splash.style.opacity='0'; splash.style.transition='opacity .3s'; setTimeout(()=>splash.remove(), 300); }
         },
 
         // ── INACTIVITÉ 30 MIN ──
