@@ -1821,8 +1821,7 @@
     </div>
     </div>
   </div>
-
-  <!-- ═══════════════════════════════════════════
+    <!-- ═══════════════════════════════════════════
        PAGE : COMPLÉTION PROFIL (après Google)
   ════════════════════════════════════════════ -->
   <div x-show="page==='complete-profil'" class="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-10" style="position:fixed;inset:0;z-index:100;overflow-y:auto;">
@@ -2003,9 +2002,7 @@
       </div>
     </div>
   </div>
-
-  
-  <!-- ═══════════════════════════════════════════
+    <!-- ═══════════════════════════════════════════
        PAGE : SAISIE CODE OTP
   ════════════════════════════════════════════ -->
   <div x-show="page==='otp'" class="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-10" style="position:fixed;inset:0;z-index:100;overflow-y:auto;">
@@ -2226,8 +2223,7 @@
       </div>
     </div>
   </div>
-
-  <!-- ═══════════════════════════════════════════
+    <!-- ═══════════════════════════════════════════
        PAGE : CONNEXION
   ════════════════════════════════════════════ -->
   <div x-show="page==='login'" class="min-h-screen flex items-center justify-center" style="position:fixed;inset:0;z-index:100;overflow-y:auto;background:#fafafa;">
@@ -2366,8 +2362,7 @@
     </div>
     </div>
   </div>
-
-  <!-- ═══════════════════════════════════════════
+    <!-- ═══════════════════════════════════════════
        APP PRINCIPALE (authentifié)
   ════════════════════════════════════════════ -->
   <div x-show="token" class="w-full">
@@ -2656,7 +2651,7 @@
     <!-- ─────────────────────────────────────
          TAB : MARKETPLACE
     ───────────────────────────────────────── -->
-    <div x-show="activeTab==='marketplace'" class="p-4">
+  <div x-show="activeTab==='marketplace'" class="p-4">
 
       <!-- Filtres -->
       <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
@@ -2837,11 +2832,10 @@
         </template>
       </div>
     </div>
-
-    <!-- ─────────────────────────────────────
+  <!-- ─────────────────────────────────────
          TAB : DASHBOARD
     ───────────────────────────────────────── -->
-    <div x-show="activeTab==='dashboard'" class="dot-bg min-h-screen">
+  <div x-show="activeTab==='dashboard'" class="dot-bg min-h-screen">
 
     <!-- ── DASHBOARD HEADER PREMIUM ── -->
     <div class="relative overflow-hidden border-b border-emerald-100/60"
@@ -3514,11 +3508,10 @@
 
     </div><!-- /p-4 space-y-4 -->
     </div><!-- /dashboard -->
-
-    <!-- ══════════════════════════════════════════
+  <!-- ══════════════════════════════════════════
          PROFIL — Mon Profil
     ══════════════════════════════════════════ -->
-<div x-show="activeTab==='profil'" class="min-h-screen pb-24" style="background:#F8FAFC;">
+  <div x-show="activeTab==='profil'" class="min-h-screen pb-24" style="background:#F8FAFC;">
 
   <!-- ══ HEADER CARTE PROFIL ══ -->
   <div class="bg-white border-b border-gray-100 px-4 pt-6 pb-5" style="box-shadow:0 2px 12px rgba(0,0,0,0.04);">
@@ -4069,10 +4062,10 @@
     <!-- ─────────────────────────────────────
          MESSAGES
     ───────────────────────────────────────── -->
-    <!-- ══════════════════════════════════════════
+  <!-- ══════════════════════════════════════════
          WALLET — Portefeuille Mosala
     ══════════════════════════════════════════ -->
-    <div x-show="activeTab==='wallet'" class="min-h-screen bg-gray-50 pb-20" x-data="{ walletTab: 'transactions', showRetrait: false, showDepot: false, retraitMontant: '', retraitMobile: '', retraitNumero: '', retraitLoading: false, retraitDone: false, walletTx: [], walletLoading: true, wDispo: 0, wBloque: 0, wTotal: 0, wMois: 0 }" x-init="
+  <div x-show="activeTab==='wallet'" class="min-h-screen bg-gray-50 pb-20" x-data="{ walletTab: 'transactions', showRetrait: false, showDepot: false, retraitMontant: '', retraitMobile: '', retraitNumero: '', retraitLoading: false, retraitDone: false, walletTx: [], walletLoading: true, wDispo: 0, wBloque: 0, wTotal: 0, wMois: 0 }" x-init="
       fetch(API+'/wallet/transactions', { headers: { Authorization: 'Bearer '+token } })
         .then(r=>r.json()).then(d=>{ walletTx = Array.isArray(d) ? d : (d.transactions||[]); walletLoading=false; })
         .catch(()=>{ walletLoading=false; });
@@ -4745,9 +4738,8 @@
       <!-- ── /NIVEAU MOSALA ── --> -->
 
     </div>
-    <!-- ══ /WALLET ══ -->
-
-    <div x-show="activeTab==='messages'" class="flex overflow-hidden bg-gray-50" style="height:calc(100vh - 56px);">
+  <!-- ══ /WALLET ══ -->
+  <div x-show="activeTab==='messages'" class="flex overflow-hidden bg-gray-50" style="height:calc(100vh - 56px);">
 
       <!-- ══ COLONNE GAUCHE : Liste conversations ══ -->
       <div class="w-full lg:w-80 xl:w-96 bg-white border-r border-gray-100 flex flex-col"
@@ -5505,7 +5497,6 @@
       </div>
     </div>
     <!-- FIN MODAL MODIFIER PROFIL -->
-
   </div><!-- /app principale -->
 
 
@@ -5960,7 +5951,7 @@
             sessionStorage.setItem('kv_user', JSON.stringify(this.user));
 
             if (!this.user.onboarding_done) {
-              this.page = 'app';
+              window.location.replace('/onboarding.html');
             } else {
               this.page = 'app';
               this.showToast(`👋 Bienvenue ${this.user.prenom} !`);
