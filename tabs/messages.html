@@ -1,6 +1,4 @@
-<!-- ── tab: messages ── -->
-
-    <div x-show="activeTab==='messages'" class="flex overflow-hidden bg-gray-50" style="height:calc(100vh - 56px);">
+<div x-show="activeTab==='messages'" class="flex overflow-hidden bg-gray-50" style="height:calc(100vh - 56px);">
 
       <!-- ══ COLONNE GAUCHE : Liste conversations ══ -->
       <div class="w-full lg:w-80 xl:w-96 bg-white border-r border-gray-100 flex flex-col"
@@ -424,4 +422,337 @@
       </div>
     </div>
 
-  </div><!-- /app principale -->
+
+
+    <!-- ══════════════════════════════════════════
+         MODAL — MODIFIER PROFIL
+    ══════════════════════════════════════════ -->
+    <div x-show="showEditProfil"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click.self="showEditProfil = false"
+         style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;"
+>
+
+      <div @click.stop
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="translate-y-full"
+           x-transition:enter-end="translate-y-0"
+           x-transition:leave="transition ease-in duration-200"
+           x-transition:leave-start="translate-y-0"
+           x-transition:leave-end="translate-y-full"
+           class="w-full max-w-lg bg-white rounded-t-3xl shadow-2xl overflow-y-auto"
+           style="max-height:90vh;">
+
+        <!-- Header modal -->
+        <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+          <div>
+            <h3 class="text-base font-black text-[#0F172A]">Modifier mon profil</h3>
+            <p class="text-xs text-gray-400 mt-0.5">Infos · Email · Mot de passe</p>
+          </div>
+          <button @click="showEditProfil = false" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-all">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Onglets -->
+        <div class="flex gap-1 px-5 pt-3 pb-0">
+          <button @click="editProfilTab='info'"
+                  :class="editProfilTab==='info' ? 'bg-[#00B87C] text-white shadow-sm shadow-[#00B87C]/30' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+                  class="flex-1 py-2 rounded-xl text-xs font-bold transition-all">
+            Infos
+          </button>
+          <button @click="editProfilTab='email'"
+                  :class="editProfilTab==='email' ? 'bg-[#00B87C] text-white shadow-sm shadow-[#00B87C]/30' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+                  class="flex-1 py-2 rounded-xl text-xs font-bold transition-all">
+            Email
+          </button>
+          <button @click="editProfilTab='password'"
+                  :class="editProfilTab==='password' ? 'bg-[#00B87C] text-white shadow-sm shadow-[#00B87C]/30' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+                  class="flex-1 py-2 rounded-xl text-xs font-bold transition-all">
+            Mot de passe
+          </button>
+        </div>
+
+        <!-- Formulaire -->
+        <form x-show="editProfilTab==='info'"
+              @submit.prevent="
+          editProfilLoading = true;
+          fetch(API+'/users/moi', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+token },
+            body: JSON.stringify({ nom: editProfilForm.nom, prenom: editProfilForm.prenom, bio: editProfilForm.bio, ville: editProfilForm.ville })
+          })
+          .then(async r => {
+            const d = await r.json();
+            editProfilLoading = false;
+            if (r.status === 429) {
+              const msg = d.detail || 'Trop de requêtes, attends un moment.';
+              showToast(msg, 'error');
+              return;
+            }
+            if (!r.ok) {
+              showToast(d.detail || 'Erreur lors de la sauvegarde', 'error');
+              return;
+            }
+            if (d.id) {
+              user = { ...user, ...d };
+              sessionStorage.setItem('kv_user', JSON.stringify(user));
+              champsCooldown = d.champs_cooldown || {};
+              editProfilSuccess = true;
+              setTimeout(() => { showEditProfil = false; editProfilSuccess = false; }, 1500);
+            }
+          })
+          .catch(() => { editProfilLoading = false; });
+        " class="px-5 py-4 space-y-4">
+
+          <!-- Prénom + Nom -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-bold text-gray-600 mb-1 block">Prénom</label>
+              <input x-model="editProfilForm.prenom" type="text" placeholder="Clément"
+                     class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+            </div>
+            <div>
+              <label class="text-xs font-bold text-gray-600 mb-1 block">Nom</label>
+              <input x-model="editProfilForm.nom" type="text" placeholder="Kapanga"
+                     class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+            </div>
+          </div>
+
+          <!-- Bio -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Bio / Titre professionnel</label>
+            <textarea x-model="editProfilForm.bio" rows="3"
+                      placeholder="Ex: Développeur Full Stack spécialisé React & FastAPI"
+                      class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all resize-none"></textarea>
+            <p class="text-[10px] text-gray-400 mt-1" x-text="(editProfilForm.bio||'').length + '/200 caractères'"></p>
+          </div>
+
+          <!-- Ville -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Ville</label>
+            <input x-model="editProfilForm.ville" type="text" placeholder="Kinshasa"
+                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+          </div>
+
+          <!-- Succès -->
+          <div x-show="editProfilSuccess" class="flex items-center gap-2 p-3 rounded-xl bg-[#00B87C]/10 border border-[#00B87C]/20">
+            <svg class="w-4 h-4 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-xs font-bold text-[#00B87C]">Profil mis à jour avec succès !</p>
+          </div>
+
+          <!-- Cooldown par champ — design moderne -->
+          <div x-show="['nom','prenom','bio','ville'].some(c => champsCooldown[c] && new Date(new Date(champsCooldown[c]).getTime()+7*24*60*60*1000) > new Date())"
+               class="rounded-2xl overflow-hidden border border-amber-200 shadow-sm">
+
+            <!-- Header bannière -->
+            <div class="flex items-center gap-2.5 px-4 py-3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+              <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              </div>
+              <div>
+                <p class="text-xs font-black text-white">Certains champs sont verrouillés</p>
+                <p class="text-[10px] text-white/80">Modification possible dans 7 jours</p>
+              </div>
+            </div>
+
+            <!-- Liste des champs bloqués -->
+            <div class="bg-amber-50 px-4 py-3 space-y-2">
+              <template x-for="champ in ['nom','prenom','bio','ville']" :key="champ">
+                <div x-show="champsCooldown[champ] && new Date(new Date(champsCooldown[champ]).getTime()+7*24*60*60*1000) > new Date()"
+                     class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded-lg bg-amber-200 flex items-center justify-center">
+                      <svg class="w-3 h-3 text-amber-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <span class="text-xs font-black text-amber-800 capitalize" x-text="champ === 'nom' ? 'Nom' : champ === 'prenom' ? 'Prénom' : champ === 'bio' ? 'Bio' : 'Ville'"></span>
+                  </div>
+                  <!-- Compte à rebours -->
+                  <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1 bg-white border border-amber-200 rounded-lg px-2 py-1">
+                      <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <span class="text-[10px] font-black text-amber-700"
+                            x-text="(() => { const next = new Date(new Date(champsCooldown[champ]).getTime()+7*24*60*60*1000); const diff = next - new Date(); const j = Math.ceil(diff/86400000); return j + ' jour' + (j>1?'s':'') + ' restant' + (j>1?'s':''); })()">
+                      </span>
+                    </div>
+                    <div class="text-[10px] text-amber-600 font-semibold"
+                         x-text="'le ' + new Date(new Date(champsCooldown[champ]).getTime()+7*24*60*60*1000).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})">
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+          </div>
+
+          <!-- Bouton submit moderne -->
+          <button type="submit"
+                  :disabled="editProfilLoading"
+                  class="relative w-full py-3.5 rounded-2xl font-black text-sm text-white overflow-hidden transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+                  style="background: linear-gradient(135deg, #00B87C 0%, #00D68F 100%); box-shadow: 0 8px 24px rgba(0,184,124,0.35);">
+            <!-- Shimmer effect -->
+            <div x-show="!editProfilLoading"
+                 class="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity"
+                 style="background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%); pointer-events:none;"></div>
+            <!-- Idle -->
+            <span x-show="!editProfilLoading" class="flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Enregistrer les modifications
+            </span>
+            <!-- Loading -->
+            <span x-show="editProfilLoading" class="flex items-center justify-center gap-2">
+              <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+              Enregistrement en cours...
+            </span>
+          </button>
+
+        </form>
+
+        <!-- ── ONGLET EMAIL ── -->
+        <form x-show="editProfilTab==='email'"
+              @submit.prevent="
+                editEmailLoading = true; editEmailError = ''; editEmailSuccess = false;
+                fetch(API+'/users/me/change-email', {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+token },
+                  body: JSON.stringify({ nouvel_email: editEmailForm.nouvel_email })
+                })
+                .then(r => r.json())
+                .then(d => {
+                  editEmailLoading = false;
+                  if (d.email) {
+                    user = { ...user, email: d.email };
+                    sessionStorage.setItem('kv_user', JSON.stringify(user));
+                    editEmailSuccess = true;
+                    editEmailForm.nouvel_email = '';
+                    setTimeout(() => { showEditProfil = false; editEmailSuccess = false; }, 1500);
+                  } else {
+                    editEmailError = d.detail || 'Erreur lors du changement';
+                  }
+                })
+                .catch(() => { editEmailLoading = false; editEmailError = 'Erreur réseau'; });
+              "
+              class="px-5 py-4 space-y-4">
+
+          <!-- Email actuel -->
+          <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <div>
+              <p class="text-[10px] text-gray-400 font-semibold">Email actuel</p>
+              <p class="text-xs font-bold text-[#0F172A]" x-text="user.email || 'Aucun email défini'"></p>
+            </div>
+          </div>
+
+          <!-- Nouvel email -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Nouvel email</label>
+            <input x-model="editEmailForm.nouvel_email" type="email" placeholder="nouveau@email.com" required
+                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+          </div>
+
+          <!-- Erreur -->
+          <div x-show="editEmailError" class="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-100">
+            <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-xs font-bold text-red-600" x-text="editEmailError"></p>
+          </div>
+
+          <!-- Succès -->
+          <div x-show="editEmailSuccess" class="flex items-center gap-2 p-3 rounded-xl bg-[#00B87C]/10 border border-[#00B87C]/20">
+            <svg class="w-4 h-4 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-xs font-bold text-[#00B87C]">Email mis à jour avec succès !</p>
+          </div>
+
+          <button type="submit" :disabled="editEmailLoading"
+                  class="w-full py-3.5 rounded-xl font-black text-sm text-white transition-all shadow-lg shadow-[#00B87C]/25 disabled:opacity-60"
+                  style="background: linear-gradient(135deg, #00B87C, #00D68F);">
+            <span x-show="!editEmailLoading">Changer l'email</span>
+            <span x-show="editEmailLoading" class="flex items-center justify-center gap-2">
+              <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+              Mise à jour...
+            </span>
+          </button>
+        </form>
+
+        <!-- ── ONGLET MOT DE PASSE ── -->
+        <form x-show="editProfilTab==='password'"
+              @submit.prevent="
+                editPassError = ''; editPassSuccess = false;
+                if (editPassForm.nouveau !== editPassForm.confirmer) { editPassError = 'Les mots de passe ne correspondent pas'; return; }
+                if (editPassForm.nouveau.length < 6) { editPassError = 'Minimum 6 caractères'; return; }
+                editPassLoading = true;
+                fetch(API+'/users/me/change-password', {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+token },
+                  body: JSON.stringify({ ancien_mot_de_passe: editPassForm.ancien, nouveau_mot_de_passe: editPassForm.nouveau })
+                })
+                .then(r => r.json())
+                .then(d => {
+                  editPassLoading = false;
+                  if (d.message && d.message.includes('succès')) {
+                    editPassSuccess = true;
+                    editPassForm = { ancien: '', nouveau: '', confirmer: '' };
+                    setTimeout(() => { showEditProfil = false; editPassSuccess = false; }, 1500);
+                  } else {
+                    editPassError = d.detail || 'Erreur lors du changement';
+                  }
+                })
+                .catch(() => { editPassLoading = false; editPassError = 'Erreur réseau'; });
+              "
+              class="px-5 py-4 space-y-4">
+
+          <!-- Ancien mot de passe -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Ancien mot de passe</label>
+            <input x-model="editPassForm.ancien" type="password" placeholder="••••••••" required
+                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+          </div>
+
+          <!-- Nouveau mot de passe -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Nouveau mot de passe</label>
+            <input x-model="editPassForm.nouveau" type="password" placeholder="••••••••" required
+                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+          </div>
+
+          <!-- Confirmer -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Confirmer le nouveau mot de passe</label>
+            <input x-model="editPassForm.confirmer" type="password" placeholder="••••••••" required
+                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+            <!-- Indicateur match -->
+            <p x-show="editPassForm.confirmer && editPassForm.nouveau !== editPassForm.confirmer"
+               class="text-[10px] text-red-500 font-bold mt-1">⚠ Les mots de passe ne correspondent pas</p>
+            <p x-show="editPassForm.confirmer && editPassForm.nouveau === editPassForm.confirmer && editPassForm.nouveau.length >= 6"
+               class="text-[10px] text-[#00B87C] font-bold mt-1">✓ Mots de passe identiques</p>
+          </div>
+
+          <!-- Erreur -->
+          <div x-show="editPassError" class="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-100">
+            <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-xs font-bold text-red-600" x-text="editPassError"></p>
+          </div>
+
+          <!-- Succès -->
+          <div x-show="editPassSuccess" class="flex items-center gap-2 p-3 rounded-xl bg-[#00B87C]/10 border border-[#00B87C]/20">
+            <svg class="w-4 h-4 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-xs font-bold text-[#00B87C]">Mot de passe modifié avec succès !</p>
+          </div>
+
+          <button type="submit" :disabled="editPassLoading"
+                  class="w-full py-3.5 rounded-xl font-black text-sm text-white transition-all shadow-lg shadow-[#00B87C]/25 disabled:opacity-60"
+                  style="background: linear-gradient(135deg, #00B87C, #00D68F);">
+            <span x-show="!editPassLoading">Changer le mot de passe</span>
+            <span x-show="editPassLoading" class="flex items-center justify-center gap-2">
+              <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+              Modification...
+            </span>
+          </button>
+        </form>
+      </div>
+    </div>
+    <!-- FIN MODAL MODIFIER PROFIL -->

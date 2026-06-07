@@ -1,6 +1,4 @@
-<!-- ── tab: wallet ── -->
-
-    <div x-show="activeTab==='wallet'" class="min-h-screen bg-gray-50 pb-20" x-data="{ walletTab: 'transactions', showRetrait: false, showDepot: false, retraitMontant: '', retraitMobile: '', retraitNumero: '', retraitLoading: false, retraitDone: false, walletTx: [], walletLoading: true, wDispo: 0, wBloque: 0, wTotal: 0, wMois: 0 }" x-init="
+<div x-show="activeTab==='wallet'" class="min-h-screen bg-gray-50 pb-20" x-data="{ walletTab: 'transactions', showRetrait: false, showDepot: false, retraitMontant: '', retraitMobile: '', retraitNumero: '', retraitLoading: false, retraitDone: false, walletTx: [], walletLoading: true, wDispo: 0, wBloque: 0, wTotal: 0, wMois: 0 }" x-init="
       fetch(API+'/wallet/transactions', { headers: { Authorization: 'Bearer '+token } })
         .then(r=>r.json()).then(d=>{ walletTx = Array.isArray(d) ? d : (d.transactions||[]); walletLoading=false; })
         .catch(()=>{ walletLoading=false; });
@@ -19,75 +17,73 @@
     ">
 
       <!-- ── CARTE FUSIONNÉE ── -->
-<div style="background:linear-gradient(160deg,#0a1628 0%,#0f2744 55%,#0d1f3c 100%);" class="px-4 pt-5 pb-5">
+      <div style="background:linear-gradient(160deg,#0a1628 0%,#0f2744 55%,#0d1f3c 100%);" class="px-4 pt-5 pb-5">
 
-  <!-- Logo + badge -->
-  <div class="flex items-center justify-between mb-4">
-    <div class="flex items-center gap-2">
-      <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" class="w-3.5 h-3.5">
-          <path stroke-linecap="round" d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/>
-          <path stroke-linecap="round" d="M16 12h5v4h-5a2 2 0 0 1 0-4z"/>
-        </svg>
+        <!-- Logo + badge -->
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" class="w-3.5 h-3.5">
+                <path stroke-linecap="round" d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/>
+                <path stroke-linecap="round" d="M16 12h5v4h-5a2 2 0 0 1 0-4z"/>
+              </svg>
+            </div>
+            <span class="text-xs font-black text-white/80 tracking-tight">Mosala Pay</span>
+          </div>
+          <div class="flex items-center gap-1.5" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:9999px;padding:4px 10px;">
+            <span class="relative flex h-1.5 w-1.5">
+              <span class="absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-50 animate-ping"></span>
+              <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#34D399]"></span>
+            </span>
+            <span class="text-[9px] font-bold text-[#34D399] uppercase tracking-wider">Sécurisé</span>
+          </div>
+        </div>
+
+        <!-- Bonjour + solde principal -->
+        <p class="text-[10px] text-white/35 uppercase tracking-widest mb-2"
+           x-text="'Bonjour ' + (user.prenom||'') + ' — Solde disponible'"></p>
+        <div class="flex items-baseline gap-2.5 mb-1">
+          <p class="text-5xl font-black text-white tracking-tight leading-none"
+             x-text="wDispo.toLocaleString('fr-FR')"></p>
+          <span class="text-lg font-black text-[#34D399]" x-text="escrow.devise||'USD'"></span>
+        </div>
+
+        <!-- Message vide si portefeuille neuf -->
+        <p x-show="(escrow.total||0) === 0"
+           class="text-[10px] text-white/30 mt-1 mb-3">
+          🔒 Vos paiements seront protégés par Mosala Escrow jusqu’à validation
+        </p>
+
+        <!-- 3 colonnes — toujours visibles -->
+        <div class="grid grid-cols-3 mt-4" style="border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;">
+          <div class="text-center py-3" style="background:rgba(255,255,255,0.04);">
+            <p class="text-xl font-black text-white leading-none" x-text="wDispo.toLocaleString('fr-FR')"></p>
+            <p class="text-[8px] font-bold text-[#34D399] mt-0.5" x-text="escrow.devise||'USD'"></p>
+            <p class="text-[9px] text-white/30 uppercase tracking-wider mt-1">Disponible</p>
+          </div>
+          <div class="text-center py-3" style="background:rgba(255,255,255,0.04);border-left:1px solid rgba(255,255,255,0.08);border-right:1px solid rgba(255,255,255,0.08);">
+            <p class="text-xl font-black text-yellow-300 leading-none" x-text="wBloque.toLocaleString('fr-FR')"></p>
+            <p class="text-[8px] font-bold text-yellow-300/50 mt-0.5" x-text="escrow.devise||'USD'"></p>
+            <p class="text-[9px] text-white/30 uppercase tracking-wider mt-1">Escrow</p>
+          </div>
+          <div class="text-center py-3" style="background:rgba(255,255,255,0.04);">
+            <p class="text-xl font-black text-[#34D399] leading-none" x-text="wTotal.toLocaleString('fr-FR')"></p>
+            <p class="text-[8px] font-bold text-[#34D399]/50 mt-0.5" x-text="escrow.devise||'USD'"></p>
+            <p class="text-[9px] text-white/30 uppercase tracking-wider mt-1">Total</p>
+          </div>
+        </div>
+
+        <!-- Nom + N° compte -->
+        <div class="flex items-center justify-between mt-4">
+          <p class="text-[10px] font-black text-white/50 uppercase tracking-wider"
+             x-text="((user.prenom||'') + ' ' + (user.nom||'')).trim()"></p>
+          <p class="text-[8px] text-white/15 tracking-widest font-mono"
+             x-text="'MOS-' + ((user.id||'0000').replace(/-/g,'').slice(-4).toUpperCase())"></p>
+        </div>
+
       </div>
-      <span class="text-xs font-black text-white/80 tracking-tight">Mosala Pay</span>
-    </div>
-    <div class="flex items-center gap-1.5" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:9999px;padding:4px 10px;">
-      <span class="relative flex h-1.5 w-1.5">
-        <span class="absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-50 animate-ping"></span>
-        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#34D399]"></span>
-      </span>
-      <span class="text-[9px] font-bold text-[#34D399] uppercase tracking-wider">Sécurisé</span>
-    </div>
-  </div>
 
-  <!-- Bonjour + solde principal -->
-  <p class="text-[10px] text-white/35 uppercase tracking-widest mb-2"
-     x-text="'Bonjour ' + (user.prenom||'') + ' — Solde disponible'"></p>
-  <div class="flex items-baseline gap-2.5 mb-1">
-    <p class="text-5xl font-black text-white tracking-tight leading-none"
-       x-text="wDispo.toLocaleString('fr-FR')"></p>
-    <span class="text-lg font-black text-[#34D399]" x-text="escrow.devise||'USD'"></span>
-  </div>
-
-  <!-- Message vide si portefeuille neuf -->
-  <p x-show="(escrow.total||0) === 0"
-     class="text-[10px] text-white/30 mt-1 mb-3">
-    🔒 Vos paiements seront protégés par Mosala Escrow jusqu'à validation
-  </p>
-
-  <!-- 3 colonnes — toujours visibles -->
-  <div class="grid grid-cols-3 mt-4" style="border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;">
-    <div class="text-center py-3" style="background:rgba(255,255,255,0.04);">
-      <p class="text-xl font-black text-white leading-none" x-text="wDispo.toLocaleString('fr-FR')"></p>
-      <p class="text-[8px] font-bold text-[#34D399] mt-0.5" x-text="escrow.devise||'USD'"></p>
-      <p class="text-[9px] text-white/30 uppercase tracking-wider mt-1">Disponible</p>
-    </div>
-    <div class="text-center py-3" style="background:rgba(255,255,255,0.04);border-left:1px solid rgba(255,255,255,0.08);border-right:1px solid rgba(255,255,255,0.08);">
-      <p class="text-xl font-black text-yellow-300 leading-none" x-text="wBloque.toLocaleString('fr-FR')"></p>
-      <p class="text-[8px] font-bold text-yellow-300/50 mt-0.5" x-text="escrow.devise||'USD'"></p>
-      <p class="text-[9px] text-white/30 uppercase tracking-wider mt-1">Escrow</p>
-    </div>
-    <div class="text-center py-3" style="background:rgba(255,255,255,0.04);">
-      <p class="text-xl font-black text-[#34D399] leading-none" x-text="wTotal.toLocaleString('fr-FR')"></p>
-      <p class="text-[8px] font-bold text-[#34D399]/50 mt-0.5" x-text="escrow.devise||'USD'"></p>
-      <p class="text-[9px] text-white/30 uppercase tracking-wider mt-1">Total</p>
-    </div>
-  </div>
-
-  <!-- Nom + N° compte -->
-  <div class="flex items-center justify-between mt-4">
-    <p class="text-[10px] font-black text-white/50 uppercase tracking-wider"
-       x-text="((user.prenom||'') + ' ' + (user.nom||'')).trim()"></p>
-    <p class="text-[8px] text-white/15 tracking-widest font-mono"
-       x-text="'MOS-' + ((user.id||'0000').replace(/-/g,'').slice(-4).toUpperCase())"></p>
-  </div>
-
-</div>
-<!-- ── /CARTE FUSIONNÉE ── -->
-
-      <!-- ── withdraw.html ── -->
-<!-- Bouton Retirer mes gains -->
+      <!-- Bouton Retirer mes gains -->
       <div class="px-4 pt-3 pb-1" style="background:#f8fafc;">
         <button @click="showRetrait = true; retraitMobile = 'airtel'"
                 class="w-full flex items-center justify-center gap-2 py-3 bg-[#00B87C] hover:bg-[#00956a] rounded-2xl font-bold text-sm text-white transition-all shadow-md shadow-[#00B87C]/25">
@@ -109,29 +105,10 @@
                   class="group flex items-center gap-2.5 bg-white border-2 rounded-2xl px-3 py-3 transition-all shadow-sm text-left"
                   :class="retraitMobile === 'airtel' && showRetrait ? 'border-[#E20A17] bg-red-50' : 'border-gray-100 hover:border-[#E20A17]/50'">
             <div class="w-8 h-8 rounded-lg flex-shrink-0 overflow-hidden">
-              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
-                <rect width="100" height="100" fill="#E20A17" rx="14"/>
-                <path fill="white" d="
-                  M 72 18
-                  C 80 25 82 36 79 47
-                  C 76 59 66 68 54 70
-                  C 42 72 31 65 27 54
-                  C 23 43 27 30 36 23
-                  C 44 17 56 18 63 25
-                  C 70 32 70 43 63 50
-                  C 57 56 47 57 42 52
-                  C 38 48 39 41 44 39
-
-                  C 44 39 44 39 44 39
-                  C 49 37 54 40 54 45
-                  C 54 49 50 52 47 50
-
-                  M 27 54
-                  C 24 62 24 72 28 80
-                  C 31 86 37 89 42 87
-                  C 48 85 50 78 46 73
-                  C 43 69 37 69 36 73
-                "/>
+              <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                <rect width="44" height="44" fill="#E20A17" rx="8"/>
+                <path d="M22 5 C28 5 33 9 34 15 C35 20 32 25 27 27 C24 28 21 27 19 25 C22 25 25 23 26 20 C27 17 25 13 22 13 C18 13 15 16.5 15 21 L10 21 C10 13 15.5 5 22 5Z" fill="white"/>
+                <text x="22" y="38" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="8.5" fill="white">airtel</text>
               </svg>
             </div>
             <div class="min-w-0">
@@ -214,29 +191,10 @@
 
                 <!-- Airtel -->
                 <template x-if="retraitMobile==='airtel'">
-                  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
-                    <rect width="100" height="100" fill="#E20A17" rx="14"/>
-                    <path fill="white" d="
-                      M 72 18
-                      C 80 25 82 36 79 47
-                      C 76 59 66 68 54 70
-                      C 42 72 31 65 27 54
-                      C 23 43 27 30 36 23
-                      C 44 17 56 18 63 25
-                      C 70 32 70 43 63 50
-                      C 57 56 47 57 42 52
-                      C 38 48 39 41 44 39
-
-                      C 44 39 44 39 44 39
-                      C 49 37 54 40 54 45
-                      C 54 49 50 52 47 50
-
-                      M 27 54
-                      C 24 62 24 72 28 80
-                      C 31 86 37 89 42 87
-                      C 48 85 50 78 46 73
-                      C 43 69 37 69 36 73
-                    "/>
+                  <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                    <rect width="44" height="44" fill="#E20A17" rx="8"/>
+                    <path d="M22 5 C28 5 33 9 34 15 C35 20 32 25 27 27 C24 28 21 27 19 25 C22 25 25 23 26 20 C27 17 25 13 22 13 C18 13 15 16.5 15 21 L10 21 C10 13 15.5 5 22 5Z" fill="white"/>
+                    <text x="22" y="38" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="8.5" fill="white">airtel</text>
                   </svg>
                 </template>
 
@@ -394,8 +352,6 @@
 
       </div>
       <!-- ── /RETRAIT ──
-
-      <!-- ── stats.html ── -->
 <!-- ── STATISTIQUES ── -->
       <div class="px-4 mt-5">
         <h3 class="text-sm font-black text-gray-900 mb-3">Statistiques</h3>
@@ -440,8 +396,6 @@
         </div>
       </div>
       <!-- ── /STATISTIQUES ──
-
-      <!-- ── transactions.html ── -->
 <!-- ── ACTIVITÉ RÉCENTE ── -->
       <div class="px-4 mt-5">
         <div class="flex items-center justify-between mb-3">
@@ -717,4 +671,3 @@
       <!-- ── /NIVEAU MOSALA ── --> -->
 
     </div>
-    <!-- ══ /WALLET ══ -->
