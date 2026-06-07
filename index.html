@@ -5904,7 +5904,7 @@
             this.champsCooldown = this.user.champs_cooldown || {};
 
             if (!this.user.onboarding_done) {
-              this.page = 'app';
+              window.location.replace('/onboarding.html');
             } else if (!this.user.telephone) {
               this.page = 'complete-profil';
               this.showToast('👋 Bienvenue ' + this.user.prenom + ' ! Complète ton profil.');
