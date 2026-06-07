@@ -1,0 +1,187 @@
+<!-- ── tab: marketplace ── -->
+
+    <div x-show="activeTab==='marketplace'" class="p-4">
+
+      <!-- Filtres -->
+      <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+        <button @click="filtreStatut=''; loadProjets()"
+                :class="filtreStatut==='' ? 'bg-kv-green text-white' : 'bg-white text-gray-600 border'"
+                class="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap">Tous</button>
+        <button @click="filtreStatut='en_attente'; loadProjets()"
+                :class="filtreStatut==='en_attente' ? 'bg-yellow-400 text-white' : 'bg-white text-gray-600 border'"
+                class="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap">⏳ Disponibles</button>
+        <button @click="filtreStatut='en_cours'; loadProjets()"
+                :class="filtreStatut==='en_cours' ? 'bg-blue-500 text-white' : 'bg-white text-gray-600 border'"
+                class="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap">🔧 En cours</button>
+        <button @click="filtreStatut='termine'; loadProjets()"
+                :class="filtreStatut==='termine' ? 'bg-gray-600 text-white' : 'bg-white text-gray-600 border'"
+                class="px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap">✅ Terminés</button>
+      </div>
+
+      <!-- Skeletons loading -->
+      <div x-show="loadingProjets" class="space-y-3">
+        <template x-for="i in 3">
+          <div class="card p-4">
+            <div class="skeleton h-5 w-2/3 mb-2"></div>
+            <div class="skeleton h-4 w-full mb-1"></div>
+            <div class="skeleton h-4 w-1/2"></div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Liste projets -->
+      <div x-show="!loadingProjets" class="space-y-3">
+        <template x-if="projets.length === 0">
+          <div class="bg-white rounded-2xl p-6 border border-dashed border-gray-200">
+            <div class="text-center mb-4">
+              <div class="w-14 h-14 bg-[#F0FBF7] rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-7 h-7">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
+                </svg>
+              </div>
+              <p class="font-black text-[#0F172A] text-base">Aucune mission pour l'instant</p>
+              <p class="text-xs mt-1">Le marché se remplit chaque jour. Voici comment démarrer :</p>
+            </div>
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center gap-3 bg-[#F0FBF7] rounded-xl p-3">
+                <div class="w-7 h-7 bg-[#00B87C] rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" class="w-3.5 h-3.5"><path stroke-linecap="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-bold text-[#0F172A]">Complète ton profil</p>
+                  <p class="text-[10px] text-gray-500">Les clients préfèrent les freelances avec un profil complet</p>
+                </div>
+                <button @click="navigateTo('profil')" class="text-[10px] font-black text-[#00B87C] bg-white px-2.5 py-1 rounded-lg border border-[#00B87C]/20 hover:bg-[#00B87C] hover:text-white transition-all">Go →</button>
+              </div>
+              <div class="flex items-center gap-3 bg-blue-50 rounded-xl p-3">
+                <div class="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" class="w-3.5 h-3.5"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-bold text-[#0F172A]">Publie ton premier service</p>
+                  <p class="text-[10px] text-gray-500">Décris ce que tu sais faire et fixe ton tarif</p>
+                </div>
+                <button @click="navigateTo('nouveau', false)" class="text-[10px] font-black text-blue-500 bg-white px-2.5 py-1 rounded-lg border border-blue-200 hover:bg-blue-500 hover:text-white transition-all">Go →</button>
+              </div>
+              <div class="flex items-center gap-3 bg-purple-50 rounded-xl p-3">
+                <div class="w-7 h-7 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" class="w-3.5 h-3.5"><path stroke-linecap="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-bold text-[#0F172A]">Génère ton CV IA</p>
+                  <p class="text-[10px] text-gray-500">Un CV professionnel généré en 30 secondes</p>
+                </div>
+                <button @click="generateCV()" class="text-[10px] font-black text-purple-500 bg-white px-2.5 py-1 rounded-lg border border-purple-200 hover:bg-purple-500 hover:text-white transition-all">Go →</button>
+              </div>
+            </div>
+            <button @click="loadProjets()" class="w-full text-xs text-gray-400 hover:text-[#00B87C] transition py-1">🔄 Actualiser le marché</button>
+          </div>
+        </template>
+
+        <template x-for="p in projets" :key="p.id">
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-[#00B87C]/20 overflow-hidden cursor-pointer"
+               @click="openProjet(p)">
+
+            <!-- Card header -->
+            <div class="p-4 pb-3">
+
+              <!-- Badge Nouveau + statut -->
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-1.5">
+                  <template x-if="p.is_new">
+                    <span class="text-[9px] font-black text-white bg-[#00B87C] px-2 py-0.5 rounded-full">Nouveau</span>
+                  </template>
+                  <span class="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                        :class="{
+                          'bg-amber-50 text-amber-600 border border-amber-200': p.statut==='en_attente',
+                          'bg-blue-50 text-blue-600 border border-blue-200': p.statut==='en_cours',
+                          'bg-green-50 text-green-600 border border-green-200': p.statut==='termine'
+                        }"
+                        x-text="statutLabel(p.statut)"></span>
+                </div>
+                <!-- Nb candidatures -->
+                <span class="flex items-center gap-1 text-[9px] font-semibold" style="color:#94a3b8">
+                  <i data-lucide="users" style="width:10px;height:10px;stroke-width:2"></i>
+                  <span x-text="(p.nb_candidatures || 0) + ' candidat' + (p.nb_candidatures > 1 ? 's' : '')"></span>
+                </span>
+              </div>
+
+              <!-- Titre -->
+              <h3 class="font-black text-[#0F172A] text-sm leading-snug mb-1.5 line-clamp-2" x-text="p.titre"></h3>
+
+              <!-- Description -->
+              <p class="text-xs line-clamp-2 mb-3" style="color:#64748b; line-height:1.5"
+                 x-text="p.description || 'Pas de description'"></p>
+
+              <!-- Tags compétences -->
+              <template x-if="p.tags">
+                <div class="flex flex-wrap gap-1 mb-3">
+                  <template x-for="tag in (p.tags || '').split(',').slice(0,3)" :key="tag">
+                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-500"
+                          x-text="tag.trim()"></span>
+                  </template>
+                </div>
+              </template>
+
+              <!-- Budget + date -->
+              <div class="flex items-center justify-between">
+                <span class="font-black text-sm text-[#00B87C]"
+                      x-text="p.budget ? formatBudget(p.budget, p.devise) : 'À négocier'"></span>
+                <span class="text-[10px]" style="color:#94a3b8" x-text="timeAgo(p.created_at)"></span>
+              </div>
+            </div>
+
+            <!-- Séparateur -->
+            <div class="border-t border-gray-50"></div>
+
+            <!-- Footer : info client + bouton postuler -->
+            <div class="px-4 py-2.5 flex items-center justify-between">
+              <!-- Client info : Prénom N. ⭐ note · X projets -->
+              <div class="flex items-center gap-1.5">
+                <div class="w-5 h-5 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-white text-[8px] font-black flex-shrink-0"
+                     x-text="(p.client_prenom || 'C')[0].toUpperCase()"></div>
+                <div class="flex items-center gap-1 flex-wrap">
+                  <!-- Nom abrégé -->
+                  <span class="text-[10px] font-bold" style="color:#334155"
+                        x-text="(p.client_prenom || '') + ' ' + ((p.client_nom || '')[0] || '') + '.'"></span>
+                  <!-- Note -->
+                  <template x-if="p.client_note">
+                    <span class="flex items-center gap-0.5 text-[9px] font-bold text-amber-500">
+                      <svg viewBox="0 0 24 24" fill="currentColor" class="w-2.5 h-2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                      <span x-text="p.client_note"></span>
+                    </span>
+                  </template>
+                  <!-- Projets complétés -->
+                  <template x-if="p.client_projets > 0">
+                    <span class="text-[9px]" style="color:#94a3b8">
+                      · <span x-text="p.client_projets + ' projet' + (p.client_projets > 1 ? 's' : '')"></span>
+                    </span>
+                  </template>
+                </div>
+              </div>
+
+              <!-- Bouton postuler -->
+              <button @click.stop="mesCandidatures.includes(p.id) ? null : ouvrirPostuler(p)"
+                      :disabled="mesCandidatures.includes(p.id)"
+                      :class="mesCandidatures.includes(p.id)
+                        ? 'text-[10px] font-bold px-3 py-1.5 rounded-lg bg-gray-100 text-gray-400 cursor-default flex items-center gap-1'
+                        : 'text-[10px] font-black px-3 py-1.5 rounded-lg text-white flex items-center gap-1 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5'"
+                      :style="mesCandidatures.includes(p.id) ? '' : 'background: linear-gradient(135deg, #00B87C, #009E6A)'">
+                <template x-if="mesCandidatures.includes(p.id)">
+                  <i data-lucide="check" style="width:11px;height:11px;stroke-width:2.5"></i>
+                </template>
+                <template x-if="!mesCandidatures.includes(p.id)">
+                  <i data-lucide="send" style="width:11px;height:11px;stroke-width:2.5"></i>
+                </template>
+                <span x-text="mesCandidatures.includes(p.id) ? 'Postulé' : 'Postuler'"></span>
+              </button>
+            </div>
+
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────
+         TAB : DASHBOARD
+    ───────────────────────────────────────── -->

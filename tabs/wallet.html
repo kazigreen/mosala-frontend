@@ -1,0 +1,720 @@
+<!-- ── tab: wallet ── -->
+
+    <div x-show="activeTab==='wallet'" class="min-h-screen bg-gray-50 pb-20" x-data="{ walletTab: 'transactions', showRetrait: false, showDepot: false, retraitMontant: '', retraitMobile: '', retraitNumero: '', retraitLoading: false, retraitDone: false, walletTx: [], walletLoading: true, wDispo: 0, wBloque: 0, wTotal: 0, wMois: 0 }" x-init="
+      fetch(API+'/wallet/transactions', { headers: { Authorization: 'Bearer '+token } })
+        .then(r=>r.json()).then(d=>{ walletTx = Array.isArray(d) ? d : (d.transactions||[]); walletLoading=false; })
+        .catch(()=>{ walletLoading=false; });
+      // CountUp — lance quand la section devient visible
+      $watch('$store', ()=>{});
+      setTimeout(() => {
+        _walletCountUp(wDispo, escrow.disponible||0, v => wDispo=v);
+        _walletCountUp(wBloque, escrow.bloque||0, v => wBloque=v);
+        _walletCountUp(wTotal, escrow.total||0, v => wTotal=v);
+        _walletCountUp(wMois, dashStats.revenus_mois||0, v => wMois=v);
+      }, 120);
+      function _walletCountUp(from, to, setter, dur=1100) {
+        const steps=50, st=dur/steps, inc=to/steps; let cur=0;
+        const t=setInterval(()=>{ cur=Math.min(cur+inc,to); setter(Math.round(cur)); if(cur>=to)clearInterval(t); },st);
+      }
+    ">
+
+      <!-- ── CARTE FUSIONNÉE ── -->
+<div style="background:linear-gradient(160deg,#0a1628 0%,#0f2744 55%,#0d1f3c 100%);" class="px-4 pt-5 pb-5">
+
+  <!-- Logo + badge -->
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-2">
+      <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" class="w-3.5 h-3.5">
+          <path stroke-linecap="round" d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/>
+          <path stroke-linecap="round" d="M16 12h5v4h-5a2 2 0 0 1 0-4z"/>
+        </svg>
+      </div>
+      <span class="text-xs font-black text-white/80 tracking-tight">Mosala Pay</span>
+    </div>
+    <div class="flex items-center gap-1.5" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:9999px;padding:4px 10px;">
+      <span class="relative flex h-1.5 w-1.5">
+        <span class="absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-50 animate-ping"></span>
+        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#34D399]"></span>
+      </span>
+      <span class="text-[9px] font-bold text-[#34D399] uppercase tracking-wider">Sécurisé</span>
+    </div>
+  </div>
+
+  <!-- Bonjour + solde principal -->
+  <p class="text-[10px] text-white/35 uppercase tracking-widest mb-2"
+     x-text="'Bonjour ' + (user.prenom||'') + ' — Solde disponible'"></p>
+  <div class="flex items-baseline gap-2.5 mb-1">
+    <p class="text-5xl font-black text-white tracking-tight leading-none"
+       x-text="wDispo.toLocaleString('fr-FR')"></p>
+    <span class="text-lg font-black text-[#34D399]" x-text="escrow.devise||'USD'"></span>
+  </div>
+
+  <!-- Message vide si portefeuille neuf -->
+  <p x-show="(escrow.total||0) === 0"
+     class="text-[10px] text-white/30 mt-1 mb-3">
+    🔒 Vos paiements seront protégés par Mosala Escrow jusqu'à validation
+  </p>
+
+  <!-- 3 colonnes — toujours visibles -->
+  <div class="grid grid-cols-3 mt-4" style="border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;">
+    <div class="text-center py-3" style="background:rgba(255,255,255,0.04);">
+      <p class="text-xl font-black text-white leading-none" x-text="wDispo.toLocaleString('fr-FR')"></p>
+      <p class="text-[8px] font-bold text-[#34D399] mt-0.5" x-text="escrow.devise||'USD'"></p>
+      <p class="text-[9px] text-white/30 uppercase tracking-wider mt-1">Disponible</p>
+    </div>
+    <div class="text-center py-3" style="background:rgba(255,255,255,0.04);border-left:1px solid rgba(255,255,255,0.08);border-right:1px solid rgba(255,255,255,0.08);">
+      <p class="text-xl font-black text-yellow-300 leading-none" x-text="wBloque.toLocaleString('fr-FR')"></p>
+      <p class="text-[8px] font-bold text-yellow-300/50 mt-0.5" x-text="escrow.devise||'USD'"></p>
+      <p class="text-[9px] text-white/30 uppercase tracking-wider mt-1">Escrow</p>
+    </div>
+    <div class="text-center py-3" style="background:rgba(255,255,255,0.04);">
+      <p class="text-xl font-black text-[#34D399] leading-none" x-text="wTotal.toLocaleString('fr-FR')"></p>
+      <p class="text-[8px] font-bold text-[#34D399]/50 mt-0.5" x-text="escrow.devise||'USD'"></p>
+      <p class="text-[9px] text-white/30 uppercase tracking-wider mt-1">Total</p>
+    </div>
+  </div>
+
+  <!-- Nom + N° compte -->
+  <div class="flex items-center justify-between mt-4">
+    <p class="text-[10px] font-black text-white/50 uppercase tracking-wider"
+       x-text="((user.prenom||'') + ' ' + (user.nom||'')).trim()"></p>
+    <p class="text-[8px] text-white/15 tracking-widest font-mono"
+       x-text="'MOS-' + ((user.id||'0000').replace(/-/g,'').slice(-4).toUpperCase())"></p>
+  </div>
+
+</div>
+<!-- ── /CARTE FUSIONNÉE ── -->
+
+      <!-- ── withdraw.html ── -->
+<!-- Bouton Retirer mes gains -->
+      <div class="px-4 pt-3 pb-1" style="background:#f8fafc;">
+        <button @click="showRetrait = true; retraitMobile = 'airtel'"
+                class="w-full flex items-center justify-center gap-2 py-3 bg-[#00B87C] hover:bg-[#00956a] rounded-2xl font-bold text-sm text-white transition-all shadow-md shadow-[#00B87C]/25">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3z"/>
+          </svg>
+          Retirer mes gains
+        </button>
+      </div>
+      <!-- ── /CARTE FUSIONNÉE ── -->
+      <div class="px-4 mt-6 mb-8">
+        <h3 class="text-sm font-black text-gray-900 mb-3">Retirer mon argent</h3>
+
+        <!-- Options Mobile Money — 2x2 grid -->
+        <div class="grid grid-cols-2 gap-2.5 mb-4">
+
+          <!-- Airtel Money -->
+          <button @click="retraitMobile = 'airtel'; showRetrait = true"
+                  class="group flex items-center gap-2.5 bg-white border-2 rounded-2xl px-3 py-3 transition-all shadow-sm text-left"
+                  :class="retraitMobile === 'airtel' && showRetrait ? 'border-[#E20A17] bg-red-50' : 'border-gray-100 hover:border-[#E20A17]/50'">
+            <div class="w-8 h-8 rounded-lg flex-shrink-0 overflow-hidden">
+              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                <rect width="100" height="100" fill="#E20A17" rx="14"/>
+                <path fill="white" d="
+                  M 72 18
+                  C 80 25 82 36 79 47
+                  C 76 59 66 68 54 70
+                  C 42 72 31 65 27 54
+                  C 23 43 27 30 36 23
+                  C 44 17 56 18 63 25
+                  C 70 32 70 43 63 50
+                  C 57 56 47 57 42 52
+                  C 38 48 39 41 44 39
+
+                  C 44 39 44 39 44 39
+                  C 49 37 54 40 54 45
+                  C 54 49 50 52 47 50
+
+                  M 27 54
+                  C 24 62 24 72 28 80
+                  C 31 86 37 89 42 87
+                  C 48 85 50 78 46 73
+                  C 43 69 37 69 36 73
+                "/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-black text-gray-900 leading-tight">Airtel Money</p>
+              <p class="text-[10px] text-[#00B87C] font-bold mt-0.5">Instantané · 1.5%</p>
+            </div>
+          </button>
+
+          <!-- Orange Money -->
+          <button @click="retraitMobile = 'orange'; showRetrait = true"
+                  class="group flex items-center gap-2.5 bg-white border-2 rounded-2xl px-3 py-3 transition-all shadow-sm text-left"
+                  :class="retraitMobile === 'orange' && showRetrait ? 'border-gray-900 bg-gray-50' : 'border-gray-100 hover:border-gray-800/50'">
+            <div class="w-8 h-8 rounded-lg flex-shrink-0 overflow-hidden">
+              <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                <rect width="44" height="44" fill="#0A0A0A" rx="8"/>
+                <line x1="9" y1="26" x2="20" y2="12" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                <polyline points="11,12 20,12 20,21" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="35" y1="18" x2="24" y2="32" stroke="#FF6600" stroke-width="4" stroke-linecap="round"/>
+                <polyline points="33,32 24,32 24,23" fill="none" stroke="#FF6600" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-black text-gray-900 leading-tight">Orange Money</p>
+              <p class="text-[10px] text-[#00B87C] font-bold mt-0.5">Instantané · 1.5%</p>
+            </div>
+          </button>
+
+          <!-- M-Pesa -->
+          <button @click="retraitMobile = 'mpesa'; showRetrait = true"
+                  class="group flex items-center gap-2.5 bg-white border-2 rounded-2xl px-3 py-3 transition-all shadow-sm text-left"
+                  :class="retraitMobile === 'mpesa' && showRetrait ? 'border-[#E20A17] bg-red-50' : 'border-gray-100 hover:border-[#E20A17]/50'">
+            <div class="w-8 h-8 rounded-lg flex-shrink-0 overflow-hidden">
+              <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                <rect width="44" height="44" fill="#E20A17" rx="8"/>
+                <rect x="15" y="7" width="14" height="22" rx="2.5" fill="white"/>
+                <rect x="17" y="9" width="10" height="16" rx="1" fill="#E20A17"/>
+                <path d="M10 20 Q22 13 36 19 Q28 24 10 20Z" fill="#4CAF50"/>
+                <text x="32" y="37" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="6" fill="white">DRC</text>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-black text-gray-900 leading-tight">M-Pesa</p>
+              <p class="text-[10px] text-[#00B87C] font-bold mt-0.5">Instantané · 1.5%</p>
+            </div>
+          </button>
+
+          <!-- Banque -->
+          <button @click="retraitMobile = 'banque'; showRetrait = true"
+                  class="group flex items-center gap-3 bg-white border-2 rounded-2xl px-3.5 py-3.5 transition-all shadow-sm text-left"
+                  :class="retraitMobile === 'banque' && showRetrait ? 'border-[#1D4ED8] bg-blue-50' : 'border-gray-100 hover:border-[#1D4ED8]/50'">
+            <!-- Logo Banque -->
+            <div class="w-11 h-11 rounded-xl flex-shrink-0 overflow-hidden">
+              <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                <rect width="44" height="44" fill="#1D4ED8" rx="8"/>
+                <polygon points="22,7 7,18 37,18" fill="white"/>
+                <rect x="10" y="19" width="4" height="13" rx="1" fill="white"/>
+                <rect x="20" y="19" width="4" height="13" rx="1" fill="white"/>
+                <rect x="30" y="19" width="4" height="13" rx="1" fill="white"/>
+                <rect x="7" y="33" width="30" height="3" rx="1.5" fill="white"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-black text-gray-900 leading-tight">Virement Bancaire</p>
+              <p class="text-[10px] text-gray-400 mt-0.5">1–3 jours</p>
+            </div>
+          </button>
+
+        </div>
+
+        <!-- Formulaire retrait (s'ouvre sous les options) -->
+        <div x-show="showRetrait" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+             class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+
+          <!-- Header formulaire -->
+          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-50">
+            <div class="flex items-center gap-2.5">
+              <!-- Logo dynamique selon méthode -->
+              <div class="w-9 h-9 rounded-xl flex-shrink-0 overflow-hidden">
+
+                <!-- Airtel -->
+                <template x-if="retraitMobile==='airtel'">
+                  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                    <rect width="100" height="100" fill="#E20A17" rx="14"/>
+                    <path fill="white" d="
+                      M 72 18
+                      C 80 25 82 36 79 47
+                      C 76 59 66 68 54 70
+                      C 42 72 31 65 27 54
+                      C 23 43 27 30 36 23
+                      C 44 17 56 18 63 25
+                      C 70 32 70 43 63 50
+                      C 57 56 47 57 42 52
+                      C 38 48 39 41 44 39
+
+                      C 44 39 44 39 44 39
+                      C 49 37 54 40 54 45
+                      C 54 49 50 52 47 50
+
+                      M 27 54
+                      C 24 62 24 72 28 80
+                      C 31 86 37 89 42 87
+                      C 48 85 50 78 46 73
+                      C 43 69 37 69 36 73
+                    "/>
+                  </svg>
+                </template>
+
+                <!-- Orange Money -->
+                <template x-if="retraitMobile==='orange'">
+                  <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                    <rect width="44" height="44" fill="#0A0A0A" rx="8"/>
+                    <line x1="9" y1="26" x2="20" y2="12" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                    <polyline points="11,12 20,12 20,21" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="35" y1="18" x2="24" y2="32" stroke="#FF6600" stroke-width="4" stroke-linecap="round"/>
+                    <polyline points="33,32 24,32 24,23" fill="none" stroke="#FF6600" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </template>
+
+                <!-- M-Pesa -->
+                <template x-if="retraitMobile==='mpesa'">
+                  <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                    <rect width="44" height="44" fill="#E20A17" rx="8"/>
+                    <rect x="15" y="7" width="14" height="22" rx="2.5" fill="white"/>
+                    <rect x="17" y="9" width="10" height="16" rx="1" fill="#E20A17"/>
+                    <rect x="17.5" y="27" width="3" height="1.5" rx="0.5" fill="#E20A17"/>
+                    <rect x="22" y="27" width="3" height="1.5" rx="0.5" fill="#E20A17"/>
+                    <path d="M10 20 Q22 13 36 19 Q28 24 10 20Z" fill="#4CAF50"/>
+                    <text x="32" y="37" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="6" fill="white">DRC</text>
+                  </svg>
+                </template>
+
+                <!-- Banque -->
+                <template x-if="retraitMobile==='banque'">
+                  <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                    <rect width="44" height="44" fill="#1D4ED8" rx="8"/>
+                    <polygon points="22,7 7,18 37,18" fill="white"/>
+                    <rect x="10" y="19" width="4" height="13" rx="1" fill="white"/>
+                    <rect x="20" y="19" width="4" height="13" rx="1" fill="white"/>
+                    <rect x="30" y="19" width="4" height="13" rx="1" fill="white"/>
+                    <rect x="7" y="33" width="30" height="3" rx="1.5" fill="white"/>
+                  </svg>
+                </template>
+
+              </div>
+              <p class="text-sm font-black text-gray-900"
+                 x-text="retraitMobile==='airtel' ? 'Airtel Money' : retraitMobile==='orange' ? 'Orange Money' : retraitMobile==='mpesa' ? 'M-Pesa' : 'Virement Bancaire'"></p>
+            </div>
+            <button @click="showRetrait = false; retraitDone = false" class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 text-gray-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Confirmation success -->
+          <template x-if="retraitDone">
+            <div class="flex flex-col items-center justify-center py-8 px-4 text-center">
+              <div class="w-14 h-14 rounded-full bg-[#00B87C]/10 flex items-center justify-center mb-3">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-7 h-7">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+              <p class="text-base font-black text-gray-900 mb-1">Demande envoyée !</p>
+              <p class="text-sm text-gray-400 mb-4">Votre retrait est en cours de traitement.<br>Vous recevrez une notification.</p>
+              <button @click="showRetrait = false; retraitDone = false"
+                      class="px-5 py-2 bg-[#00B87C] text-white text-sm font-bold rounded-xl hover:bg-[#00956a] transition">
+                Fermer
+              </button>
+            </div>
+          </template>
+
+          <!-- Formulaire -->
+          <template x-if="!retraitDone">
+            <div class="px-4 py-4 space-y-4">
+
+              <!-- Solde dispo rappel -->
+              <div class="flex items-center justify-between bg-[#00B87C]/5 border border-[#00B87C]/15 rounded-xl px-3 py-2.5">
+                <span class="text-xs text-gray-500">Disponible</span>
+                <span class="text-sm font-black text-[#00B87C]"
+                      x-text="(escrow.disponible||0).toLocaleString('fr-FR', {minimumFractionDigits:2}) + ' ' + (escrow.devise||'USD')"></span>
+              </div>
+
+              <!-- Numéro / IBAN selon méthode -->
+              <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1.5"
+                       x-text="retraitMobile !== 'banque' ? 'Numéro Mobile Money' : 'IBAN / N° de compte'"></label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] font-black px-1 py-0.5 rounded text-white"
+                        :style="retraitMobile==='airtel' ? 'background:#E20A17' : retraitMobile==='orange' ? 'background:#0A0A0A' : retraitMobile==='mpesa' ? 'background:#E20A17' : 'background:#1D4ED8'"
+                        x-text="retraitMobile==='airtel' ? 'A' : retraitMobile==='orange' ? 'O' : retraitMobile==='mpesa' ? 'M' : 'B'"></span>
+                  <input x-model="retraitNumero"
+                         :placeholder="retraitMobile==='banque' ? 'CD XX XXXX XXXX XXXX' : '+243 8XX XXX XXX'"
+                         class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/10 transition"/>
+                </div>
+              </div>
+
+              <!-- Montant -->
+              <div>
+                <label class="block text-xs font-bold text-gray-700 mb-1.5">Montant à retirer</label>
+                <div class="relative">
+                  <input x-model="retraitMontant"
+                         type="number" min="1" :max="escrow.disponible"
+                         placeholder="0.00"
+                         class="w-full pr-16 pl-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/10 transition"/>
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400" x-text="escrow.devise||'USD'"></span>
+                </div>
+                <!-- Raccourcis -->
+                <div class="flex gap-1.5 mt-2">
+                  <template x-for="pct in [25, 50, 75, 100]">
+                    <button @click="retraitMontant = ((escrow.disponible||0) * pct / 100).toFixed(2)"
+                            class="flex-1 text-[10px] font-bold py-1 bg-gray-50 border border-gray-200 rounded-lg hover:border-[#00B87C] hover:text-[#00B87C] transition"
+                            x-text="pct + '%'"></button>
+                  </template>
+                </div>
+              </div>
+
+              <!-- Frais -->
+              <div class="flex items-center justify-between text-xs text-gray-400 px-1">
+                <span>Frais de traitement</span>
+                <span class="font-semibold text-gray-600"
+                      x-text="retraitMobile !== 'banque' ? '1.5%' : '2.5% + 2 USD'"></span>
+              </div>
+
+              <!-- Bouton confirmer -->
+              <button @click="
+                if (!retraitMontant || !retraitNumero) { showToast('Remplis tous les champs'); return; }
+                if (parseFloat(retraitMontant) > (escrow.disponible||0)) { showToast('Solde insuffisant'); return; }
+                retraitLoading = true;
+                fetch(API+'/wallet/retrait', {
+                  method: 'POST',
+                  headers: { Authorization: 'Bearer '+token, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ montant: parseFloat(retraitMontant), methode: retraitMobile, numero: retraitNumero })
+                }).then(r=>r.json()).then(d=>{
+                  retraitLoading = false;
+                  if (d.id || d.success || d.statut) { retraitDone = true; retraitMontant = ''; retraitNumero = ''; }
+                  else showToast(d.detail || 'Erreur retrait');
+                }).catch(()=>{ retraitLoading = false; showToast('Erreur réseau'); });
+              "
+                      :disabled="retraitLoading || !retraitMontant || !retraitNumero"
+                      :class="(retraitLoading || !retraitMontant || !retraitNumero) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#00956a] hover:shadow-lg hover:shadow-[#00B87C]/25'"
+                      class="w-full flex items-center justify-center gap-2 py-3 bg-[#00B87C] text-white text-sm font-black rounded-xl transition-all">
+                <template x-if="retraitLoading">
+                  <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                </template>
+                <template x-if="!retraitLoading">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H6a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3z"/>
+                  </svg>
+                </template>
+                <span x-text="retraitLoading ? 'Traitement...' : 'Confirmer le retrait'"></span>
+              </button>
+
+            </div>
+          </template>
+        </div>
+
+      </div>
+      <!-- ── /RETRAIT ──
+
+      <!-- ── stats.html ── -->
+<!-- ── STATISTIQUES ── -->
+      <div class="px-4 mt-5">
+        <h3 class="text-sm font-black text-gray-900 mb-3">Statistiques</h3>
+        <div class="grid grid-cols-2 gap-3">
+
+          <!-- Revenus ce mois -->
+          <div class="bg-white border border-gray-100 rounded-2xl px-4 py-3.5 shadow-sm">
+            <div class="w-1.5 h-4 rounded-full bg-[#00B87C] mb-2.5"></div>
+            <p class="text-2xl font-black text-gray-900 leading-none"
+               x-text="wMois.toLocaleString('fr-FR')"></p>
+            <p class="text-[10px] font-bold text-[#00B87C] mt-0.5" x-text="escrow.devise||'USD'"></p>
+            <p class="text-[10px] text-gray-400 mt-1.5">Revenus ce mois</p>
+          </div>
+
+          <!-- Revenus totaux -->
+          <div class="bg-white border border-gray-100 rounded-2xl px-4 py-3.5 shadow-sm">
+            <div class="w-1.5 h-4 rounded-full bg-purple-400 mb-2.5"></div>
+            <p class="text-2xl font-black text-gray-900 leading-none"
+               x-text="wTotal.toLocaleString('fr-FR')"></p>
+            <p class="text-[10px] font-bold text-purple-400 mt-0.5" x-text="escrow.devise||'USD'"></p>
+            <p class="text-[10px] text-gray-400 mt-1.5">Revenus totaux</p>
+          </div>
+
+          <!-- Projets payés -->
+          <div class="bg-white border border-gray-100 rounded-2xl px-4 py-3.5 shadow-sm">
+            <div class="w-1.5 h-4 rounded-full bg-blue-400 mb-2.5"></div>
+            <p class="text-2xl font-black text-gray-900 leading-none"
+               x-text="dashStats.projets_termines || 0"></p>
+            <p class="text-[10px] font-bold text-blue-400 mt-0.5">projets</p>
+            <p class="text-[10px] text-gray-400 mt-1.5">Projets payés</p>
+          </div>
+
+          <!-- Retraits -->
+          <div class="bg-white border border-gray-100 rounded-2xl px-4 py-3.5 shadow-sm">
+            <div class="w-1.5 h-4 rounded-full bg-amber-400 mb-2.5"></div>
+            <p class="text-2xl font-black text-gray-900 leading-none"
+               x-text="walletTx.filter(t => t.type === 'debit').length || 0"></p>
+            <p class="text-[10px] font-bold text-amber-400 mt-0.5">retraits</p>
+            <p class="text-[10px] text-gray-400 mt-1.5">Retraits effectués</p>
+          </div>
+
+        </div>
+      </div>
+      <!-- ── /STATISTIQUES ──
+
+      <!-- ── transactions.html ── -->
+<!-- ── ACTIVITÉ RÉCENTE ── -->
+      <div class="px-4 mt-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-black text-gray-900">Activité récente</h3>
+          <span class="text-[10px] text-gray-400" x-text="walletTx.length + ' opération(s)'"></span>
+        </div>
+
+        <!-- Skeleton loading -->
+        <template x-if="walletLoading">
+          <div class="space-y-3">
+            <template x-for="i in 4">
+              <div class="flex items-center gap-3 animate-pulse bg-white rounded-2xl p-3.5 border border-gray-100">
+                <div class="w-10 h-10 rounded-xl bg-gray-100 flex-shrink-0"></div>
+                <div class="flex-1 space-y-1.5">
+                  <div class="h-3 bg-gray-100 rounded w-2/3"></div>
+                  <div class="h-2 bg-gray-50 rounded w-1/3"></div>
+                </div>
+                <div class="h-4 bg-gray-100 rounded w-16"></div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- Liste transactions -->
+        <template x-if="!walletLoading">
+          <div>
+            <!-- État vide -->
+            <template x-if="walletTx.length === 0">
+              <div class="bg-white border border-dashed border-gray-200 rounded-2xl p-8 text-center">
+                <div class="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-bold text-gray-600">Aucune transaction</p>
+                <p class="text-xs text-gray-400 mt-1">Vos opérations apparaîtront ici</p>
+              </div>
+            </template>
+
+            <!-- Transactions -->
+            <template x-if="walletTx.length > 0">
+              <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                <template x-for="(tx, index) in walletTx" :key="tx.id || index">
+                  <div class="flex items-center gap-3 px-4 py-3.5"
+                       :class="index < walletTx.length - 1 ? 'border-b border-gray-50' : ''">
+
+                    <!-- Icône crédit / débit -->
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                         :class="tx.type === 'credit' ? 'bg-[#00B87C]/10' : 'bg-red-50'">
+                      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" class="w-4 h-4"
+                           :stroke="tx.type === 'credit' ? '#00B87C' : '#ef4444'">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              :d="tx.type === 'credit' ? 'M12 4v16m-8-8l8-8 8 8' : 'M12 20V4m-8 8l8 8 8-8'"/>
+                      </svg>
+                    </div>
+
+                    <!-- Libellé + date -->
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-gray-900 truncate" x-text="tx.libelle || tx.description || 'Transaction'"></p>
+                      <p class="text-xs text-gray-400 mt-0.5" x-text="formatTxDate(tx.created_at)"></p>
+                    </div>
+
+                    <!-- Montant -->
+                    <div class="text-right flex-shrink-0">
+                      <p class="text-sm font-black"
+                         :class="tx.type === 'credit' ? 'bg-[#00B87C]/10 text-[#00B87C]' : 'bg-red-50 text-red-500'"
+                         style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:9999px;"
+                         x-text="(tx.type === 'credit' ? '+ ' : '- ') + Number(tx.montant||0).toLocaleString('fr-FR') + ' ' + (tx.devise || escrow.devise || 'USD')"></p>
+                    </div>
+
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+      <!-- ── /ACTIVITÉ RÉCENTE ──
+<!-- ── ESCROW DÉTAIL ── -->
+      <div class="px-4 mt-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-black text-gray-900">Où est mon argent ?</h3>
+        </div>
+
+        <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+
+          <!-- Header colonnes -->
+          <div class="grid grid-cols-3 px-4 py-2 bg-gray-50 border-b border-gray-100">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-wide">Projet</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-wide text-center">Montant</p>
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-wide text-right">Statut</p>
+          </div>
+
+          <!-- État vide -->
+          <template x-if="mesProjets.length === 0">
+            <div class="flex flex-col items-center py-6 px-4 text-center">
+              <p class="text-sm font-bold text-gray-500">Aucun projet lié</p>
+              <p class="text-xs text-gray-400 mt-1">Vos missions et paiements apparaîtront ici</p>
+            </div>
+          </template>
+
+          <!-- Liste projets -->
+          <template x-if="mesProjets.length > 0">
+            <div>
+              <template x-for="(p, i) in mesProjets.slice(0,5)" :key="p.id">
+                <div class="grid grid-cols-3 items-center px-4 py-3"
+                     :class="i < Math.min(mesProjets.length,5)-1 ? 'border-b border-gray-50' : ''">
+                  <!-- Projet -->
+                  <p class="text-xs font-semibold text-gray-900 truncate pr-2" x-text="p.titre"></p>
+                  <!-- Montant -->
+                  <p class="text-xs font-black text-center"
+                     :class="p.statut==='termine' ? 'text-[#00B87C]' : 'text-gray-700'"
+                     x-text="(p.budget||0).toLocaleString('fr-FR') + ' ' + (p.devise||'USD')"></p>
+                  <!-- Statut pill -->
+                  <div class="flex justify-end">
+                    <span class="text-[9px] font-black px-2 py-0.5 rounded-full whitespace-nowrap"
+                          :class="p.statut==='termine' ? 'bg-[#00B87C]/10 text-[#00B87C]' : p.statut==='en_cours' ? 'bg-yellow-50 text-yellow-600' : 'bg-gray-100 text-gray-500'"
+                          x-text="p.statut==='termine' ? '✅ Disponible' : p.statut==='en_cours' ? '🔒 Bloqué' : '⏳ Validation'"></span>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+        </div>
+      </div>
+      <!-- ── /ESCROW DÉTAIL ── -->
+
+<!-- ── MISSIONS LIÉES À L'ARGENT ── -->
+      <div class="px-4 mt-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-black text-gray-900">Missions &amp; paiements</h3>
+          <button @click="navigateTo('marketplace')" class="text-[10px] text-[#00B87C] font-semibold hover:underline">Voir tout →</button>
+        </div>
+
+        <!-- Skeleton -->
+        <template x-if="convLoading">
+          <div class="space-y-2">
+            <template x-for="i in 3">
+              <div class="flex items-center gap-3 animate-pulse bg-white rounded-2xl p-3.5 border border-gray-100">
+                <div class="w-9 h-9 rounded-xl bg-gray-100 flex-shrink-0"></div>
+                <div class="flex-1 space-y-1.5"><div class="h-3 bg-gray-100 rounded w-1/2"></div><div class="h-2 bg-gray-50 rounded w-1/4"></div></div>
+                <div class="h-5 bg-gray-100 rounded-full w-20"></div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <template x-if="!convLoading">
+          <div>
+            <!-- État vide -->
+            <template x-if="mesProjets.length === 0">
+              <div class="bg-white border border-dashed border-gray-200 rounded-2xl p-6 text-center">
+                <p class="text-sm font-bold text-gray-500">Aucune mission en cours</p>
+                <p class="text-xs text-gray-400 mt-1">Vos projets payés apparaîtront ici</p>
+              </div>
+            </template>
+
+            <!-- Liste projets -->
+            <template x-if="mesProjets.length > 0">
+              <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                <template x-for="(p, index) in mesProjets.slice(0,6)" :key="p.id">
+                  <div class="flex items-center gap-3 px-4 py-3.5"
+                       :class="index < Math.min(mesProjets.length,6) - 1 ? 'border-b border-gray-50' : ''">
+
+                    <!-- Icône statut -->
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                         :class="p.statut==='termine' ? 'bg-[#00B87C]/10' : p.statut==='en_cours' ? 'bg-amber-50' : 'bg-gray-50'">
+                      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" class="w-4 h-4"
+                           :stroke="p.statut==='termine' ? '#00B87C' : p.statut==='en_cours' ? '#D97706' : '#9ca3af'">
+                        <template x-if="p.statut==='termine'">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+                        </template>
+                        <template x-if="p.statut==='en_cours'">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25z"/>
+                        </template>
+                        <template x-if="p.statut==='en_attente'">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+                        </template>
+                      </svg>
+                    </div>
+
+                    <!-- Titre + budget -->
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-gray-900 truncate" x-text="p.titre"></p>
+                      <p class="text-xs font-black mt-0.5"
+                         :class="p.statut==='termine' ? 'text-[#00B87C]' : 'text-gray-400'"
+                         x-text="(p.budget||0).toLocaleString('fr-FR') + ' ' + (p.devise||'USD')"></p>
+                    </div>
+
+                    <!-- Badge statut -->
+                    <span class="text-[10px] font-black px-2.5 py-1 rounded-full flex-shrink-0"
+                          :class="p.statut==='termine' ? 'bg-[#00B87C]/10 text-[#00B87C]' : p.statut==='en_cours' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500'"
+                          x-text="p.statut==='termine' ? '✅ Disponible' : p.statut==='en_cours' ? '🔒 Bloqué Escrow' : '⏳ En attente'"></span>
+
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+      <!-- ── /MISSIONS LIÉES À L'ARGENT ──
+      <!-- ── NIVEAU MOSALA ── -->
+      <div class="px-4 mt-5 mb-8">
+        <h3 class="text-sm font-black text-gray-900 mb-3">Niveau Mosala</h3>
+        <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+
+          <!-- Header niveau actuel -->
+          <div class="px-4 pt-4 pb-3 border-b border-gray-50">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                     :class="{'bg-amber-50':(escrow.total||0)<500,'bg-gray-100':(escrow.total||0)>=500&&(escrow.total||0)<2000,'bg-yellow-50':(escrow.total||0)>=2000&&(escrow.total||0)<5000,'bg-[#00B87C]/10':(escrow.total||0)>=5000}">
+                  <span x-text="(escrow.total||0)>=5000?'🏆':(escrow.total||0)>=2000?'🥇':(escrow.total||0)>=500?'🥈':'🥉'"></span>
+                </div>
+                <div>
+                  <p class="text-sm font-black text-gray-900"
+                     x-text="(escrow.total||0)>=5000?'Top Freelance':(escrow.total||0)>=2000?'Or':(escrow.total||0)>=500?'Argent':'Bronze'"></p>
+                  <p class="text-[10px] text-gray-400"
+                     x-text="(escrow.total||0).toLocaleString('fr-FR')+' '+(escrow.devise||'USD')+' gagnés'"></p>
+                </div>
+              </div>
+              <div class="text-right" x-show="(escrow.total||0)<5000">
+                <p class="text-[9px] text-gray-400 uppercase tracking-wider">Prochain</p>
+                <p class="text-[11px] font-black"
+                   :class="(escrow.total||0)>=2000?'text-[#00B87C]':(escrow.total||0)>=500?'text-yellow-500':'text-gray-500'"
+                   x-text="(escrow.total||0)>=2000?'🏆 Top Freelance':(escrow.total||0)>=500?'🥇 Or':'🥈 Argent'"></p>
+              </div>
+            </div>
+            <!-- Barre progression -->
+            <div>
+              <div class="h-4 bg-gray-100 rounded-full overflow-hidden" style="position:relative;">
+                <div class="h-full rounded-full transition-all duration-700"
+                     :class="{'bg-gradient-to-r from-amber-300 to-amber-500':(escrow.total||0)<500,'bg-gradient-to-r from-gray-400 to-gray-600':(escrow.total||0)>=500&&(escrow.total||0)<2000,'bg-gradient-to-r from-yellow-300 to-yellow-500':(escrow.total||0)>=2000&&(escrow.total||0)<5000,'bg-gradient-to-r from-[#00B87C] to-[#34D399]':(escrow.total||0)>=5000}"
+                     :style="'width:'+Math.min(100,(()=>{const t=escrow.total||0;if(t<500)return(t/500)*100;if(t<2000)return((t-500)/1500)*100;if(t<5000)return((t-2000)/3000)*100;return 100;})()||0)+'%'"
+                     style="border-radius:9999px;position:relative;overflow:hidden;transition:width 1s ease;">
+                  <span style="position:absolute;top:0;left:-60%;width:45%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);animation:walletShimmer 2.2s ease-in-out infinite;"></span>
+                </div>
+              </div>
+              <p class="text-[10px] text-gray-400 mt-1.5 font-medium" x-show="(escrow.total||0)<5000"
+                 x-text="(()=>{const t=escrow.total||0;if(t<500)return'Encore '+(500-t).toLocaleString('fr-FR')+' USD pour atteindre Argent 🥈';if(t<2000)return'Encore '+(2000-t).toLocaleString('fr-FR')+' USD pour atteindre Or 🥇';return'Encore '+(5000-t).toLocaleString('fr-FR')+' USD pour atteindre Top Freelance 🏆';})()"></p>
+              <p class="text-[10px] text-[#00B87C] mt-1.5 font-black" x-show="(escrow.total||0)>=5000">🎉 Vous avez atteint le niveau maximum !</p>
+            </div>
+          </div>
+
+          <!-- 4 paliers -->
+          <div class="grid grid-cols-4 divide-x divide-gray-50">
+            <div class="flex flex-col items-center py-3 px-1 transition-opacity" :class="(escrow.total||0)>=0?'opacity-100':'opacity-30'">
+              <span class="text-xl mb-0.5">🥉</span>
+              <p class="text-[9px] font-black text-gray-700">Bronze</p>
+              <p class="text-[8px] text-gray-400">0 USD</p>
+            </div>
+            <div class="flex flex-col items-center py-3 px-1 transition-opacity" :class="(escrow.total||0)>=500?'opacity-100':'opacity-30'">
+              <span class="text-xl mb-0.5">🥈</span>
+              <p class="text-[9px] font-black text-gray-700">Argent</p>
+              <p class="text-[8px] text-gray-400">500 USD</p>
+            </div>
+            <div class="flex flex-col items-center py-3 px-1 transition-opacity" :class="(escrow.total||0)>=2000?'opacity-100':'opacity-30'">
+              <span class="text-xl mb-0.5">🥇</span>
+              <p class="text-[9px] font-black text-gray-700">Or</p>
+              <p class="text-[8px] text-gray-400">2 000 USD</p>
+            </div>
+            <div class="flex flex-col items-center py-3 px-1 transition-opacity" :class="(escrow.total||0)>=5000?'opacity-100':'opacity-30'">
+              <span class="text-xl mb-0.5">🏆</span>
+              <p class="text-[9px] font-black text-gray-700">Top</p>
+              <p class="text-[8px] text-gray-400">5 000 USD</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- ── /NIVEAU MOSALA ── --> -->
+
+    </div>
+    <!-- ══ /WALLET ══ -->

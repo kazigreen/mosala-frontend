@@ -1,0 +1,251 @@
+<!-- ── tab: profil ── -->
+
+<div x-show="activeTab==='profil'" class="min-h-screen bg-gray-50 pb-20">
+
+  <!-- ── HEADER ── -->
+  <div style="background:linear-gradient(160deg,#0a1628 0%,#0f2744 55%,#0d1f3c 100%);" class="px-4 pt-5 pb-6">
+
+    <!-- Photo + infos -->
+    <div class="flex items-center gap-4 mb-4">
+
+      <!-- Avatar -->
+      <div class="relative">
+        <div class="w-16 h-16 rounded-2xl overflow-hidden border-2 border-white/20">
+          <template x-if="user.photo_url">
+            <img :src="user.photo_url" class="w-full h-full object-cover"/>
+          </template>
+          <template x-if="!user.photo_url">
+            <div class="w-full h-full bg-[#00B87C]/20 flex items-center justify-center">
+              <span class="text-2xl font-black text-[#34D399]"
+                    x-text="(user.prenom||'?')[0].toUpperCase()"></span>
+            </div>
+          </template>
+        </div>
+        <!-- Bouton upload photo -->
+        <label class="absolute -bottom-1 -right-1 w-6 h-6 bg-[#00B87C] rounded-full flex items-center justify-center cursor-pointer border-2 border-white shadow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" class="w-3 h-3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+          </svg>
+          <input type="file" accept="image/*" class="hidden" @change="uploadPhoto($event)"/>
+        </label>
+        <!-- Spinner upload -->
+        <template x-if="photoUploading">
+          <div class="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center">
+            <svg class="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+          </div>
+        </template>
+      </div>
+
+      <!-- Nom + rôle + ville -->
+      <div class="flex-1 min-w-0">
+        <p class="text-base font-black text-white leading-tight truncate"
+           x-text="((user.prenom||'') + ' ' + (user.nom||'')).trim() || 'Mon profil'"></p>
+        <p class="text-[10px] text-[#34D399] font-bold mt-0.5"
+           x-text="user.role === 'client' ? '🏢 Client' : '💼 Freelance'"></p>
+        <p class="text-[10px] text-white/40 mt-0.5 truncate"
+           x-text="user.ville || 'Ville non renseignée'"></p>
+      </div>
+
+      <!-- Bouton éditer -->
+      <button @click="editProfil()"
+              x-show="!profilEdit"
+              class="flex-shrink-0 px-3 py-1.5 rounded-xl text-[11px] font-black text-white border border-white/20 hover:bg-white/10 transition">
+        ✏️ Éditer
+      </button>
+    </div>
+
+    <!-- Score complétion profil -->
+    <div>
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-[10px] text-white/40 uppercase tracking-wider">Complétion du profil</span>
+        <span class="text-[10px] font-black text-[#34D399]" x-text="profileScore + '%'"></span>
+      </div>
+      <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div class="h-full bg-[#34D399] rounded-full transition-all duration-700"
+             :style="'width:' + profileScore + '%'"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── FORMULAIRE ÉDITION ── -->
+  <div x-show="profilEdit" x-transition class="px-4 mt-4">
+    <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+
+      <div class="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
+        <p class="text-sm font-black text-gray-900">Modifier mon profil</p>
+        <button @click="cancelEditProfil()"
+                class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5 text-gray-500">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="px-4 py-4 space-y-3">
+
+        <!-- Prénom + Nom -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Prénom</label>
+            <input x-model="profilForm.prenom" placeholder="Prénom"
+                   class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/10 transition"/>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Nom</label>
+            <input x-model="profilForm.nom" placeholder="Nom"
+                   class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/10 transition"/>
+          </div>
+        </div>
+
+        <!-- Ville -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Ville</label>
+          <input x-model="profilForm.ville" placeholder="Ex: Kinshasa, Lubumbashi..."
+                 class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/10 transition"/>
+        </div>
+
+        <!-- Disponibilité -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Disponibilité</label>
+          <select x-model="profilForm.disponibilite"
+                  class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#00B87C] transition">
+            <option value="disponible">✅ Disponible</option>
+            <option value="partiel">🟡 Partiellement disponible</option>
+            <option value="indisponible">🔴 Indisponible</option>
+          </select>
+        </div>
+
+        <!-- Bio -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Bio</label>
+          <textarea x-model="profilForm.bio" rows="3"
+                    placeholder="Décris ton expertise, tes spécialités..."
+                    class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/10 transition"></textarea>
+        </div>
+
+        <!-- Bouton sauvegarder -->
+        <button @click="saveProfil()"
+                :disabled="profilSaving"
+                :class="profilSaving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#00956a]'"
+                class="w-full flex items-center justify-center gap-2 py-3 bg-[#00B87C] text-white text-sm font-black rounded-xl transition-all">
+          <template x-if="profilSaving">
+            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+          </template>
+          <span x-text="profilSaving ? 'Sauvegarde...' : '💾 Sauvegarder'"></span>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── INFOS PROFIL (mode lecture) ── -->
+  <div x-show="!profilEdit" class="px-4 mt-4 space-y-4">
+
+    <!-- Skeleton loading -->
+    <template x-if="profilLoading">
+      <div class="space-y-3 animate-pulse">
+        <div class="h-24 bg-white border border-gray-100 rounded-2xl"></div>
+        <div class="h-32 bg-white border border-gray-100 rounded-2xl"></div>
+      </div>
+    </template>
+
+    <template x-if="!profilLoading">
+      <div class="space-y-4">
+
+        <!-- Infos principales -->
+        <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+          <div class="px-4 py-3 border-b border-gray-50">
+            <p class="text-xs font-black text-gray-500 uppercase tracking-wider">Informations</p>
+          </div>
+          <div class="divide-y divide-gray-50">
+
+            <div class="flex items-center justify-between px-4 py-3">
+              <span class="text-xs text-gray-400">Email</span>
+              <span class="text-sm font-semibold text-gray-900 truncate ml-4 max-w-[60%] text-right"
+                    x-text="user.email || '—'"></span>
+            </div>
+
+            <div class="flex items-center justify-between px-4 py-3">
+              <span class="text-xs text-gray-400">Téléphone</span>
+              <span class="text-sm font-semibold text-gray-900"
+                    x-text="user.telephone || '—'"></span>
+            </div>
+
+            <div class="flex items-center justify-between px-4 py-3">
+              <span class="text-xs text-gray-400">Ville</span>
+              <span class="text-sm font-semibold text-gray-900"
+                    x-text="user.ville || '—'"></span>
+            </div>
+
+            <div class="flex items-center justify-between px-4 py-3">
+              <span class="text-xs text-gray-400">Disponibilité</span>
+              <span class="text-xs font-black px-2.5 py-1 rounded-full"
+                    :class="user.disponibilite === 'disponible' ? 'bg-[#00B87C]/10 text-[#00B87C]' : user.disponibilite === 'partiel' ? 'bg-yellow-50 text-yellow-600' : 'bg-red-50 text-red-500'"
+                    x-text="user.disponibilite === 'disponible' ? '✅ Disponible' : user.disponibilite === 'partiel' ? '🟡 Partiel' : '🔴 Indisponible'"></span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Bio -->
+        <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+          <div class="px-4 py-3 border-b border-gray-50">
+            <p class="text-xs font-black text-gray-500 uppercase tracking-wider">Bio</p>
+          </div>
+          <div class="px-4 py-3">
+            <p class="text-sm text-gray-600 leading-relaxed"
+               x-text="user.bio || 'Aucune bio renseignée. Clique sur Éditer pour te présenter !'"></p>
+          </div>
+        </div>
+
+        <!-- Compétences -->
+        <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+          <div class="px-4 py-3 border-b border-gray-50 flex items-center justify-between">
+            <p class="text-xs font-black text-gray-500 uppercase tracking-wider">Compétences</p>
+            <span class="text-[10px] text-gray-400" x-text="profilCompetences.length + ' compétence(s)'"></span>
+          </div>
+
+          <!-- Vide -->
+          <template x-if="profilCompetences.length === 0">
+            <div class="px-4 py-6 text-center">
+              <p class="text-sm font-bold text-gray-500">Aucune compétence ajoutée</p>
+              <p class="text-xs text-gray-400 mt-1">Ajoute tes compétences pour attirer plus de clients</p>
+            </div>
+          </template>
+
+          <!-- Liste -->
+          <template x-if="profilCompetences.length > 0">
+            <div class="px-4 py-3 flex flex-wrap gap-2">
+              <template x-for="c in profilCompetences" :key="c.id">
+                <span class="text-xs font-bold px-3 py-1.5 bg-[#00B87C]/8 text-[#00B87C] border border-[#00B87C]/20 rounded-full"
+                      x-text="(c.nom || c.competence?.nom || c.label || '?') + (c.niveau ? ' · ' + '★'.repeat(c.niveau) : '')"></span>
+              </template>
+            </div>
+          </template>
+        </div>
+
+        <!-- Déconnexion -->
+        <div class="pb-4">
+          <button @click="logout()"
+                  class="w-full flex items-center justify-center gap-2 py-3 bg-white border border-red-100 text-red-500 text-sm font-black rounded-2xl hover:bg-red-50 transition shadow-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"/>
+            </svg>
+            Se déconnecter
+          </button>
+        </div>
+
+      </div>
+    </template>
+
+  </div>
+
+</div>
+<!-- ── /PROFIL ── -->

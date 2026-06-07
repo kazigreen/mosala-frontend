@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="36" fill="#16a34a"/>
+  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle"
+        font-family="Arial, sans-serif" font-weight="bold" font-size="72"
+        fill="white">KG</text>
+  <text x="50%" y="80%" dominant-baseline="middle" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="22" fill="#bbf7d0">KaziGreen</text>
+</svg>

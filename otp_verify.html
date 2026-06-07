@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mosala — Vérification du code</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0fdf4;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 40px 36px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .logo-icon {
+      width: 64px; height: 64px;
+      background: #f0fdf4;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    .logo h1 { color: #16a34a; font-size: 22px; font-weight: 700; }
+    h2 { font-size: 22px; color: #111; margin-bottom: 8px; }
+    .subtitle { color: #6b7280; font-size: 14px; margin-bottom: 32px; line-height: 1.5; }
+    .subtitle span { color: #111; font-weight: 600; }
+
+    /* Cases OTP */
+    .otp-container {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+    .otp-input {
+      width: 52px; height: 60px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      color: #111;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .otp-input:focus { border-color: #16a34a; }
+    .otp-input.filled { border-color: #16a34a; background: #f0fdf4; }
+    .otp-input.error { border-color: #ef4444; background: #fef2f2; }
+
+    .error-msg {
+      color: #ef4444;
+      font-size: 13px;
+      text-align: center;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .btn {
+      width: 100%;
+      height: 52px;
+      background: #16a34a;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn:hover { background: #15803d; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .resend {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #6b7280;
+    }
+    .resend a {
+      color: #16a34a;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .resend a:hover { text-decoration: underline; }
+
+    .success-banner {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #15803d;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      text-align: center;
+      margin-bottom: 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="logo-icon">🌿</div>
+      <h1>Mosala</h1>
+    </div>
+
+    <h2>Vérification du code</h2>
+    <p class="subtitle">
+      Code envoyé à <span id="email-display">votre email</span>.<br>
+      Entrez le code à 6 chiffres reçu.
+    </p>
+
+    <div class="success-banner" id="success-banner">✅ Nouveau code envoyé !</div>
+    <div class="error-msg" id="error-msg">Code invalide ou expiré. Réessayez.</div>
+
+    <div class="otp-container">
+      <input class="otp-input" type="text" inputmode="numeric" maxlength="1" id="d0">
+      <input class="otp-input" type="text" inputmode="numeric" maxlength="1" id="d1">
+      <input class="otp-input" type="text" inputmode="numeric" maxlength="1" id="d2">
+      <input class="otp-input" type="text" inputmode="numeric" maxlength="1" id="d3">
+      <input class="otp-input" type="text" inputmode="numeric" maxlength="1" id="d4">
+      <input class="otp-input" type="text" inputmode="numeric" maxlength="1" id="d5">
+    </div>
+
+    <button class="btn" id="btn-verify" onclick="verifyOtp()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btn-text">Vérifier le code</span>
+    </button>
+
+    <div class="resend">
+      Pas reçu ? <a onclick="resendOtp()">Renvoyer le code</a>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/';
+    const inputs = [0,1,2,3,4,5].map(i => document.getElementById('d'+i));
+
+    // Récupérer email depuis URL
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get('email') || '';
+    if (email) document.getElementById('email-display').textContent = email;
+
+    // Navigation entre cases
+    inputs.forEach((input, i) => {
+      input.addEventListener('input', (e) => {
+        const val = e.target.value.replace(/\D/g, '');
+        e.target.value = val;
+        if (val && i < 5) inputs[i+1].focus();
+        e.target.classList.toggle('filled', !!val);
+        e.target.classList.remove('error');
+        document.getElementById('error-msg').style.display = 'none';
+        // Auto-submit quand tous remplis
+        if (i === 5 && val) verifyOtp();
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && i > 0) {
+          inputs[i-1].focus();
+          inputs[i-1].value = '';
+          inputs[i-1].classList.remove('filled');
+        }
+      });
+
+      // Coller le code d'un coup
+      input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const paste = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+        paste.split('').forEach((c, j) => {
+          if (inputs[j]) {
+            inputs[j].value = c;
+            inputs[j].classList.add('filled');
+          }
+        });
+        if (paste.length === 6) verifyOtp();
+      });
+    });
+
+    // Focus premier champ au chargement
+    inputs[0].focus();
+
+    function getOtp() {
+      return inputs.map(i => i.value).join('');
+    }
+
+    function setLoading(state) {
+      document.getElementById('btn-verify').disabled = state;
+      document.getElementById('spinner').style.display = state ? 'block' : 'none';
+      document.getElementById('btn-text').textContent = state ? '' : 'Vérifier le code';
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = msg;
+      el.style.display = 'block';
+      inputs.forEach(i => i.classList.add('error'));
+    }
+
+    async function verifyOtp() {
+      const otp = getOtp();
+      if (otp.length < 6) { showError('Entrez les 6 chiffres du code'); return; }
+
+      setLoading(true);
+      try {
+        const resp = await fetch(`${API_BASE}/auth/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp })
+        });
+
+        if (resp.ok) {
+          // Rediriger vers page nouveau mot de passe
+          window.location.href = `reset_password.html?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
+        } else {
+          const data = await resp.json();
+          showError(data.detail || 'Code invalide ou expiré');
+        }
+      } catch (e) {
+        showError('Connexion impossible. Vérifiez votre internet.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function resendOtp() {
+      try {
+        await fetch(`${API_BASE}/auth/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const banner = document.getElementById('success-banner');
+        banner.style.display = 'block';
+        setTimeout(() => banner.style.display = 'none', 3000);
+        // Vider les cases
+        inputs.forEach(i => { i.value = ''; i.classList.remove('filled', 'error'); });
+        inputs[0].focus();
+      } catch (e) {
+        showError('Impossible de renvoyer le code.');
+      }
+    }
+  </script>
+</body>
+</html>

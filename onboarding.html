@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mosala — Configurer mon profil</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak]{display:none!important}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f7fa}
+
+    /* Progress bar */
+    .step-label{font-size:.75rem;font-weight:600;color:#9ca3af}
+    .step-label.active{color:#16a34a}
+    .step-label.done{color:#16a34a}
+    .step-circle{width:2rem;height:2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;border:2px solid #d1d5db;background:#fff;color:#9ca3af}
+    .step-circle.active{border-color:#16a34a;background:#16a34a;color:#fff}
+    .step-circle.done{border-color:#16a34a;background:#dcfce7;color:#16a34a}
+    .step-line{flex:1;height:2px;background:#e5e7eb;margin:0 .5rem}
+    .step-line.done{background:#16a34a}
+
+    /* Cards */
+    .role-card{border:2px solid #e5e7eb;border-radius:1rem;padding:1.25rem 1rem;cursor:pointer;transition:all .2s;background:#fff;display:flex;flex-direction:column;align-items:center;gap:.5rem;text-align:center}
+    .role-card:hover{border-color:#86efac}
+    .role-card.selected{border-color:#16a34a;background:#f0fdf4}
+    .role-card .icon-wrap{width:3.5rem;height:3.5rem;border-radius:.875rem;display:flex;align-items:center;justify-content:center;font-size:1.75rem}
+
+    /* Tags */
+    .comp-tag{padding:.4rem .9rem;border-radius:9999px;border:2px solid #e5e7eb;background:#fff;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .18s;color:#374151}
+    .comp-tag:hover{border-color:#86efac}
+    .comp-tag.selected{border-color:#16a34a;background:#16a34a;color:#fff}
+
+    /* Dispo cards */
+    .dispo-card{border:2px solid #e5e7eb;border-radius:1rem;padding:1rem;cursor:pointer;transition:all .2s;background:#fff;display:flex;flex-direction:column;align-items:flex-start;gap:.35rem}
+    .dispo-card:hover{border-color:#86efac}
+    .dispo-card.selected{border-color:#16a34a;background:#f0fdf4}
+
+    /* Button */
+    .btn-green{background:#16a34a;color:#fff;padding:.85rem 1.5rem;border-radius:.875rem;font-weight:700;font-size:1rem;width:100%;transition:background .2s}
+    .btn-green:hover{background:#15803d}
+    .btn-green:disabled{background:#86efac;cursor:not-allowed}
+    .btn-skip{color:#6b7280;font-size:.9rem;font-weight:500;transition:color .2s}
+    .btn-skip:hover{color:#374151}
+
+    /* Search */
+    .search-input{border:1.5px solid #e5e7eb;border-radius:.75rem;padding:.65rem 1rem .65rem 2.5rem;width:100%;font-size:.95rem;outline:none;transition:border .2s}
+    .search-input:focus{border-color:#16a34a}
+
+    /* Slide */
+    .slide-in{animation:slideIn .25s ease}
+    @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+    /* Toast */
+    .toast{position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:100;padding:.75rem 1.5rem;border-radius:.875rem;font-weight:600;font-size:.9rem;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+  </style>
+</head>
+<body x-data="onboarding()" x-cloak>
+
+  <!-- Toast -->
+  <div x-show="toast.show" x-transition
+       :class="toast.type==='error'?'bg-red-500 text-white':'bg-green-600 text-white'"
+       class="toast" x-text="toast.msg"></div>
+
+  <!-- HEADER -->
+  <header class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-2">
+      <span class="text-xl">🌿</span>
+      <span class="font-black text-gray-800 text-lg">Mosala</span>
+    </div>
+    <button x-show="step < 4" @click="skip()" class="btn-skip">Passer cette étape →</button>
+  </header>
+
+  <div class="max-w-lg mx-auto px-4 py-8">
+
+    <!-- PROGRESS BAR -->
+    <div class="flex items-center mb-10">
+      <!-- Step 1 -->
+      <div class="flex flex-col items-center gap-1">
+        <div class="step-circle" :class="step>1?'done':(step===1?'active':'')">
+          <span x-show="step<=1">1</span>
+          <svg x-show="step>1" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <span class="step-label" :class="step>=1?'active':''">Profil</span>
+      </div>
+
+      <div class="step-line" :class="step>1?'done':''"></div>
+
+      <!-- Step 2 -->
+      <div class="flex flex-col items-center gap-1">
+        <div class="step-circle" :class="step>2?'done':(step===2?'active':'')">
+          <span x-show="step<=2">2</span>
+          <svg x-show="step>2" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <span class="step-label" :class="step>=2?'active':''">Compétences</span>
+      </div>
+
+      <div class="step-line" :class="step>2?'done':''"></div>
+
+      <!-- Step 3 -->
+      <div class="flex flex-col items-center gap-1">
+        <div class="step-circle" :class="step>3?'done':(step===3?'active':'')">
+          <span x-show="step<=3">3</span>
+          <svg x-show="step>3" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <span class="step-label" :class="step>=3?'active':''">Disponibilité</span>
+      </div>
+
+      <div class="step-line" :class="step>3?'done':''"></div>
+
+      <!-- Step 4 -->
+      <div class="flex flex-col items-center gap-1">
+        <div class="step-circle" :class="step===4?'active':''">4</div>
+        <span class="step-label" :class="step>=4?'active':''">Terminé</span>
+      </div>
+    </div>
+
+    <!-- ═══ ÉTAPE 1 — TYPE DE PROFIL ═══ -->
+    <div x-show="step===1" class="slide-in">
+      <h1 class="text-2xl font-black text-gray-900 mb-1">Quel est votre profil ?</h1>
+      <p class="text-gray-500 text-sm mb-6">Sélectionnez le type de compte qui vous correspond</p>
+
+      <div class="grid grid-cols-2 gap-4 mb-8">
+        <!-- Freelance -->
+        <div class="role-card" :class="form.account_type==='freelance'?'selected':''" @click="form.account_type='freelance'">
+          <div class="icon-wrap" :class="form.account_type==='freelance'?'bg-green-100':'bg-gray-50'">💼</div>
+          <div>
+            <div class="font-bold text-gray-900 text-base">Freelance</div>
+            <div class="text-xs text-gray-500 mt-0.5">Je propose mes services</div>
+          </div>
+          <div class="w-5 h-5 rounded-full border-2 mt-1 flex items-center justify-center"
+               :class="form.account_type==='freelance'?'border-green-600 bg-green-600':'border-gray-300'">
+            <div x-show="form.account_type==='freelance'" class="w-2 h-2 rounded-full bg-white"></div>
+          </div>
+        </div>
+
+        <!-- Client -->
+        <div class="role-card" :class="form.account_type==='client'?'selected':''" @click="form.account_type='client'">
+          <div class="icon-wrap" :class="form.account_type==='client'?'bg-green-100':'bg-gray-50'">🏢</div>
+          <div>
+            <div class="font-bold text-gray-900 text-base">Client</div>
+            <div class="text-xs text-gray-500 mt-0.5">Je cherche des talents</div>
+          </div>
+          <div class="w-5 h-5 rounded-full border-2 mt-1 flex items-center justify-center"
+               :class="form.account_type==='client'?'border-green-600 bg-green-600':'border-gray-300'">
+            <div x-show="form.account_type==='client'" class="w-2 h-2 rounded-full bg-white"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-green" :disabled="!form.account_type" @click="step=2">
+        Continuer →
+      </button>
+    </div>
+
+    <!-- ═══ ÉTAPE 2 — COMPÉTENCES ═══ -->
+    <div x-show="step===2" class="slide-in">
+      <h1 class="text-2xl font-black text-gray-900 mb-1">Vos compétences principales</h1>
+      <p class="text-gray-500 text-sm mb-5">
+        <span x-show="form.account_type==='freelance'">Sélectionnez jusqu'à <strong>5 compétences</strong> que vous maîtrisez</span>
+        <span x-show="form.account_type!=='freelance'">Dans quels domaines cherchez-vous des talents ?</span>
+      </p>
+
+      <!-- Search -->
+      <div class="relative mb-4">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input class="search-input" placeholder="Rechercher une compétence..." x-model="compSearch" type="text"/>
+      </div>
+
+      <!-- Tags -->
+      <div class="flex flex-wrap gap-2 mb-3">
+        <template x-for="c in filteredComps" :key="c">
+          <button class="comp-tag"
+            :class="{
+              'selected': form.competences.includes(c),
+              'opacity-40 cursor-not-allowed': !form.competences.includes(c) && form.competences.length>=5
+            }"
+            @click="toggleComp(c)" x-text="c">
+          </button>
+        </template>
+      </div>
+
+      <!-- Compteur -->
+      <div class="flex items-center justify-between mb-6">
+        <span class="text-xs text-gray-400" x-text="form.competences.length + '/5 sélectionnées'"></span>
+        <div class="flex gap-1">
+          <template x-for="i in 5" :key="i">
+            <div class="w-2 h-2 rounded-full" :class="i <= form.competences.length ? 'bg-green-500' : 'bg-gray-200'"></div>
+          </template>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <button class="btn-green" :disabled="form.competences.length===0" @click="step=3">Continuer →</button>
+        <button class="btn-skip text-center" @click="step=3">Passer cette étape</button>
+      </div>
+    </div>
+
+    <!-- ═══ ÉTAPE 3 — DISPONIBILITÉ ═══ -->
+    <div x-show="step===3" class="slide-in">
+      <h1 class="text-2xl font-black text-gray-900 mb-1">Votre disponibilité</h1>
+      <p class="text-gray-500 text-sm mb-6">Quand êtes-vous disponible pour commencer ?</p>
+
+      <div class="grid grid-cols-2 gap-3 mb-8">
+        <template x-for="opt in dispoOptions" :key="opt.value">
+          <div class="dispo-card"
+               :class="form.disponibilite===opt.value?'selected':''"
+               @click="form.disponibilite=opt.value; form.delai_reponse=opt.delai">
+            <span class="text-2xl">{{opt.emoji}}</span>
+            <div class="font-bold text-gray-900 text-sm" x-text="opt.label"></div>
+            <div class="text-xs text-gray-500" x-text="opt.desc"></div>
+            <div class="w-4 h-4 rounded-full border-2 mt-1 flex items-center justify-center"
+                 :class="form.disponibilite===opt.value?'border-green-600 bg-green-600':'border-gray-300'">
+              <div x-show="form.disponibilite===opt.value" class="w-1.5 h-1.5 rounded-full bg-white"></div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <button class="btn-green" :disabled="!form.disponibilite || loading" @click="submit()">
+          <span x-show="!loading">🚀 Accéder à mon espace</span>
+          <span x-show="loading">Enregistrement…</span>
+        </button>
+        <button class="btn-skip text-center" :disabled="loading" @click="submit()">Passer pour l'instant</button>
+      </div>
+    </div>
+
+    <!-- ═══ ÉTAPE 4 — SUCCÈS ═══ -->
+    <div x-show="step===4" class="slide-in text-center py-8">
+      <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-black text-gray-900 mb-2">Profil configuré ! 🎉</h1>
+      <p class="text-gray-500 mb-8">Bienvenue sur Mosala. Votre espace est prêt.</p>
+      <button class="btn-green" @click="goToDashboard()">Accéder à mon tableau de bord →</button>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="mt-8 text-center" x-show="step < 4">
+      <div class="flex items-center justify-center gap-2 text-xs text-gray-400">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+        <span>Vos informations sont sécurisées et ne seront jamais partagées.</span>
+      </div>
+    </div>
+
+    <!-- Retour -->
+    <div class="mt-4 text-center" x-show="step > 1 && step < 4">
+      <button @click="step--" class="text-xs text-gray-400 hover:text-gray-600 transition">← Étape précédente</button>
+    </div>
+
+  </div>
+
+  <script>
+    const API = 'https://mosala.io';
+
+    function onboarding() {
+      return {
+        step: 1,
+        loading: false,
+        compSearch: '',
+        toast: { show: false, msg: '', type: 'success' },
+
+        form: {
+          account_type: '',
+          competences: [],
+          disponibilite: '',
+          delai_reponse: ''
+        },
+
+        competences: [
+          'Développement Web', 'Design Graphique', 'Montage Vidéo',
+          'Marketing Digital', 'Rédaction & Copywriting', 'Mobile (Android/iOS)',
+          'Photographie', 'Comptabilité', 'Traduction', 'Réseaux & IT',
+          'Formation', 'Gestion de projet', 'E-commerce', 'SEO / SEM',
+          'Illustration', 'Architecture', 'Droit', 'Conseil en stratégie'
+        ],
+
+        dispoOptions: [
+          { value: 'maintenant',           emoji: '🟢', label: 'Disponible maintenant',  desc: 'Prêt à démarrer immédiatement', delai: 'moins_24h' },
+          { value: 'cette_semaine',         emoji: '📅', label: 'Cette semaine',           desc: 'Dans les 7 prochains jours',     delai: '1_3_jours' },
+          { value: 'temps_partiel',         emoji: '⏰', label: 'Temps partiel',           desc: 'Quelques heures par jour',       delai: '1_3_jours' },
+          { value: 'temps_plein',           emoji: '⚡', label: 'Temps plein',             desc: 'Disponible full-time',           delai: 'moins_24h' }
+        ],
+
+        get filteredComps() {
+          if (!this.compSearch) return this.competences;
+          return this.competences.filter(c => c.toLowerCase().includes(this.compSearch.toLowerCase()));
+        },
+
+        async init() {
+          // sessionStorage = session courante (priorité), localStorage = remember me
+          const token = sessionStorage.getItem('kv_token') || localStorage.getItem('kv_token');
+          if (!token) { window.location.replace('/'); return; }
+          // Vérifier onboarding_done EN DIRECT depuis l'API (ne pas faire confiance au cache local)
+          try {
+            const r = await fetch(`${API}/auth/me`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!r.ok) { window.location.replace('/'); return; }
+            const user = await r.json();
+            // Mettre à jour les deux storages
+            sessionStorage.setItem('kv_user', JSON.stringify(user));
+            if (localStorage.getItem('kv_token')) localStorage.setItem('kv_user', JSON.stringify(user));
+            // Si déjà complété → dashboard
+            if (user.onboarding_done) { window.location.replace('/'); }
+          } catch(e) {
+            // Fallback cache si API indisponible
+            const user = JSON.parse(sessionStorage.getItem('kv_user') || localStorage.getItem('kv_user') || '{}');
+            if (user.onboarding_done) { window.location.replace('/'); }
+          }
+        },
+
+        toggleComp(c) {
+          const i = this.form.competences.indexOf(c);
+          if (i > -1) { this.form.competences.splice(i, 1); }
+          else if (this.form.competences.length < 5) { this.form.competences.push(c); }
+        },
+
+        skip() {
+          if (this.step < 3) { this.step++; }
+          else { this.submit(); }
+        },
+
+        showToast(msg, type = 'success') {
+          this.toast = { show: true, msg, type };
+          setTimeout(() => this.toast.show = false, 3500);
+        },
+
+        async submit() {
+          const token = sessionStorage.getItem('kv_token') || localStorage.getItem('kv_token');
+          if (!token) { window.location.replace('/'); return; }
+          this.loading = true;
+          try {
+            const r = await fetch(`${API}/users/onboarding`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+              body: JSON.stringify({
+                account_type:  this.form.account_type || null,
+                disponibilite: this.form.disponibilite || null,
+                delai_reponse: this.form.delai_reponse || null,
+                competences:   this.form.competences
+              })
+            });
+            if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erreur'); }
+            const u = await r.json();
+            localStorage.setItem('kv_user', JSON.stringify(u));
+            sessionStorage.setItem('kv_user', JSON.stringify(u));
+            this.step = 4;
+          } catch(e) {
+            this.showToast(e.message, 'error');
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        goToDashboard() {
+          window.location.replace('/');
+        }
+      }
+    }
+  </script>
+</body>
+</html>
