@@ -214,7 +214,7 @@
           <div class="dispo-card"
                :class="form.disponibilite===opt.value?'selected':''"
                @click="form.disponibilite=opt.value; form.delai_reponse=opt.delai">
-            <span class="text-2xl">{{opt.emoji}}</span>
+            <span x-html="opt.icon" style="display:flex;align-items:center;justify-content:center;width:2.5rem;height:2.5rem;border-radius:10px;background:#f0fdfb;"></span>
             <div class="font-bold text-gray-900 text-sm" x-text="opt.label"></div>
             <div class="text-xs text-gray-500" x-text="opt.desc"></div>
             <div class="w-4 h-4 rounded-full border-2 mt-1 flex items-center justify-center"
@@ -304,10 +304,10 @@
         ],
 
         dispoOptions: [
-          { value: 'maintenant',           emoji: '🟢', label: 'Disponible maintenant',  desc: 'Prêt à démarrer immédiatement', delai: 'moins_24h' },
-          { value: 'cette_semaine',         emoji: '📅', label: 'Cette semaine',           desc: 'Dans les 7 prochains jours',     delai: '1_3_jours' },
-          { value: 'temps_partiel',         emoji: '⏰', label: 'Temps partiel',           desc: 'Quelques heures par jour',       delai: '1_3_jours' },
-          { value: 'temps_plein',           emoji: '⚡', label: 'Temps plein',             desc: 'Disponible full-time',           delai: 'moins_24h' }
+          { value: 'maintenant',   icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" stroke-linecap="round"/></svg>',   label: 'Disponible maintenant',  desc: 'Prêt à démarrer immédiatement', delai: 'moins_24h' },
+          { value: 'cette_semaine', icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round"/></svg>', label: 'Cette semaine',           desc: 'Dans les 7 prochains jours',     delai: '1_3_jours' },
+          { value: 'temps_partiel', icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.2"><path d="M12 2a10 10 0 0 1 0 20" stroke-linecap="round"/><path d="M12 6v6l3 3" stroke-linecap="round"/></svg>', label: 'Temps partiel',           desc: 'Quelques heures par jour',       delai: '1_3_jours' },
+          { value: 'temps_plein',   icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/></svg>', label: 'Temps plein',             desc: 'Disponible full-time',           delai: 'moins_24h' }
         ],
 
         get filteredComps() {
