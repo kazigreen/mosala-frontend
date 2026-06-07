@@ -1,0 +1,276 @@
+<div x-show="page==='register'" class="min-h-screen flex items-center justify-center" style="position:fixed;inset:0;z-index:100;overflow-y:auto;background:#fafafa;">
+
+    <!-- ── Formulaire centré ── -->
+    <div class="w-full flex items-center justify-center p-6 py-10">
+    <div class="w-full max-w-md auth-fade-up" style="background:#ffffff;border-radius:20px;border:1px solid #ebebeb;padding:40px 36px;">
+
+      <!-- Logo + badge -->
+      <div class="flex flex-col items-center mb-6">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg" style="background:linear-gradient(135deg,#059669,#10b981);">
+          <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium" style="background:rgba(16,185,129,.08);color:#059669;border:1px solid rgba(16,185,129,.2);">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          Inscription gratuite · Paiement sécurisé
+        </div>
+      </div>
+
+      <!-- Dots de progression -->
+      <div class="flex justify-center gap-2 mb-6">
+        <template x-for="i in [1,2,3]" :key="i">
+          <div class="transition-all duration-300 rounded-full"
+               :class="i === regStep ? 'w-6 h-2.5 bg-[#00B87C]' : (i < regStep ? 'w-2.5 h-2.5 bg-green-400' : 'w-2.5 h-2.5 bg-gray-200')"></div>
+        </template>
+      </div>
+
+      <!-- ── ÉTAPE 1 : Email + Téléphone ── -->
+      <div x-show="regStep === 1">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-[#0F172A]">Commence ici</h2>
+          <p class="text-gray-500 text-sm mt-1">Étape 1 sur 3 · Tes coordonnées</p>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Téléphone -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Téléphone *</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+              </span>
+              <input x-model="form.telephone" type="tel" @input="validatePhone()"
+                     class="w-full rounded-xl pl-10 pr-4 py-3 text-sm text-[#0F172A] placeholder-gray-400 outline-none transition-all duration-200"
+                     style="background:#F7F8FA;border:1.5px solid #EBEBEB;" onfocus="this.style.border='1.5px solid #00B87C';this.style.background='#fff';" onblur="this.style.border='1.5px solid #EBEBEB';this.style.background='#F7F8FA';"
+                     placeholder="+243 810 000 000" required />
+            </div>
+            <p x-show="phoneError" class="text-red-500 text-xs mt-1" x-text="phoneError"></p>
+          </div>
+
+          <button type="button"
+                  @click="if(form.telephone && !phoneError) regStep = 2"
+                  class="w-full text-white font-semibold rounded-xl py-3.5 text-sm transition-all duration-200"
+                  style="background:linear-gradient(135deg,#00B87C,#00D68F);"
+                  onmouseover="this.style.opacity='0.92';this.style.transform='translateY(-1px)';"
+                  onmouseout="this.style.opacity='1';this.style.transform='translateY(0)';">
+            Commencer →
+          </button>
+
+          <!-- Séparateur -->
+          <div class="flex items-center gap-4">
+            <div class="flex-1 h-px bg-gray-200"></div>
+            <span class="text-xs text-gray-400">ou</span>
+            <div class="flex-1 h-px bg-gray-200"></div>
+          </div>
+
+          <!-- Google en bas -->
+          <button type="button" @click="loginWithGoogle()"
+                  class="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-medium text-gray-700 transition-all duration-200"
+                  style="border:1.5px solid #EBEBEB;background:#fff;"
+                  onmouseover="this.style.borderColor='#00B87C';this.style.background='#f9fffe';"
+                  onmouseout="this.style.borderColor='#EBEBEB';this.style.background='#fff';">
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continuer avec Google
+          </button>
+        </div>
+      </div>
+
+      <!-- ── ÉTAPE 2 : Mot de passe ── -->
+      <div x-show="regStep === 2">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold text-[#0F172A]">Ton mot de passe</h2>
+          <p class="text-gray-500 text-sm mt-1">Étape 2 sur 3 · Sécurise ton compte</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Mot de passe *</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+              </span>
+              <input x-model="form.password" :type="showRegPwd ? 'text' : 'password'"
+                     @input="pwdLen = form.password.length >= 6; pwdUpper = /[A-Z]/.test(form.password); pwdNum = /[0-9]/.test(form.password)"
+                     class="w-full rounded-xl pl-10 pr-11 py-3 text-sm text-[#0F172A] placeholder-gray-400 outline-none transition-all duration-200"
+                     style="background:#F7F8FA;border:1.5px solid #EBEBEB;" onfocus="this.style.border='1.5px solid #00B87C';this.style.background='#fff';" onblur="this.style.border='1.5px solid #EBEBEB';this.style.background='#F7F8FA';"
+                     placeholder="••••••••" required minlength="6" />
+              <button type="button" @click="showRegPwd = !showRegPwd"
+                      class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
+                <svg x-show="!showRegPwd" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                <svg x-show="showRegPwd" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Checklist password -->
+          <div class="bg-[#F7FAF9] rounded-xl p-4 space-y-2">
+            <div class="flex items-center gap-2 text-sm" :class="pwdLen ? 'text-[#00B87C]' : 'text-gray-400'">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path x-show="pwdLen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                <circle x-show="!pwdLen" cx="12" cy="12" r="9" stroke-width="2"/>
+              </svg>
+              <span>Au moins 6 caractères</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm" :class="pwdUpper ? 'text-[#00B87C]' : 'text-gray-400'">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path x-show="pwdUpper" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                <circle x-show="!pwdUpper" cx="12" cy="12" r="9" stroke-width="2"/>
+              </svg>
+              <span>Une lettre majuscule</span>
+            </div>
+            <div class="flex items-center gap-2 text-sm" :class="pwdNum ? 'text-[#00B87C]' : 'text-gray-400'">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path x-show="pwdNum" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                <circle x-show="!pwdNum" cx="12" cy="12" r="9" stroke-width="2"/>
+              </svg>
+              <span>Un chiffre</span>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" @click="regStep = 1"
+                    class="flex-1 text-gray-600 font-semibold rounded-xl py-3 transition text-sm"
+                    style="border:1.5px solid #EBEBEB;background:#fff;"
+                    onmouseover="this.style.background='#F7F8FA';" onmouseout="this.style.background='#fff';">
+              ← Retour
+            </button>
+            <button type="button"
+                    @click="if(form.password && form.password.length >= 6) regStep = 3"
+                    class="flex-1 text-white font-semibold rounded-xl py-3 text-sm transition-all duration-200"
+                    style="background:linear-gradient(135deg,#00B87C,#00D68F);"
+                    onmouseover="this.style.opacity='0.92';" onmouseout="this.style.opacity='1';">
+              Continuer →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ÉTAPE 3 : Profil & Préférences ── -->
+      <div x-show="regStep === 3">
+        <div class="mb-7">
+          <h2 class="text-2xl font-bold text-[#0F172A]">Ton profil</h2>
+          <p class="text-gray-500 text-sm mt-1">Étape 3 sur 3 · Presque terminé !</p>
+        </div>
+
+        <form @submit.prevent="register(); regStep = 1" class="space-y-4">
+
+          <!-- Prénom + Nom -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Prénom *</label>
+              <input x-model="form.prenom"
+                     @input="form.prenom = form.prenom.replace(/[^a-zA-ZÀ-ÿ\s\-']/g, '')"
+                     class="w-full rounded-xl px-4 py-3 text-sm text-[#0F172A] placeholder-gray-400 outline-none transition-all duration-200"
+                     style="background:#F7F8FA;border:1.5px solid #EBEBEB;" onfocus="this.style.border='1.5px solid #00B87C';this.style.background='#fff';" onblur="this.style.border='1.5px solid #EBEBEB';this.style.background='#F7F8FA';"
+                     placeholder="Jean" required />
+              <p x-show="form.prenom && form.prenom.length < 2" class="text-red-500 text-xs mt-1">Prenom trop court</p>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Nom *</label>
+              <input x-model="form.nom"
+                     @input="form.nom = form.nom.replace(/[^a-zA-ZÀ-ÿ\s\-']/g, '')"
+                     class="w-full rounded-xl px-4 py-3 text-sm text-[#0F172A] placeholder-gray-400 outline-none transition-all duration-200"
+                     style="background:#F7F8FA;border:1.5px solid #EBEBEB;" onfocus="this.style.border='1.5px solid #00B87C';this.style.background='#fff';" onblur="this.style.border='1.5px solid #EBEBEB';this.style.background='#F7F8FA';"
+                     placeholder="Kabila" required />
+              <p x-show="form.nom && form.nom.length < 2" class="text-red-500 text-xs mt-1">Nom trop court</p>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Email *</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+              </span>
+              <input x-model="form.email" type="email" @input="form.email = form.email.toLowerCase(); emailAlreadyUsed = false"
+                     class="w-full rounded-xl pl-10 pr-4 py-3 text-sm text-[#0F172A] placeholder-gray-400 outline-none transition-all duration-200"
+                     style="background:#F7F8FA;border:1.5px solid #EBEBEB;" onfocus="this.style.border='1.5px solid #00B87C';this.style.background='#fff';" onblur="this.style.border='1.5px solid #EBEBEB';this.style.background='#F7F8FA';"
+                     placeholder="jean@email.com" />
+            </div>
+            <div x-show="emailAlreadyUsed" class="mt-2 bg-yellow-50 border border-yellow-300 rounded-xl p-3">
+              <p class="text-yellow-800 font-semibold text-xs">⚠️ Cet email est déjà utilisé.</p>
+              <button type="button" @click="emailAlreadyUsed = false; page = 'login'"
+                      class="mt-2 w-full bg-[#00B87C] text-white py-1.5 rounded-lg text-xs font-bold hover:bg-[#009E6A] transition">
+                Se connecter avec ce compte
+              </button>
+            </div>
+          </div>
+
+
+
+          <!-- Ville -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Ville</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </span>
+              <select x-model="form.ville"
+                      class="w-full rounded-xl pl-10 pr-4 py-3 text-sm text-[#0F172A] outline-none transition-all duration-200 appearance-none cursor-pointer"
+                      style="background:#F7F8FA;border:1.5px solid #EBEBEB;" onfocus="this.style.border='1.5px solid #00B87C';this.style.background='#fff';" onblur="this.style.border='1.5px solid #EBEBEB';this.style.background='#F7F8FA';">
+                <option value="">-- Choisir une ville --</option>
+                <option>Kinshasa</option>
+                <option>Lubumbashi</option>
+                <option>Goma</option>
+                <option>Bukavu</option>
+                <option>Mbuji-Mayi</option>
+                <option>Kisangani</option>
+                <option>Matadi</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-1">
+            <button type="button" @click="regStep = 2"
+                    class="flex-1 text-gray-600 font-semibold rounded-xl py-3 transition text-sm"
+                    style="border:1.5px solid #EBEBEB;background:#fff;"
+                    onmouseover="this.style.background='#F7F8FA';" onmouseout="this.style.background='#fff';">
+              ← Retour
+            </button>
+            <button type="submit"
+                    class="flex-1 text-white font-semibold rounded-xl py-3 text-sm transition-all duration-200"
+                    style="background:linear-gradient(135deg,#00B87C,#00D68F);"
+                    onmouseover="this.style.opacity='0.92';" onmouseout="this.style.opacity='1';"
+                    :disabled="loading">
+              <span x-show="!loading">Créer mon compte ✓</span>
+              <span x-show="loading">⏳ En cours...</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Lien connexion -->
+      <p class="text-center text-sm text-gray-500 mt-6">
+        Déjà un compte ?
+        <button @click="page='login'; regStep = 1; window.scrollTo(0,0)" class="text-[#00B87C] hover:text-[#009E6A] font-semibold transition">Se connecter</button>
+      </p>
+
+    </div>
+    </div>
+  </div>
