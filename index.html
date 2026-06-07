@@ -1925,80 +1925,84 @@
   <!-- ═══════════════════════════════════════════
        PAGE : MOT DE PASSE OUBLIÉ
   ════════════════════════════════════════════ -->
-  <div x-show="page==='forgot'" class="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-10" style="position:fixed;inset:0;z-index:100;overflow-y:auto;">
-    <div class="bg-white rounded-3xl shadow-xl p-10 w-full max-w-md">
+  <div x-show="page==='forgot'" class="min-h-screen flex items-center justify-center" style="position:fixed;inset:0;z-index:100;overflow-y:auto;background:#fafafa;">
+    <div style="background:#ffffff;border-radius:20px;border:1px solid #ebebeb;padding:40px 36px;width:100%;max-width:420px;margin:24px 16px;">
 
-      <!-- Logo -->
-      <div class="flex justify-center mb-6">
-        <div class="w-14 h-14 bg-[#F7FAF9] rounded-2xl flex items-center justify-center">
-          <svg class="w-8 h-8 text-[#00B87C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Header logo -->
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#00B87C,#00D68F);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
           </svg>
         </div>
+        <div style="display:inline-flex;align-items:center;gap:6px;background:#f0fdfb;border:1px solid #d1fae5;border-radius:999px;padding:4px 12px;font-size:.75rem;font-weight:600;color:#00B87C;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Récupération sécurisée
+        </div>
       </div>
 
-      <!-- Envoyé -->
-      <div x-show="forgotSent" class="text-center">
-        <div class="w-16 h-16 bg-[#F7FAF9] rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      <!-- État : email envoyé -->
+      <div x-show="forgotSent" style="text-align:center;">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#00B87C,#00D68F);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 4px 20px rgba(0,184,124,.25);">
+          <svg width="30" height="30" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
           </svg>
         </div>
-        <h2 class="text-2xl font-bold text-[#0F172A] mb-2">Email envoyé !</h2>
-        <p class="text-gray-500 text-sm mb-2">Vérifie ta boîte mail à :</p>
-        <p class="text-[#00B87C] font-semibold mb-6" x-text="forgotEmail"></p>
-        <p class="text-gray-400 text-xs mb-6">Le lien expire dans 1 heure. Vérifie aussi tes spams.</p>
+        <h2 style="font-size:1.4rem;font-weight:900;color:#111;margin-bottom:8px;">Email envoyé !</h2>
+        <p style="color:#6b7280;font-size:.9rem;margin-bottom:6px;">Vérifie ta boîte mail à :</p>
+        <p style="color:#00B87C;font-weight:700;font-size:.95rem;margin-bottom:8px;" x-text="forgotEmail"></p>
+        <p style="color:#9ca3af;font-size:.8rem;margin-bottom:24px;">Le lien expire dans 1 heure. Vérifie aussi tes spams.</p>
         <button @click="page='login'; forgotSent=false; forgotEmail=''"
-                class="w-full border border-gray-200 text-gray-600 font-semibold rounded-xl py-3 hover:bg-[#F7FAF9] transition text-sm">
+          style="width:100%;border:1.5px solid #ebebeb;background:#fff;color:#374151;font-weight:600;border-radius:12px;padding:.85rem;cursor:pointer;font-size:.9rem;transition:background .2s;"
+          onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
           ← Retour à la connexion
         </button>
       </div>
 
       <!-- Formulaire -->
       <div x-show="!forgotSent">
-        <div class="mb-8">
-          <h2 class="text-2xl font-bold text-[#0F172A]">Mot de passe oublié ?</h2>
-          <p class="text-gray-500 text-sm mt-1">Entre ton email pour recevoir un lien de réinitialisation.</p>
-        </div>
+        <h2 style="font-size:1.4rem;font-weight:900;color:#111;margin-bottom:6px;">Mot de passe oublié ?</h2>
+        <p style="color:#6b7280;font-size:.875rem;margin-bottom:28px;">Entre ton email pour recevoir un lien de réinitialisation.</p>
 
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-            <div class="relative">
-              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
-              </span>
-              <input x-model="forgotEmail" type="email"
-                     class="w-full rounded-xl pl-11 pr-4 py-3 text-[#0F172A] placeholder-gray-400 style="background:#FAFAFA;border:1.5px solid transparent;box-shadow:0 0 0 1.5px #e2e8f0;" onfocus="this.style.boxShadow='0 0 0 2px #10b981, 0 0 0 4px rgba(16,185,129,.12)'" onblur="this.style.boxShadow='0 0 0 1.5px #e2e8f0'" focus:outline-none transition text-sm"
-                     placeholder="jean@email.com" />
-            </div>
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:.72rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Email</label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);display:flex;">
+              <svg width="18" height="18" fill="none" stroke="#9ca3af" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+            </span>
+            <input x-model="forgotEmail" type="email" placeholder="jean@email.com"
+              style="width:100%;background:#F7F8FA;border:1.5px solid #EBEBEB;border-radius:12px;padding:.75rem .75rem .75rem 42px;font-size:.95rem;color:#111;outline:none;box-sizing:border-box;transition:border .2s,background .2s;"
+              onfocus="this.style.borderColor='#00B87C';this.style.background='#fff'"
+              onblur="this.style.borderColor='#EBEBEB';this.style.background='#F7F8FA'"/>
           </div>
-
-          <button type="button" @click="
-              if(!forgotEmail) return;
-              forgotLoading = true;
-              fetch(API+'/auth/forgot-password', {
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({email: forgotEmail})
-              }).then(r => r.json()).then(() => {
-                page = 'otp';
-              }).catch(() => {
-                showToast('Erreur réseau, réessaie.', 'error');
-              }).finally(() => { forgotLoading = false; })"
-              class="w-full bg-[#00B87C] hover:bg-[#009E6A] text-white font-semibold rounded-xl py-3.5 transition disabled:opacity-50 text-sm shadow-sm"
-              :disabled="forgotLoading">
-            <span x-show="!forgotLoading">Envoyer le lien</span>
-            <span x-show="forgotLoading">⏳ Envoi...</span>
-          </button>
-
-          <button @click="page='login'; window.scrollTo(0,0)"
-                  class="w-full border border-gray-200 text-gray-600 font-semibold rounded-xl py-3 hover:bg-[#F7FAF9] transition text-sm">
-            ← Retour à la connexion
-          </button>
         </div>
+
+        <button type="button" @click="
+            if(!forgotEmail) return;
+            forgotLoading = true;
+            fetch(API+'/auth/forgot-password', {
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({email: forgotEmail})
+            }).then(r => r.json()).then(() => {
+              page = 'otp';
+            }).catch(() => {
+              showToast('Erreur réseau, réessaie.', 'error');
+            }).finally(() => { forgotLoading = false; })"
+          :disabled="forgotLoading || !forgotEmail"
+          style="width:100%;background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;font-weight:700;border-radius:12px;padding:.9rem;font-size:1rem;border:none;cursor:pointer;box-shadow:0 2px 12px rgba(0,184,124,.2);transition:opacity .2s;margin-bottom:12px;"
+          :style="(forgotLoading || !forgotEmail) ? 'opacity:.5;cursor:not-allowed' : 'opacity:1'">
+          <span x-show="!forgotLoading">Envoyer le lien →</span>
+          <span x-show="forgotLoading">Envoi en cours…</span>
+        </button>
+
+        <button @click="page='login'; window.scrollTo(0,0)"
+          style="width:100%;border:1.5px solid #ebebeb;background:#fff;color:#374151;font-weight:600;border-radius:12px;padding:.85rem;cursor:pointer;font-size:.9rem;transition:background .2s;"
+          onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+          ← Retour à la connexion
+        </button>
       </div>
     </div>
   </div>
@@ -5732,7 +5736,6 @@
             this.loadDashboard();
             this._startInactivityTimer();
           }
-
         },
 
         // ── INACTIVITÉ 30 MIN ──
@@ -5905,7 +5908,7 @@
             this.champsCooldown = this.user.champs_cooldown || {};
 
             if (!this.user.onboarding_done) {
-              window.location.replace('/onboarding.html');
+              this.page = 'app';
             } else if (!this.user.telephone) {
               this.page = 'complete-profil';
               this.showToast('👋 Bienvenue ' + this.user.prenom + ' ! Complète ton profil.');
@@ -5952,7 +5955,7 @@
             sessionStorage.setItem('kv_user', JSON.stringify(this.user));
 
             if (!this.user.onboarding_done) {
-              window.location.replace('/onboarding.html');
+              this.page = 'app';
             } else {
               this.page = 'app';
               this.showToast(`👋 Bienvenue ${this.user.prenom} !`);
