@@ -17,12 +17,12 @@ PAGES = {
         'file':  'login.html',
     },
     'register': {
-        'start': '  <!-- ═══════════════════════════════════════════\n       PAGE : INSCRIPTION — 3 ÉTAPES\n  ════════════════════════════════════════════ -->',
-        'end':   '  <!-- ═══════════════════════════════════════════\n       PAGE : COMPLÉTION PROFIL (après Google)\n  ════════════════════════════════════════════ -->',
+        'start': '  <!-- ═══════════════════════════════════════════\n       PAGE : INSCRIPTION \u2014 3 \u00c9TAPES\n  ════════════════════════════════════════════ -->',
+        'end':   '  <!-- ═══════════════════════════════════════════\n       PAGE : COMPL\u00c9TION PROFIL (apr\u00e8s Google)\n  ════════════════════════════════════════════ -->',
         'file':  'register.html',
     },
     'forgot': {
-        'start': '  <!-- ═══════════════════════════════════════════\n       PAGE : MOT DE PASSE OUBLIÉ\n  ════════════════════════════════════════════ -->',
+        'start': '  <!-- ═══════════════════════════════════════════\n       PAGE : MOT DE PASSE OUBLI\u00c9\n  ════════════════════════════════════════════ -->',
         'end':   '  <!-- ═══════════════════════════════════════════\n       PAGE : SAISIE CODE OTP\n  ════════════════════════════════════════════ -->',
         'file':  'forgot.html',
     },
@@ -53,8 +53,8 @@ def build(only=None):
         with open(page_file, 'r') as f:
             new_html = f.read().strip()
 
-        start_m = cfg['start'].encode().decode('unicode_escape')
-        end_m   = cfg['end'].encode().decode('unicode_escape')
+        start_m = cfg['start'].encode('raw_unicode_escape').decode('unicode_escape')
+        end_m   = cfg['end'].encode('raw_unicode_escape').decode('unicode_escape')
 
         idx_start = content.find(start_m)
         idx_end   = content.find(end_m)
