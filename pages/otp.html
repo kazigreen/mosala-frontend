@@ -1,0 +1,218 @@
+<div x-show="page==='otp'" class="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-10" style="position:fixed;inset:0;z-index:100;overflow-y:auto;">
+    <div class="bg-white rounded-3xl shadow-xl p-10 w-full max-w-md">
+      <div class="flex justify-center mb-6">
+        <div class="w-14 h-14 bg-[#F7FAF9] rounded-2xl flex items-center justify-center">
+          <svg class="w-8 h-8 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="text-2xl font-bold text-[#0F172A] mb-2">Vérification</h2>
+      <p class="text-gray-500 text-sm mb-6">Code envoyé à <span class="font-semibold text-gray-800" x-text="forgotEmail"></span></p>
+
+      <p x-show="otpError" class="text-red-500 text-sm bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4" x-text="otpError"></p>
+
+      <!-- 6 cases OTP -->
+      <div class="flex gap-3 justify-center mb-8" id="otp-boxes">
+        <template x-for="(d, i) in otpDigits" :key="i">
+          <input type="text" inputmode="numeric" maxlength="1"
+            :id="'otp-'+i"
+            :value="otpDigits[i]"
+            @input="e => {
+              otpDigits[i] = e.target.value.replace(/\D/g,'').slice(-1);
+              e.target.value = otpDigits[i];
+              if(otpDigits[i] && i < 5) document.getElementById('otp-'+(i+1)).focus();
+              if(i===5 && otpDigits[i]) {
+                const code = otpDigits.join('');
+                if(code.length === 6) {
+                  otpLoading = true; otpError = '';
+                  fetch(API + '/auth/verify-otp', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: forgotEmail, otp: code})
+                  }).then(r => r.json()).then(data => {
+                    if(data.valid) { resetToken = code; page = 'reset'; }
+                    else { otpError = data.detail || 'Code invalide'; otpDigits = ['','','','','','']; }
+                  }).catch(() => { otpError = 'Connexion impossible.'; })
+                  .finally(() => { otpLoading = false; });
+                }
+              }
+            }"
+            @keydown="e => { if(e.key==='Backspace' && !otpDigits[i] && i>0) { otpDigits[i-1]=''; document.getElementById('otp-'+(i-1)).focus(); } }"
+            @paste.prevent="e => {
+              const p = e.clipboardData.getData('text').replace(/\D/g,'').slice(0,6);
+              p.split('').forEach((c,j) => { if(j<6) otpDigits[j]=c; });
+              if(p.length===6) {
+                otpLoading = true;
+                fetch(API + '/auth/verify-otp', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({email: forgotEmail, otp: p})
+                }).then(r => r.json()).then(data => {
+                  if(data.valid) { resetToken = p; page = 'reset'; }
+                  else { otpError = data.detail || 'Code invalide'; otpDigits = ['','','','','','']; }
+                }).catch(() => { otpError = 'Connexion impossible.'; })
+                .finally(() => { otpLoading = false; });
+              }
+            }"
+            class="w-12 h-14 border-2 border-gray-200 rounded-xl text-center text-xl font-bold text-[#0F172A] focus:border-[#00B87C] focus:outline-none transition"
+            :class="otpDigits[i] ? 'border-[#33D6A0] bg-[#F7FAF9]' : ''"
+          />
+        </template>
+      </div>
+
+      <button type="button"
+        @click="
+          const code = otpDigits.join('');
+          if(code.length < 6) { otpError = 'Entrez les 6 chiffres'; return; }
+          otpLoading = true; otpError = '';
+          fetch(API + '/auth/verify-otp', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email: forgotEmail, otp: code})
+          }).then(r => r.json()).then(data => {
+            if(data.valid) {
+              resetToken = code;
+              page = 'reset';
+            } else {
+              otpError = data.detail || 'Code invalide ou expiré';
+              otpDigits = ['','','','','',''];
+              setTimeout(() => document.getElementById('otp-0') && document.getElementById('otp-0').focus(), 100);
+            }
+          }).catch(() => { otpError = 'Connexion impossible.'; })
+          .finally(() => { otpLoading = false; })"
+        :disabled="otpLoading"
+        class="w-full bg-[#00B87C] hover:bg-[#009E6A] text-white font-semibold rounded-xl py-3.5 transition disabled:opacity-50 text-sm shadow-sm mb-4">
+        <span x-show="!otpLoading">Vérifier le code</span>
+        <span x-show="otpLoading">⏳ Vérification...</span>
+      </button>
+
+      <button type="button"
+        @click="
+          fetch(API+'/auth/forgot-password', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:forgotEmail})});
+          otpDigits=['','','','','',''];
+          otpError='';
+          showToast('Nouveau code envoyé !', 'success');"
+        class="w-full border border-gray-200 text-gray-600 font-semibold rounded-xl py-3 hover:bg-[#F7FAF9] transition text-sm">
+        Renvoyer le code
+      </button>
+
+      <button type="button"
+        @click="page='forgot'; otpDigits=['','','','','','']; otpError='';"
+        class="w-full flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-[#00B87C] transition mt-3">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Changer l'adresse email
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGE : RESET MOT DE PASSE
+  ════════════════════════════════════════════ -->
+  <div x-show="page==='reset'" class="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-10" style="position:fixed;inset:0;z-index:100;overflow-y:auto;">
+    <div class="bg-white rounded-3xl shadow-xl p-10 w-full max-w-md">
+
+      <!-- Logo -->
+      <div class="flex justify-center mb-6">
+        <div class="w-14 h-14 bg-[#F7FAF9] rounded-2xl flex items-center justify-center">
+          <svg class="w-8 h-8 text-[#00B87C]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Succès -->
+      <div x-show="resetDone" class="text-center">
+        <div class="w-16 h-16 bg-[#F7FAF9] rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-[#0F172A] mb-2">Mot de passe mis à jour !</h2>
+        <p class="text-gray-500 text-sm mb-6">Tu peux maintenant te connecter avec ton nouveau mot de passe.</p>
+        <button @click="page='login'; resetDone=false; resetToken=''; resetPwd=''; resetPwd2=''; history.replaceState({}, '', '/')"
+                class="w-full bg-[#00B87C] hover:bg-[#009E6A] text-white font-semibold rounded-xl py-3.5 transition text-sm shadow-sm">
+          Se connecter →
+        </button>
+      </div>
+
+      <!-- Formulaire reset -->
+      <div x-show="!resetDone" x-data="{ showP1: false, showP2: false }">
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold text-[#0F172A]">Nouveau mot de passe</h2>
+          <p class="text-gray-500 text-sm mt-1">Choisis un nouveau mot de passe sécurisé.</p>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Nouveau mdp -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Nouveau mot de passe</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+              </span>
+              <input x-model="resetPwd" :type="showP1 ? 'text' : 'password'"
+                     class="w-full rounded-xl pl-11 pr-11 py-3 text-[#0F172A] placeholder-gray-400 style="background:#FAFAFA;border:1.5px solid transparent;box-shadow:0 0 0 1.5px #e2e8f0;" onfocus="this.style.boxShadow='0 0 0 2px #10b981, 0 0 0 4px rgba(16,185,129,.12)'" onblur="this.style.boxShadow='0 0 0 1.5px #e2e8f0'" focus:outline-none transition text-sm"
+                     placeholder="••••••••" minlength="6" />
+              <button type="button" @click="showP1=!showP1"
+                      class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
+                <svg x-show="!showP1" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <svg x-show="showP1" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Confirmer mdp -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le mot de passe</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+              </span>
+              <input x-model="resetPwd2" :type="showP2 ? 'text' : 'password'"
+                     :class="resetPwd2 && resetPwd !== resetPwd2 ? 'border-red-400' : 'border-gray-200'"
+                     class="w-full border-none rounded-xl pl-11 pr-11 py-3 text-[#0F172A] placeholder-gray-400 focus:outline-none transition text-sm" style="background:#FAFAFA;border:1.5px solid transparent;box-shadow:0 0 0 1.5px #e2e8f0;" onfocus="this.style.boxShadow='0 0 0 2px #10b981, 0 0 0 4px rgba(16,185,129,.12)'" onblur="this.style.boxShadow='0 0 0 1.5px #e2e8f0'"
+                     placeholder="••••••••" minlength="6" />
+              <button type="button" @click="showP2=!showP2"
+                      class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
+                <svg x-show="!showP2" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <svg x-show="showP2" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+              </button>
+            </div>
+            <p x-show="resetPwd2 && resetPwd !== resetPwd2" class="text-red-500 text-xs mt-1">Les mots de passe ne correspondent pas</p>
+          </div>
+
+          <button type="button"
+                  @click="
+                    if(resetPwd !== resetPwd2) { showToast('Les mots de passe ne correspondent pas', 'error'); return; }
+                    if(resetPwd.length < 6) { showToast('Minimum 6 caractères', 'error'); return; }
+                    if(resetLoading) return;
+                    resetLoading = true;
+                    fetch(API+'/auth/reset-password', {
+                      method:'POST',
+                      headers:{'Content-Type':'application/json'},
+                      body: JSON.stringify({email: forgotEmail, otp: resetToken, new_password: resetPwd})
+                    }).then(r => {
+                      if(r.ok) {
+                        resetDone = true;
+                      } else {
+                        return r.json().then(data => {
+                          showToast(data.detail || 'Erreur', 'error');
+                          resetLoading = false;
+                        });
+                      }
+                    }).catch(() => { showToast('Erreur réseau', 'error'); resetLoading = false; })"
+                  class="w-full bg-[#00B87C] hover:bg-[#009E6A] text-white font-semibold rounded-xl py-3.5 transition disabled:opacity-50 text-sm shadow-sm"
+                  :disabled="resetLoading">
+            <span x-show="!resetLoading">Changer mon mot de passe</span>
+            <span x-show="resetLoading">⏳ En cours...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

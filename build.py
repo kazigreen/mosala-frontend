@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """
 build.py — Mosala.io build system
-Injecte les pages/ dans index.html via des marqueurs commentaires.
-Usage: python3 build.py
-       python3 build.py login       ← rebuild une seule page
+Usage: python3 build.py              (toutes les pages)
+       python3 build.py login        (une seule page)
 """
 import os, shutil, datetime, sys
 
@@ -22,6 +21,16 @@ PAGES = {
         'end':   '  <!-- ═══════════════════════════════════════════\n       PAGE : COMPLÉTION PROFIL (après Google)\n  ════════════════════════════════════════════ -->',
         'file':  'register.html',
     },
+    'forgot': {
+        'start': '  <!-- ═══════════════════════════════════════════\n       PAGE : MOT DE PASSE OUBLIÉ\n  ════════════════════════════════════════════ -->',
+        'end':   '  <!-- ═══════════════════════════════════════════\n       PAGE : SAISIE CODE OTP\n  ════════════════════════════════════════════ -->',
+        'file':  'forgot.html',
+    },
+    'otp': {
+        'start': '  <!-- ═══════════════════════════════════════════\n       PAGE : SAISIE CODE OTP\n  ════════════════════════════════════════════ -->',
+        'end':   '  <!-- ═══════════════════════════════════════════\n       PAGE : CONNEXION\n  ════════════════════════════════════════════ -->',
+        'file':  'otp.html',
+    },
 }
 
 def build(only=None):
@@ -33,7 +42,7 @@ def build(only=None):
 
     for name in targets:
         if name not in PAGES:
-            print(f"⚠️  Page '{name}' inconnue")
+            print(f"⚠️  Page '{name}' inconnue. Disponibles : {list(PAGES.keys())}")
             continue
         cfg = PAGES[name]
         page_file = os.path.join(PAGES_DIR, cfg['file'])
@@ -44,15 +53,18 @@ def build(only=None):
         with open(page_file, 'r') as f:
             new_html = f.read().strip()
 
-        idx_start = content.find(cfg['start'])
-        idx_end   = content.find(cfg['end'])
+        start_m = cfg['start'].encode().decode('unicode_escape')
+        end_m   = cfg['end'].encode().decode('unicode_escape')
+
+        idx_start = content.find(start_m)
+        idx_end   = content.find(end_m)
 
         if idx_start == -1 or idx_end == -1:
             print(f"⚠️  Marqueurs de '{name}' introuvables — ignoré")
             continue
 
         new_section = '\n  ' + new_html + '\n\n  '
-        content = content[:idx_start + len(cfg['start'])] + new_section + content[idx_end:]
+        content = content[:idx_start + len(start_m)] + new_section + content[idx_end:]
         changed.append(name)
         print(f"✅ {name} injecté")
 
@@ -60,7 +72,6 @@ def build(only=None):
         print("Rien à faire.")
         return
 
-    # Backup automatique
     ts  = datetime.datetime.now().strftime('%Y%m%d_%H%M')
     bak = SOURCE_FILE + f'.bak_{ts}'
     shutil.copy2(SOURCE_FILE, bak)
@@ -68,7 +79,7 @@ def build(only=None):
 
     with open(SOURCE_FILE, 'w') as f:
         f.write(content)
-    print(f"🚀 index.html mis à jour ({len(changed)} section(s) : {', '.join(changed)})")
+    print(f"🚀 Déployé ({len(changed)} section(s) : {', '.join(changed)})")
 
 if __name__ == '__main__':
     only = sys.argv[1] if len(sys.argv) > 1 else None
