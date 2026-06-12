@@ -4662,7 +4662,7 @@
 
       <!-- ── HEADER ── -->
       <div class="bg-white border-b border-gray-100 px-4 pt-5 pb-4" style="box-shadow:0 2px 12px rgba(0,0,0,0.04);">
-        <div class="max-w-lg mx-auto">
+        <div class="max-w-2xl mx-auto">
           <h2 class="text-lg font-black text-gray-900">📋 Publier un projet</h2>
           <p class="text-xs text-gray-400 mt-0.5">Décris ton besoin — les freelances te trouveront</p>
           <!-- Stepper progress -->
@@ -4687,7 +4687,7 @@
         </div>
       </div>
 
-      <div class="px-4 pt-5 max-w-lg mx-auto">
+      <div class="px-4 pt-5 max-w-2xl mx-auto">
 
         <!-- ══ ÉTAPE 1 : Catégorie + Titre ══ -->
         <div x-show="projetStep === 1" x-transition:enter="transition ease-out duration-200"
@@ -4695,7 +4695,7 @@
 
           <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
             <p class="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">Catégorie du projet</p>
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <template x-for="cat in [
                 {id:'dev',      icon:'💻', label:'Développement'},
                 {id:'design',   icon:'🎨', label:'Design & Créa'},
