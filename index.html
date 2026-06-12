@@ -2861,6 +2861,7 @@
 
     <!-- ── Header sticky ── -->
     <div class="sticky top-0 z-10 px-4 pt-4 pb-3" style="background:#F5F4F2;">
+      <div class="max-w-6xl mx-auto">
 
       <!-- Barre recherche -->
       <div class="flex items-center gap-2 px-3 py-2.5 rounded-2xl mb-3"
@@ -2936,13 +2937,14 @@
         </button>
 
       </div>
-    </div>
+      </div><!-- /max-w header -->
+    </div><!-- /sticky header -->
 
     <!-- ── Contenu ── -->
-    <div class="px-4">
+    <div class="px-4 max-w-6xl mx-auto">
 
       <!-- Skeleton loading -->
-      <div x-show="loadingProjets" class="space-y-3">
+      <div x-show="loadingProjets" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         <template x-for="i in 4" :key="i">
           <div class="rounded-2xl p-4 animate-pulse" style="background:#FFFFFF; border:none; box-shadow:0 2px 12px rgba(15,23,42,0.06);">
             <div class="flex items-center gap-2 mb-3">
@@ -2979,7 +2981,7 @@
       </div>
 
       <!-- Liste missions -->
-      <div x-show="!loadingProjets && projets.length > 0" class="space-y-3">
+      <div x-show="!loadingProjets && projets.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         <template x-for="p in projets" :key="p.id">
           <div @click="openProjet(p)"
                class="rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 flex"
