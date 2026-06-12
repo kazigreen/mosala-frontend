@@ -1,13 +1,45 @@
 {
-  "name": "KaziGreen",
-  "short_name": "KaziGreen",
-  "description": "Plateforme Freelance Souveraine — RDC",
+  "name": "Mosala — Freelance RDC",
+  "short_name": "Mosala",
+  "description": "La plateforme freelance de la République Démocratique du Congo",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f0fdf4",
-  "theme_color": "#16a34a",
+  "orientation": "portrait",
+  "background_color": "#F5F4F2",
+  "theme_color": "#00B87C",
+  "lang": "fr",
   "icons": [
-    { "src": "/logo-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
-    { "src": "/logo-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+    {
+      "src": "/logo-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "shortcuts": [
+    {
+      "name": "Accueil",
+      "url": "/#dashboard",
+      "description": "Mon espace"
+    },
+    {
+      "name": "Trouver du travail",
+      "url": "/#marketplace",
+      "description": "Projets disponibles"
+    },
+    {
+      "name": "Messages",
+      "url": "/#messages",
+      "description": "Mes conversations"
+    }
   ]
 }

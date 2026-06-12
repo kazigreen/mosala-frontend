@@ -29,7 +29,7 @@
     /* Tags */
     .comp-tag{padding:.4rem .9rem;border-radius:9999px;border:1.5px solid #ebebeb;background:#fff;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .18s;color:#333;}
     .comp-tag:hover{border-color:#00B87C;color:#00B87C;}
-    .comp-tag.selected{border-color:#00B87C;background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;box-shadow:0 2px 8px rgba(0,184,124,.2);}
+    .comp-tag.selected{border-color:#00B87C;background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;box-shadow:0 2px 8px rgba(0,184,124,.40);}
 
     /* Dispo cards */
     .dispo-card{border:1.5px solid #ebebeb;border-radius:16px;padding:1.1rem;cursor:pointer;transition:all .2s;background:#fff;display:flex;flex-direction:column;align-items:flex-start;gap:.35rem;box-shadow:none;}
@@ -37,8 +37,8 @@
     .dispo-card.selected{border-color:#00B87C;background:#f0fdfb;box-shadow:0 2px 16px rgba(0,184,124,.13);}
 
     /* Button */
-    .btn-green{background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;padding:.9rem 1.5rem;border-radius:12px;font-weight:700;font-size:1rem;width:100%;transition:opacity .2s;border:none;cursor:pointer;box-shadow:0 2px 12px rgba(0,184,124,.2);}
-    .btn-green:hover{opacity:.9;}
+    .btn-green{background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;padding:.9rem 1.5rem;border-radius:12px;font-weight:700;font-size:1rem;width:100%;transition:all .2s;border:none;cursor:pointer;box-shadow:0 2px 12px rgba(0,184,124,.40);}
+    .btn-green:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 2px 12px rgba(0,184,124,.40);}
     .btn-green:disabled{opacity:.45;cursor:not-allowed;}
     .btn-skip{color:#9ca3af;font-size:.875rem;font-weight:600;background:none;border:none;cursor:pointer;transition:color .2s;width:100%;text-align:center;padding:.5rem;}
     .btn-skip:hover{color:#333;}
@@ -173,6 +173,10 @@
 
     <!-- ═══ ÉTAPE 2 — COMPÉTENCES ═══ -->
     <div x-show="step===2" class="slide-in">
+      <button @click="step=1" class="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-gray-700 mb-4 transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        Retour
+      </button>
       <h1 class="text-2xl font-black text-gray-900 mb-1">Vos compétences principales</h1>
       <p class="text-gray-500 text-sm mb-5">
         <span x-show="form.account_type==='freelance'">Sélectionnez jusqu'à <strong>5 compétences</strong> que vous maîtrisez</span>
@@ -193,7 +197,7 @@
           <button class="comp-tag"
             :class="{
               'selected': form.competences.includes(c),
-              'opacity-40 cursor-not-allowed': !form.competences.includes(c) && form.competences.length>=5
+              'opacity-40 cursor-not-allowed': form.account_type==='freelance' && !form.competences.includes(c) && form.competences.length>=5
             }"
             @click="toggleComp(c)" x-text="c">
           </button>
@@ -202,7 +206,8 @@
 
       <!-- Compteur -->
       <div class="flex items-center justify-between mb-6">
-        <span class="text-xs text-gray-400" x-text="form.competences.length + '/5 sélectionnées'"></span>
+        <span class="text-xs text-gray-400"
+              x-text="form.account_type==='freelance' ? form.competences.length + '/5 sélectionnées' : form.competences.length + ' sélectionnée(s)'"></span>
         <div class="flex gap-1">
           <template x-for="i in 5" :key="i">
             <div class="w-2 h-2 rounded-full" :class="i <= form.competences.length ? 'bg-green-500' : 'bg-gray-200'"></div>
@@ -218,8 +223,40 @@
 
     <!-- ═══ ÉTAPE 3 — DISPONIBILITÉ ═══ -->
     <div x-show="step===3" class="slide-in">
+      <button @click="step=2" class="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-gray-700 mb-4 transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        Retour
+      </button>
       <h1 class="text-2xl font-black text-gray-900 mb-1">Votre disponibilité</h1>
       <p class="text-gray-500 text-sm mb-6">Quand êtes-vous disponible pour commencer ?</p>
+
+      <!-- Ville -->
+      <div class="mb-5">
+        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+          📍 Votre ville
+        </label>
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <select x-model="form.ville"
+                  class="w-full pl-9 pr-4 py-3 rounded-xl text-sm text-gray-800 outline-none transition-all appearance-none cursor-pointer"
+                  style="background:#F7F8FA;border:1.5px solid #EBEBEB;"
+                  onfocus="this.style.borderColor='#00B87C';this.style.background='#fff'"
+                  onblur="this.style.borderColor='#EBEBEB';this.style.background='#F7F8FA'">
+            <option value="">-- Choisir votre ville --</option>
+            <option>Kinshasa</option>
+            <option>Lubumbashi</option>
+            <option>Goma</option>
+            <option>Bukavu</option>
+            <option>Mbuji-Mayi</option>
+            <option>Kisangani</option>
+            <option>Matadi</option>
+            <option>Autre</option>
+          </select>
+        </div>
+      </div>
 
       <div class="grid grid-cols-2 gap-3 mb-8">
         <template x-for="opt in dispoOptions" :key="opt.value">
@@ -242,7 +279,7 @@
           <span x-show="!loading">🚀 Accéder à mon espace</span>
           <span x-show="loading">Enregistrement…</span>
         </button>
-        <button class="btn-skip text-center" :disabled="loading" @click="submit()">Passer pour l'instant</button>
+        <button class="btn-skip text-center" :disabled="loading" @click="skip()">Passer pour l'instant →</button>
       </div>
     </div>
 
@@ -304,16 +341,15 @@
           account_type: '',
           competences: [],
           disponibilite: '',
-          delai_reponse: ''
+          ville: '',
+          delai_reponse: '',
+          source: '',
+          utm_medium: '',
+          utm_campaign: '',
+          referral_code: ''
         },
 
-        competences: [
-          'Développement Web', 'Design Graphique', 'Montage Vidéo',
-          'Marketing Digital', 'Rédaction & Copywriting', 'Mobile (Android/iOS)',
-          'Photographie', 'Comptabilité', 'Traduction', 'Réseaux & IT',
-          'Formation', 'Gestion de projet', 'E-commerce', 'SEO / SEM',
-          'Illustration', 'Architecture', 'Droit', 'Conseil en stratégie'
-        ],
+        competences: [], // chargé depuis /competences/
 
         dispoOptions: [
           { value: 'maintenant',   icon: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" stroke-linecap="round"/></svg>',   label: 'Disponible maintenant',  desc: 'Prêt à démarrer immédiatement', delai: 'moins_24h' },
@@ -328,6 +364,13 @@
         },
 
         async init() {
+          // Capturer UTM params depuis l'URL
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('utm_source'))   this.form.source       = urlParams.get('utm_source');
+          if (urlParams.get('utm_medium'))   this.form.utm_medium   = urlParams.get('utm_medium');
+          if (urlParams.get('utm_campaign')) this.form.utm_campaign = urlParams.get('utm_campaign');
+          if (urlParams.get('ref'))          this.form.referral_code = urlParams.get('ref');
+
           // sessionStorage = session courante (priorité), localStorage = remember me
           const token = sessionStorage.getItem('kv_token') || localStorage.getItem('kv_token');
           if (!token) { window.location.replace('/'); return; }
@@ -342,18 +385,31 @@
             sessionStorage.setItem('kv_user', JSON.stringify(user));
             if (localStorage.getItem('kv_token')) localStorage.setItem('kv_user', JSON.stringify(user));
             // Si déjà complété → dashboard
-            if (user.onboarding_done) { window.location.replace('/'); }
+            if (user.onboarding_done) { window.location.replace('/'); return; }
           } catch(e) {
             // Fallback cache si API indisponible
             const user = JSON.parse(sessionStorage.getItem('kv_user') || localStorage.getItem('kv_user') || '{}');
-            if (user.onboarding_done) { window.location.replace('/'); }
+            if (user.onboarding_done) { window.location.replace('/'); return; }
+          }
+          // Charger les compétences depuis l'API
+          try {
+            const rc = await fetch(`${API}/competences/`);
+            if (rc.ok) {
+              const data = await rc.json();
+              this.competences = data.map(c => c.nom).sort((a,b) => a.localeCompare(b));
+            }
+          } catch(e) {
+            // Fallback hardcodé si API indisponible
+            this.competences = ['Architecture','Comptabilité','Conseil en stratégie','Design Graphique','Droit','Développement Web','E-commerce','Formation','Gestion de projet','Illustration','Marketing Digital','Mobile (Android/iOS)','Montage Vidéo','Photographie','Rédaction & Copywriting','Réseaux & IT','SEO / SEM','Traduction'];
           }
         },
 
         toggleComp(c) {
           const i = this.form.competences.indexOf(c);
           if (i > -1) { this.form.competences.splice(i, 1); }
-          else if (this.form.competences.length < 5) { this.form.competences.push(c); }
+          else if (this.form.account_type !== 'freelance' || this.form.competences.length < 5) {
+            this.form.competences.push(c);
+          }
         },
 
         skip() {
@@ -375,16 +431,34 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
               body: JSON.stringify({
-                account_type:  this.form.account_type || null,
-                disponibilite: this.form.disponibilite || null,
-                delai_reponse: this.form.delai_reponse || null,
-                competences:   this.form.competences
+                account_type:   this.form.account_type || null,
+                disponibilite:  this.form.disponibilite || null,
+                delai_reponse:  this.form.delai_reponse || null,
+                competences:    this.form.competences,
+                ville:          this.form.ville || null,
+                source:         this.form.source || null,
+                utm_medium:     this.form.utm_medium || null,
+                utm_campaign:   this.form.utm_campaign || null,
+                referral_code:  this.form.referral_code || null,
               })
             });
-            if (!r.ok) { const d = await r.json(); throw new Error(d.detail || 'Erreur'); }
-            const u = await r.json();
-            localStorage.setItem('kv_user', JSON.stringify(u));
-            sessionStorage.setItem('kv_user', JSON.stringify(u));
+            if (!r.ok) {
+              let msg = 'Erreur serveur';
+              try { const d = await r.json(); msg = d.detail || msg; } catch(_) {}
+              throw new Error(msg);
+            }
+            // Succès — mettre à jour le cache local et rediriger
+            try {
+              const u = await r.json();
+              localStorage.setItem('kv_user', JSON.stringify(u));
+              sessionStorage.setItem('kv_user', JSON.stringify(u));
+            } catch(_) {
+              // Si parsing échoue, on met juste onboarding_done à true dans le cache
+              const cached = JSON.parse(sessionStorage.getItem('kv_user') || localStorage.getItem('kv_user') || '{}');
+              cached.onboarding_done = true;
+              sessionStorage.setItem('kv_user', JSON.stringify(cached));
+              if (localStorage.getItem('kv_token')) localStorage.setItem('kv_user', JSON.stringify(cached));
+            }
             this.step = 4;
           } catch(e) {
             this.showToast(e.message, 'error');
