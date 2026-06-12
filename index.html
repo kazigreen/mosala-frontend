@@ -2479,13 +2479,13 @@
         <button @click="navigateTo('profil')" class="flex flex-col items-center gap-0.5 py-2 px-3 transition-all duration-200">
           <div :class="activeTab==='profil' ? 'ring-2 ring-[#00B87C] ring-offset-1 scale-110' : ''"
                class="w-9 h-9 rounded-xl overflow-hidden transition-all duration-200">
-            <template x-if="userData.photo_url">
-              <img :src="userData.photo_url" class="w-full h-full object-cover"/>
+            <template x-if="user.photo_url">
+              <img :src="user.photo_url" class="w-full h-full object-cover"/>
             </template>
-            <template x-if="!userData.photo_url">
+            <template x-if="!user.photo_url">
               <div :class="activeTab==='profil' ? 'bg-[#00B87C] text-white' : 'bg-gray-100 text-gray-500'"
                    class="w-full h-full flex items-center justify-center font-black text-sm transition-all">
-                <span x-text="(userData.prenom || 'M')[0].toUpperCase()"></span>
+                <span x-text="(user.prenom || 'M')[0].toUpperCase()"></span>
               </div>
             </template>
           </div>
