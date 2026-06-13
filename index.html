@@ -6254,7 +6254,16 @@
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1"
                x-text="candidaturesRecues.length + ' candidature(s) reçue(s)'"></p>
 
-            <template x-for="c in candidaturesRecues" :key="c.id">
+            <!-- Compteur refusées masquées -->
+            <template x-if="candidaturesRecues.filter(c => c.statut === 'refusee').length > 0">
+              <button @click="showRefusees = !showRefusees"
+                      class="w-full text-center text-[10px] font-bold py-1.5 rounded-lg transition mb-1"
+                      style="color:#9CA3AF; background:#F9FAFB; border:1px dashed #E5E7EB;"
+                      x-text="showRefusees ? '🙈 Masquer les refusées' : '👁 Voir les refusées (' + candidaturesRecues.filter(c => c.statut === 'refusee').length + ')'">
+              </button>
+            </template>
+
+            <template x-for="c in candidaturesRecues.filter(c => c.statut !== 'refusee' || showRefusees)" :key="c.id">
               <div class="bg-white rounded-2xl shadow-sm overflow-hidden border"
                    :style="c.statut === 'en_attente' ? 'border-color:#FDE68A;' : c.statut === 'acceptee' ? 'border-color:#A7F3D0;' : 'border-color:#FECACA;'">
 
@@ -7225,6 +7234,7 @@
         candidaturesRecues: [],
         loadingCandidaturesRecues: false,
         unreadCandidatures: 0,
+        showRefusees: false,
         convLoading: false,
         msgLoading: false,
         msgSending: false,
