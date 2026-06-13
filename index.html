@@ -3747,10 +3747,24 @@
                 </div>
               </div>
 
-              <!-- Budget -->
-              <div class="flex-shrink-0 text-right">
+              <!-- Budget + actions -->
+              <div class="flex-shrink-0 text-right flex flex-col items-end gap-1.5">
                 <p class="text-sm font-black" style="color:#0F172A;"
                    x-text="formatBudget(p.budget, p.devise)"></p>
+                <!-- Boutons Modifier/Supprimer — seulement si en_attente -->
+                <template x-if="p.statut === 'en_attente'">
+                  <div class="flex items-center gap-1">
+                    <button @click.stop="ouvrirEditProjet(p)"
+                            class="px-2 py-0.5 rounded-lg text-[9px] font-bold transition"
+                            style="background:#EFF6FF;color:#3B82F6;">✏️ Modifier</button>
+                    <button @click.stop="confirmerSupprimerProjet(p)"
+                            class="px-2 py-0.5 rounded-lg text-[9px] font-bold transition"
+                            style="background:#FEF2F2;color:#EF4444;">🗑️</button>
+                  </div>
+                </template>
+                <template x-if="['en_cours','litige'].includes(p.statut)">
+                  <span class="text-[9px] text-amber-500 font-semibold">🔒 Contrat actif</span>
+                </template>
               </div>
 
             </div>
@@ -5898,10 +5912,37 @@
                          x-text="(p.budget||0).toLocaleString('fr-FR') + ' ' + (p.devise||'USD')"></p>
                     </div>
 
-                    <!-- Badge statut -->
-                    <span class="text-[10px] font-black px-2.5 py-1 rounded-full flex-shrink-0"
-                          :class="p.statut==='termine' ? 'bg-[#00B87C]/10 text-[#00B87C]' : p.statut==='en_cours' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500'"
-                          x-text="p.statut==='termine' ? '✅ Disponible' : p.statut==='en_cours' ? '🔒 Bloqué Escrow' : '⏳ En attente'"></span>
+                    <!-- Droite : badge + actions -->
+                    <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      <!-- Badge statut -->
+                      <span class="text-[10px] font-black px-2.5 py-1 rounded-full"
+                            :class="p.statut==='termine' ? 'bg-[#00B87C]/10 text-[#00B87C]' : p.statut==='en_cours' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500'"
+                            x-text="p.statut==='termine' ? '✅ Terminé' : p.statut==='en_cours' ? '🔒 En cours' : '⏳ En attente'"></span>
+                      <!-- Boutons Modifier / Supprimer — seulement si en_attente -->
+                      <template x-if="p.statut === 'en_attente'">
+                        <div class="flex items-center gap-1">
+                          <button @click="$root.ouvrirEditProjet ? $root.ouvrirEditProjet(p) : $dispatch('edit-projet', p)"
+                                  class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition"
+                                  style="background:#EFF6FF;color:#3B82F6;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Modifier
+                          </button>
+                          <button @click="$root.confirmerSupprimerProjet ? $root.confirmerSupprimerProjet(p) : $dispatch('delete-projet', p)"
+                                  class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition"
+                                  style="background:#FEF2F2;color:#EF4444;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                            Supprimer
+                          </button>
+                        </div>
+                      </template>
+                      <!-- Verrou si en_cours/litige -->
+                      <template x-if="['en_cours','litige'].includes(p.statut)">
+                        <span class="text-[9px] text-amber-500 font-semibold flex items-center gap-0.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                          Contrat actif
+                        </span>
+                      </template>
+                    </div>
 
                   </div>
                 </template>
@@ -6999,6 +7040,9 @@
 
         // ── toast ──
         toast: { show: false, msg: '', type: 'success' },
+        modalAlerte: { show: false, titre: '', message: '', type: 'error', btnLabel: 'Compris', btnAction: null, action: null },
+        modalEditProjet: { show: false, id: null, titre: '', description: '', budget: '', titre_original: '', loading: false },
+        modalSupprimerProjet: { show: false, id: null, titre: '', loading: false },
 
         // ── marketplace ──
         projets:      [],
@@ -7190,6 +7234,73 @@
         showToast(msg, type='success') {
           this.toast = { show:true, msg, type };
           setTimeout(() => this.toast.show = false, 3500);
+        },
+
+        ouvrirEditProjet(p) {
+          this.modalEditProjet = {
+            show: true, id: p.id,
+            titre: p.titre, description: p.description || '', budget: p.budget || '',
+            titre_original: p.titre, loading: false
+          };
+        },
+
+        async sauvegarderEditProjet() {
+          if (!this.modalEditProjet.titre.trim()) { this.showToast('Le titre est requis', 'error'); return; }
+          this.modalEditProjet.loading = true;
+          try {
+            const r = await fetch(`${API}/projets/${this.modalEditProjet.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.token}` },
+              body: JSON.stringify({
+                titre: this.modalEditProjet.titre,
+                description: this.modalEditProjet.description || null,
+                budget: this.modalEditProjet.budget ? Number(this.modalEditProjet.budget) : null,
+              })
+            });
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.detail || 'Erreur modification');
+            this.modalEditProjet.show = false;
+            this.showToast('✅ Projet modifié avec succès !');
+            await this.loadDashboard();
+          } catch(e) {
+            this.showAlerte('Modification impossible', e.message, { type: 'error' });
+          } finally { this.modalEditProjet.loading = false; }
+        },
+
+        confirmerSupprimerProjet(p) {
+          this.modalSupprimerProjet = { show: true, id: p.id, titre: p.titre, loading: false };
+        },
+
+        async supprimerProjet() {
+          this.modalSupprimerProjet.loading = true;
+          try {
+            const r = await fetch(`${API}/projets/${this.modalSupprimerProjet.id}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (!r.ok) {
+              const data = await r.json();
+              throw new Error(data.detail || 'Erreur suppression');
+            }
+            this.modalSupprimerProjet.show = false;
+            this.showToast('🗑️ Projet supprimé');
+            await this.loadDashboard();
+          } catch(e) {
+            this.modalSupprimerProjet.show = false;
+            this.showAlerte('Suppression impossible', e.message, { type: 'error' });
+          } finally { this.modalSupprimerProjet.loading = false; }
+        },
+
+        showAlerte(titre, message, opts={}) {
+          this.modalAlerte = {
+            show: true,
+            titre,
+            message,
+            type: opts.type || 'error',
+            btnLabel: opts.btnLabel || 'Compris',
+            btnAction: opts.btnAction || null,
+            action: opts.action || null,
+          };
         },
 
         validatePhone() {
@@ -8134,7 +8245,21 @@
             await this.loadProjets();
 
           } catch(e) {
-            this.showToast(e.message, 'error');
+            // Erreur 403 freelance → modale persistante (pas un toast qui disparaît)
+            if (e.message && e.message.includes('seul projet actif')) {
+              this.showAlerte(
+                'Projet déjà actif',
+                e.message,
+                {
+                  type: 'warning',
+                  btnLabel: 'OK, compris',
+                  btnAction: 'Voir mon projet',
+                  action: () => { this.activeTab = 'marketplace'; }
+                }
+              );
+            } else {
+              this.showToast(e.message, 'error');
+            }
           } finally { this.loading = false; }
         },
 
@@ -8569,6 +8694,163 @@
   </script>
 
   <!-- ══ MODAL POSTULER ══ -->
+
+<!-- ══ MODAL EDIT PROJET ══ -->
+  <div x-show="modalEditProjet.show"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       class="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4"
+       style="display:none">
+    <div class="absolute inset-0 bg-black/40" @click="modalEditProjet.show=false"></div>
+    <div x-show="modalEditProjet.show"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 translate-y-4"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden z-10">
+      <!-- Header -->
+      <div class="px-5 pt-5 pb-4" style="background:linear-gradient(135deg,#1e3a5f,#2d5a9e);">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-blue-300 font-bold uppercase tracking-widest mb-0.5">Modifier le projet</p>
+            <h3 class="text-white font-black text-sm truncate" x-text="modalEditProjet.titre_original"></h3>
+          </div>
+          <button @click="modalEditProjet.show=false" class="text-white/50 hover:text-white ml-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Body -->
+      <div class="p-5 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1.5">Titre <span class="text-red-500">*</span></label>
+          <input x-model="modalEditProjet.titre" type="text" maxlength="80"
+                 class="w-full px-3.5 py-2.5 rounded-xl border text-sm font-medium outline-none transition"
+                 style="border-color:#E8ECF4;background:white;"
+                 @focus="$el.style.borderColor='#3B82F6'" @blur="$el.style.borderColor='#E8ECF4'">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1.5">Description</label>
+          <textarea x-model="modalEditProjet.description" rows="3" maxlength="600"
+                    class="w-full px-3.5 py-2.5 rounded-xl border text-sm font-medium outline-none transition resize-none"
+                    style="border-color:#E8ECF4;background:white;"
+                    @focus="$el.style.borderColor='#3B82F6'" @blur="$el.style.borderColor='#E8ECF4'"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1.5">Budget</label>
+          <input x-model="modalEditProjet.budget" type="number" min="0"
+                 class="w-full px-3.5 py-2.5 rounded-xl border text-sm font-medium outline-none transition"
+                 style="border-color:#E8ECF4;background:white;"
+                 @focus="$el.style.borderColor='#3B82F6'" @blur="$el.style.borderColor='#E8ECF4'">
+        </div>
+        <div class="flex gap-3 pt-1">
+          <button @click="modalEditProjet.show=false"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold border"
+                  style="color:#64748B;border-color:#E2E8F0;">Annuler</button>
+          <button @click="sauvegarderEditProjet()"
+                  :disabled="modalEditProjet.loading"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition"
+                  style="background:linear-gradient(135deg,#3B82F6,#2563EB);">
+            <span x-show="!modalEditProjet.loading">💾 Sauvegarder</span>
+            <span x-show="modalEditProjet.loading">...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL CONFIRMER SUPPRESSION PROJET ══ -->
+  <div x-show="modalSupprimerProjet.show"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       class="fixed inset-0 z-50 flex items-center justify-center px-4"
+       style="display:none">
+    <div class="absolute inset-0 bg-black/50" @click="modalSupprimerProjet.show=false"></div>
+    <div x-show="modalSupprimerProjet.show"
+         x-transition:enter="transition ease-out duration-250"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden z-10">
+      <div class="px-5 pt-5 pb-4" style="background:linear-gradient(135deg,#991b1b,#dc2626);">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">🗑️</div>
+          <div>
+            <p class="text-[10px] text-red-200 font-bold uppercase tracking-widest">Confirmer la suppression</p>
+            <h3 class="text-white font-black text-sm leading-tight" x-text="modalSupprimerProjet.titre"></h3>
+          </div>
+        </div>
+      </div>
+      <div class="p-5">
+        <p class="text-sm text-gray-600 leading-relaxed mb-5">Cette action est irréversible. Le projet sera <strong>annulé définitivement</strong>. Les candidatures reçues seront perdues.</p>
+        <div class="flex gap-3">
+          <button @click="modalSupprimerProjet.show=false"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold border"
+                  style="color:#64748B;border-color:#E2E8F0;">Annuler</button>
+          <button @click="supprimerProjet()"
+                  :disabled="modalSupprimerProjet.loading"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition"
+                  style="background:#dc2626;">
+            <span x-show="!modalSupprimerProjet.loading">🗑️ Supprimer</span>
+            <span x-show="modalSupprimerProjet.loading">...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- ══ MODAL ALERTE (erreurs importantes) ══ -->
+  <div x-show="modalAlerte.show"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       class="fixed inset-0 z-50 flex items-center justify-center px-4"
+       style="display:none">
+    <div class="absolute inset-0 bg-black/50" @click="modalAlerte.show=false"></div>
+    <div x-show="modalAlerte.show"
+         x-transition:enter="transition ease-out duration-250"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden z-10">
+      <!-- Header rouge/amber -->
+      <div class="px-5 pt-5 pb-4" :style="'background: linear-gradient(135deg,' + (modalAlerte.type==='warning' ? '#b45309,#d97706' : '#991b1b,#dc2626') + ')'">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+            <span class="text-xl" x-text="modalAlerte.type==='warning' ? '⚠️' : '🚫'"></span>
+          </div>
+          <div>
+            <p class="text-[10px] text-white/70 font-bold uppercase tracking-widest" x-text="modalAlerte.type==='warning' ? 'Attention' : 'Action bloquée'"></p>
+            <h3 class="text-white font-black text-sm leading-tight" x-text="modalAlerte.titre"></h3>
+          </div>
+          <button @click="modalAlerte.show=false" class="ml-auto text-white/60 hover:text-white transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Body -->
+      <div class="p-5">
+        <p class="text-sm text-[#374151] leading-relaxed" x-text="modalAlerte.message"></p>
+        <div class="mt-5 flex gap-3">
+          <button @click="modalAlerte.show=false"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition"
+                  :style="'background:' + (modalAlerte.type==='warning' ? '#d97706' : '#dc2626')"
+                  x-text="modalAlerte.btnLabel || 'Compris'"></button>
+          <template x-if="modalAlerte.btnAction">
+            <button @click="modalAlerte.action(); modalAlerte.show=false"
+                    class="flex-1 py-2.5 rounded-xl text-sm font-bold bg-[#0F172A] text-white transition">
+              <span x-text="modalAlerte.btnAction"></span>
+            </button>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div x-show="modalPostuler"
        x-transition:enter="transition ease-out duration-200"
        x-transition:enter-start="opacity-0"
