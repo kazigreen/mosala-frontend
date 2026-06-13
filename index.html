@@ -6065,18 +6065,35 @@
       <div class="w-full lg:w-80 xl:w-96 border-r border-gray-200 flex flex-col" style="background:#F5F4F2;"
            :class="activeConv ? 'hidden lg:flex' : 'flex'">
 
-        <!-- Header -->
-        <div class="px-4 py-4 border-b border-gray-100">
-          <div class="flex items-center justify-between">
+        <!-- Header + onglets -->
+        <div class="border-b border-gray-100" style="background:white;">
+          <div class="px-4 pt-4 pb-0 flex items-center justify-between">
             <h2 class="text-base font-bold text-gray-900">Messages</h2>
-            <span x-show="(conversations||[]).length > 0"
+            <span x-show="unreadMessages > 0"
                   class="text-[11px] font-semibold px-2 py-0.5 bg-[#00B87C]/10 text-[#00B87C] rounded-full"
-                  x-text="(conversations||[]).length"></span>
+                  x-text="unreadMessages + ' non lus'"></span>
           </div>
-          <p class="text-xs text-gray-400 mt-0.5">Vos échanges avec clients &amp; freelances</p>
+          <!-- Onglets Messages | Alertes -->
+          <div class="flex px-4 mt-3">
+            <button @click="messageTab='conversations'"
+                    class="flex-1 pb-2.5 text-xs font-bold transition-all border-b-2"
+                    :class="messageTab==='conversations' ? 'border-[#00B87C] text-[#00B87C]' : 'border-transparent text-gray-400'">
+              💬 Messages
+            </button>
+            <button @click="messageTab='alertes'; loadCandidaturesRecues()"
+                    class="flex-1 pb-2.5 text-xs font-bold transition-all border-b-2 relative"
+                    :class="messageTab==='alertes' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-400'">
+              🔔 Candidatures
+              <span x-show="unreadCandidatures > 0"
+                    class="absolute -top-1 right-3 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-black text-white flex items-center justify-center"
+                    style="background:#EF4444;"
+                    x-text="unreadCandidatures"></span>
+            </button>
+          </div>
         </div>
 
-        <!-- Search -->
+        <!-- Search + liste conversations -->
+        <div x-show="messageTab==='conversations'" class="flex flex-col flex-1 overflow-hidden">
         <div class="px-4 py-3 border-b border-gray-100">
           <div class="relative">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -6209,6 +6226,102 @@
           </template>
 
         </div>
+        </div><!-- /messageTab conversations -->
+
+        <!-- ══ ONGLET ALERTES / CANDIDATURES ══ -->
+        <div x-show="messageTab==='alertes'" class="flex-1 overflow-y-auto">
+
+          <!-- Loading -->
+          <div x-show="loadingCandidaturesRecues" class="flex justify-center items-center py-10">
+            <div class="w-6 h-6 rounded-full border-2 animate-spin" style="border-color:#E8ECF4;border-top-color:#F59E0B;"></div>
+          </div>
+
+          <!-- Vide -->
+          <template x-if="!loadingCandidaturesRecues && candidaturesRecues.length === 0">
+            <div class="flex flex-col items-center justify-center py-12 px-6 text-center">
+              <div class="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center mb-4">
+                <span class="text-3xl">🔔</span>
+              </div>
+              <p class="text-sm font-bold text-gray-700 mb-1">Aucune candidature reçue</p>
+              <p class="text-xs text-gray-400 leading-relaxed">Les candidatures sur vos projets apparaîtront ici avec les boutons Accepter / Refuser.</p>
+            </div>
+          </template>
+
+          <!-- Liste candidatures -->
+          <div x-show="!loadingCandidaturesRecues && candidaturesRecues.length > 0" class="p-4 space-y-3">
+
+            <!-- Compteur -->
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1"
+               x-text="candidaturesRecues.length + ' candidature(s) reçue(s)'"></p>
+
+            <template x-for="c in candidaturesRecues" :key="c.id">
+              <div class="bg-white rounded-2xl shadow-sm overflow-hidden border"
+                   :style="c.statut === 'en_attente' ? 'border-color:#FDE68A;' : c.statut === 'acceptee' ? 'border-color:#A7F3D0;' : 'border-color:#FECACA;'">
+
+                <!-- Header carte -->
+                <div class="px-4 pt-3 pb-2 flex items-center gap-3">
+                  <!-- Avatar -->
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-black text-white text-sm"
+                       style="background:linear-gradient(135deg,#667eea,#764ba2);"
+                       x-text="(c.freelance_prenom || '?').charAt(0).toUpperCase()"></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-black text-gray-900 truncate"
+                       x-text="(c.freelance_prenom || '') + ' ' + (c.freelance_nom || '')"></p>
+                    <p class="text-[10px] text-gray-400 truncate" x-text="'Sur : ' + (c.projet_titre || '—')"></p>
+                  </div>
+                  <!-- Badge statut -->
+                  <span class="text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0"
+                        :class="c.statut==='en_attente' ? 'bg-amber-50 text-amber-600' : c.statut==='acceptee' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'"
+                        x-text="c.statut==='en_attente' ? '⏳ En attente' : c.statut==='acceptee' ? '✅ Acceptée' : '❌ Refusée'"></span>
+                </div>
+
+                <!-- Message candidature -->
+                <div class="px-4 py-2 border-t border-gray-50">
+                  <p class="text-xs text-gray-600 leading-relaxed line-clamp-2" x-text="c.message || '—'"></p>
+                </div>
+
+                <!-- Infos budget / délai -->
+                <div class="px-4 py-2 flex items-center gap-3 border-t border-gray-50">
+                  <template x-if="c.budget_propose">
+                    <span class="text-[10px] font-bold text-gray-700 flex items-center gap-1">
+                      💰 <span x-text="'$' + c.budget_propose"></span>
+                    </span>
+                  </template>
+                  <template x-if="c.delai_jours">
+                    <span class="text-[10px] font-bold text-gray-700 flex items-center gap-1">
+                      ⏱ <span x-text="c.delai_jours + ' jours'"></span>
+                    </span>
+                  </template>
+                  <span class="ml-auto text-[9px] text-gray-400"
+                        x-text="new Date(c.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'short'})"></span>
+                </div>
+
+                <!-- Boutons Accepter / Refuser (seulement si en_attente) -->
+                <template x-if="c.statut === 'en_attente'">
+                  <div class="px-4 pb-3 pt-1 flex gap-2">
+                    <button @click="deciderCandidatureAlerte(c.id, 'acceptee', c)"
+                            :disabled="candidatureLoading === c.id"
+                            class="flex-1 py-2 rounded-xl text-xs font-black text-white transition"
+                            style="background:linear-gradient(135deg,#00B87C,#00D68F);">
+                      <span x-show="candidatureLoading !== c.id">✅ Accepter</span>
+                      <span x-show="candidatureLoading === c.id">...</span>
+                    </button>
+                    <button @click="deciderCandidatureAlerte(c.id, 'refusee', c)"
+                            :disabled="candidatureLoading === c.id"
+                            class="flex-1 py-2 rounded-xl text-xs font-black transition"
+                            style="background:#FEF2F2; color:#EF4444; border:1.5px solid rgba(239,68,68,0.2);">
+                      <span x-show="candidatureLoading !== c.id">❌ Refuser</span>
+                      <span x-show="candidatureLoading === c.id">...</span>
+                    </button>
+                  </div>
+                </template>
+
+              </div>
+            </template>
+          </div>
+
+        </div><!-- /messageTab alertes -->
+
       </div>
 
       <!-- ══ COLONNE DROITE : Conversation active ══ -->
@@ -6959,23 +7072,33 @@
 
                   <!-- Boutons Accepter / Refuser -->
                   <div x-show="c.statut === 'en_attente'" class="flex gap-2">
-                    <button @click="deciderCandidature(c.id, 'acceptee', c)"
-                            :disabled="c._loading"
+                    <button @click="deciderCandidature(c.id, 'acceptee')"
+                            :disabled="candidatureLoading === c.id"
                             class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl font-bold text-[11px] text-white transition-all"
                             style="background:linear-gradient(135deg,#00B87C,#00D68F); border:none; cursor:pointer; box-shadow:0 3px 10px rgba(0,184,124,0.30);">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
-                      </svg>
-                      Accepter
+                      <template x-if="candidatureLoading === c.id && candidatureDecision === 'acceptee'">
+                        <span>...</span>
+                      </template>
+                      <template x-if="!(candidatureLoading === c.id && candidatureDecision === 'acceptee')">
+                        <span class="flex items-center gap-1.5">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                          Accepter
+                        </span>
+                      </template>
                     </button>
-                    <button @click="deciderCandidature(c.id, 'refusee', c)"
-                            :disabled="c._loading"
+                    <button @click="deciderCandidature(c.id, 'refusee')"
+                            :disabled="candidatureLoading === c.id"
                             class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl font-bold text-[11px] transition-all"
                             style="background:#FEF2F2; color:#DC2626; border:1.5px solid rgba(220,38,38,0.20); cursor:pointer;">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
-                      </svg>
-                      Refuser
+                      <template x-if="candidatureLoading === c.id && candidatureDecision === 'refusee'">
+                        <span>...</span>
+                      </template>
+                      <template x-if="!(candidatureLoading === c.id && candidatureDecision === 'refusee')">
+                        <span class="flex items-center gap-1.5">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                          Refuser
+                        </span>
+                      </template>
                     </button>
                   </div>
 
@@ -7022,6 +7145,8 @@
         loadingProjets: false,
         candidaturesProjet: [],
         loadingCandidatures: false,
+        candidatureLoading: null,
+        candidatureDecision: null,
 
         
         // ── profil tab ──
@@ -7096,6 +7221,10 @@
         convMessages: [],
         newMessage: '',
         msgSearch: '',
+        messageTab: 'conversations', // 'conversations' | 'alertes'
+        candidaturesRecues: [],
+        loadingCandidaturesRecues: false,
+        unreadCandidatures: 0,
         convLoading: false,
         msgLoading: false,
         msgSending: false,
@@ -7143,7 +7272,7 @@
           if (!load) return;
           if (tab === 'dashboard')    this.loadDashboard();
           else if (tab === 'marketplace') this.loadProjets();
-          else if (tab === 'messages')    this.loadMessages();
+          else if (tab === 'messages') { this.loadMessages(); this.loadCandidaturesRecues(); }
           else if (tab === 'wallet')      this.loadWallet();
           else if (tab === 'profil')      this.loadProfil();
         },
@@ -7712,6 +7841,83 @@
             this.showToast('Erreur réseau', 'error');
           } finally {
             this.postuleLoading = false;
+          }
+        },
+
+        // ── CANDIDATURES ──
+        async loadCandidaturesRecues() {
+          this.loadingCandidaturesRecues = true;
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/candidatures/projet/all-received`, {
+              headers: { Authorization: `Bearer ${tok}` }
+            });
+            if (r.ok) {
+              this.candidaturesRecues = await r.json();
+              this.unreadCandidatures = this.candidaturesRecues.filter(c => c.statut === 'en_attente').length;
+            }
+          } catch {}
+          finally { this.loadingCandidaturesRecues = false; }
+        },
+
+        async deciderCandidatureAlerte(candId, decision, c) {
+          await this.deciderCandidature(candId, decision);
+          // Rafraîchir la liste alertes
+          await this.loadCandidaturesRecues();
+        },
+
+        async loadCandidaturesProjet(projetId) {
+          this.loadingCandidatures = true;
+          this.candidaturesProjet = [];
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/candidatures/projet/${projetId}`, {
+              headers: { Authorization: `Bearer ${tok}` }
+            });
+            if (r.ok) {
+              this.candidaturesProjet = await r.json();
+            } else {
+              this.showToast('Erreur chargement candidatures', 'error');
+            }
+          } catch {
+            this.showToast('Erreur réseau', 'error');
+          } finally {
+            this.loadingCandidatures = false;
+          }
+        },
+
+        async deciderCandidature(candId, decision) {
+          this.candidatureLoading = candId;
+          this.candidatureDecision = decision;
+          // Récupérer le token depuis sessionStorage en fallback si this.token est null
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/candidatures/${candId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+              body: JSON.stringify({ statut: decision })
+            });
+            const data = await r.json();
+            if (r.ok) {
+              const label = decision === 'acceptee' ? '✅ Candidature acceptée !' : '❌ Candidature refusée';
+              this.showToast(label, decision === 'acceptee' ? 'success' : 'error');
+              if (this.selectedProjet) await this.loadCandidaturesProjet(this.selectedProjet.id);
+              if (decision === 'acceptee' && data.conv_id) {
+                this.selectedProjet = null;
+                this.showAlerte(
+                  'Freelance accepté ! 🎉',
+                  'Une conversation a été ouverte. Allez dans Messages pour coordonner.',
+                  { type: 'warning', btnLabel: 'Voir les messages', action: () => this.navigateTo('messages'), btnAction: null }
+                );
+              }
+            } else {
+              this.showToast(data.detail || 'Erreur', 'error');
+            }
+          } catch {
+            this.showToast('Erreur réseau', 'error');
+          } finally {
+            this.candidatureLoading = null;
+            this.candidatureDecision = null;
           }
         },
 
