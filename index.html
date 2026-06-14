@@ -6479,10 +6479,10 @@
               </template>
 
               <!-- ══ CARTE ESCROW ══ -->
-              <template x-if="activeConv && activeConv.projet_id">
+              <template x-if="activeConv && activeConv.projet_id && activeConv.projet_statut === 'en_cours'">
                 <div x-data="{ _esc: null, _loaded: false }"
                      x-init="
-                       if (!_loaded) {
+                       if (!_loaded && activeConv.projet_statut === 'en_cours') {
                          _loaded = true;
                          const tok = token || sessionStorage.getItem('kv_token');
                          fetch(`${API}/escrow/projet/${activeConv.projet_id}`, {headers:{Authorization:'Bearer '+tok}})
@@ -6494,7 +6494,7 @@
                      class="mx-1 mb-2">
 
                   <!-- Pas d escrow → bouton initier (client seulement) -->
-                  <template x-if="!_esc && user.id === activeConv.client_id">
+                  <template x-if="!_esc && String(user.id) === String(activeConv.client_id)">
                     <div class="rounded-2xl p-4 border-2 border-dashed border-amber-200 bg-amber-50">
                       <p class="text-xs font-black text-amber-700 mb-1">💳 Paiement sécurisé requis</p>
                       <p class="text-[10px] text-amber-600 mb-3 leading-relaxed">Déposez le montant en escrow pour que le freelance puisse commencer en toute confiance.</p>
@@ -6520,7 +6520,7 @@
                   <template x-if="_esc && _esc.statut === 'bloque'">
                     <div class="rounded-2xl p-4 bg-green-50 border border-green-200">
                       <p class="text-xs font-black text-green-700 mb-1">🔒 <span x-text="'$' + _esc.montant_net"></span> sécurisés en escrow</p>
-                      <template x-if="user.id === activeConv.client_id">
+                      <template x-if="String(user.id) === String(activeConv.client_id)">
                         <div>
                           <p class="text-[10px] text-green-600 mb-2">Le freelance a été notifié. Validez la livraison pour libérer les fonds.</p>
                           <button @click="libererEscrow(_esc.id)"
@@ -6530,7 +6530,7 @@
                           </button>
                         </div>
                       </template>
-                      <template x-if="user.id !== activeConv.client_id">
+                      <template x-if="String(user.id) !== String(activeConv.client_id)">
                         <p class="text-[10px] text-green-600">💪 Les fonds sont sécurisés. Livrez votre travail pour recevoir le paiement.</p>
                       </template>
                     </div>
