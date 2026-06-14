@@ -6478,6 +6478,75 @@
                 </div>
               </template>
 
+              <!-- ══ CARTE ESCROW ══ -->
+              <template x-if="activeConv && activeConv.projet_id">
+                <div x-data="{ _esc: null, _loaded: false }"
+                     x-init="
+                       if (!_loaded) {
+                         _loaded = true;
+                         const tok = token || sessionStorage.getItem('kv_token');
+                         fetch(`${API}/escrow/projet/${activeConv.projet_id}`, {headers:{Authorization:'Bearer '+tok}})
+                           .then(r=>r.ok?r.json():null)
+                           .then(d=>{ if(d) _esc=d.escrow; })
+                           .catch(()=>{});
+                       }
+                     "
+                     class="mx-1 mb-2">
+
+                  <!-- Pas d escrow → bouton initier (client seulement) -->
+                  <template x-if="!_esc && user.id === activeConv.client_id">
+                    <div class="rounded-2xl p-4 border-2 border-dashed border-amber-200 bg-amber-50">
+                      <p class="text-xs font-black text-amber-700 mb-1">💳 Paiement sécurisé requis</p>
+                      <p class="text-[10px] text-amber-600 mb-3 leading-relaxed">Déposez le montant en escrow pour que le freelance puisse commencer en toute confiance.</p>
+                      <button @click="initierEscrow(activeConv.projet_id, activeConv).then(()=>{ _loaded=false; })"
+                              class="w-full py-2 rounded-xl text-xs font-black text-white"
+                              style="background:linear-gradient(135deg,#F59E0B,#D97706);">
+                        💰 Initier le paiement escrow
+                      </button>
+                    </div>
+                  </template>
+
+                  <!-- En attente confirmation admin -->
+                  <template x-if="_esc && _esc.statut === 'en_attente'">
+                    <div class="rounded-2xl p-4 bg-amber-50 border border-amber-200">
+                      <p class="text-xs font-black text-amber-700 mb-1">⏳ Paiement en attente de confirmation</p>
+                      <p class="text-[10px] text-amber-600">Référence : <strong x-text="_esc.reference_externe"></strong></p>
+                      <p class="text-[10px] text-amber-600 mt-0.5">Montant : <strong x-text="'$' + _esc.montant"></strong></p>
+                      <p class="text-[9px] text-amber-500 mt-2">Envoyez cette référence à l'admin Mosala pour confirmer la réception.</p>
+                    </div>
+                  </template>
+
+                  <!-- Escrow bloqué → en cours -->
+                  <template x-if="_esc && _esc.statut === 'bloque'">
+                    <div class="rounded-2xl p-4 bg-green-50 border border-green-200">
+                      <p class="text-xs font-black text-green-700 mb-1">🔒 <span x-text="'$' + _esc.montant_net"></span> sécurisés en escrow</p>
+                      <template x-if="user.id === activeConv.client_id">
+                        <div>
+                          <p class="text-[10px] text-green-600 mb-2">Le freelance a été notifié. Validez la livraison pour libérer les fonds.</p>
+                          <button @click="libererEscrow(_esc.id)"
+                                  class="w-full py-2 rounded-xl text-xs font-black text-white"
+                                  style="background:linear-gradient(135deg,#00B87C,#00D68F);">
+                            ✅ Valider la livraison &amp; libérer les fonds
+                          </button>
+                        </div>
+                      </template>
+                      <template x-if="user.id !== activeConv.client_id">
+                        <p class="text-[10px] text-green-600">💪 Les fonds sont sécurisés. Livrez votre travail pour recevoir le paiement.</p>
+                      </template>
+                    </div>
+                  </template>
+
+                  <!-- Escrow libéré -->
+                  <template x-if="_esc && _esc.statut === 'libere'">
+                    <div class="rounded-2xl p-3 bg-gray-50 border border-gray-200 flex items-center gap-2">
+                      <span>🎉</span>
+                      <p class="text-[10px] text-gray-500">Mission terminée · <strong x-text="'$' + (_esc.montant_net || _esc.montant)"></strong> libérés au freelance.</p>
+                    </div>
+                  </template>
+
+                </div>
+              </template>
+
               <!-- Messages -->
               <template x-if="!msgLoading">
                 <div class="space-y-1">
@@ -7156,6 +7225,8 @@
         loadingCandidatures: false,
         candidatureLoading: null,
         candidatureDecision: null,
+        escrowProjet: {},      // { [projet_id]: escrow|null }
+        escrowLoading: false,
 
         
         // ── profil tab ──
@@ -7855,6 +7926,47 @@
         },
 
         // ── CANDIDATURES ──
+        async initierEscrow(projetId, conv) {
+          const montant = prompt('Montant à sécuriser en escrow (USD) :');
+          if (!montant || isNaN(montant) || Number(montant) <= 0) return;
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/escrow/initier`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+              body: JSON.stringify({ projet_id: projetId, montant: Number(montant), devise: 'USD' })
+            });
+            const d = await r.json();
+            if (r.ok) {
+              this.showAlerte(
+                '💰 Escrow initié !',
+                `Référence : ${d.reference}\n\nMontant : $${d.montant_brut} (frais Mosala : $${d.frais_mosala})\n\nPartagez cette référence à l\'admin Mosala pour confirmer votre paiement. Le freelance sera notifié dès confirmation.`,
+                { type: 'warning', btnLabel: 'Compris' }
+              );
+            } else {
+              this.showToast(d.detail || 'Erreur', 'error');
+            }
+          } catch { this.showToast('Erreur réseau', 'error'); }
+        },
+
+        async libererEscrow(escrowId) {
+          if (!confirm('Confirmer la livraison et libérer les fonds au freelance ?')) return;
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/escrow/liberer`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+              body: JSON.stringify({ escrow_id: escrowId })
+            });
+            const d = await r.json();
+            if (r.ok) {
+              this.showToast('🎉 Fonds libérés ! Mission terminée.', 'success');
+            } else {
+              this.showToast(d.detail || 'Erreur', 'error');
+            }
+          } catch { this.showToast('Erreur réseau', 'error'); }
+        },
+
         async loadCandidaturesRecues() {
           this.loadingCandidaturesRecues = true;
           const tok = this.token || sessionStorage.getItem('kv_token');
