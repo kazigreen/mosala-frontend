@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#16a34a" />
+  <meta name="theme-color" content="#00B87C" />
+  <link rel="preload" as="image" href="/images/hero-pro.jpg" fetchpriority="high">
   <title>Mosala — Plateforme Freelance RDC</title>
   <meta name="description" content="Mosala est la plateforme freelance souveraine de la RDC. Trouvez des talents, publiez des projets et sécurisez vos paiements." />
 
@@ -139,32 +140,32 @@
 
     [x-cloak] { display: none !important; }
     /* font-family géré par Inter global */
-    .tab-active { border-bottom: 3px solid #16a34a; color: #16a34a; font-weight: 700; }
+    .tab-active { border-bottom: 3px solid #00B87C; color: #00B87C; font-weight: 700; }
     .card { background:#fff; border-radius:1rem; box-shadow:0 2px 12px rgba(0,0,0,.08); }
     .btn-primary {
-      background:#16a34a; color:#fff; padding:.75rem 1.5rem;
+      background:#00B87C; color:#fff; padding:.75rem 1.5rem;
       border-radius:.75rem; font-weight:700; width:100%;
       transition:background .2s;
     }
-    .btn-primary:hover { background:#14532d; }
+    .btn-primary:hover { background:#009E6A; }
     .btn-outline {
-      border:2px solid #16a34a; color:#16a34a; padding:.65rem 1.2rem;
+      border:2px solid #00B87C; color:#00B87C; padding:.65rem 1.2rem;
       border-radius:.75rem; font-weight:600; background:transparent;
       transition:all .2s;
     }
-    .btn-outline:hover { background:#16a34a; color:#fff; }
+    .btn-outline:hover { background:#00B87C; color:#fff; }
     .input {
       border:1.5px solid #d1fae5; border-radius:.75rem; padding:.75rem 1rem;
       width:100%; font-size:1rem; outline:none; transition:border .2s;
     }
-    .input:focus { border-color:#16a34a; }
+    .input:focus { border-color:#00B87C; }
     .badge-green  { background:#dcfce7; color:#166534; padding:.2rem .75rem; border-radius:9999px; font-size:.78rem; font-weight:700; }
     .badge-yellow { background:#fef9c3; color:#854d0e; padding:.2rem .75rem; border-radius:9999px; font-size:.78rem; font-weight:700; }
     .badge-red    { background:#fee2e2; color:#991b1b; padding:.2rem .75rem; border-radius:9999px; font-size:.78rem; font-weight:700; }
     .badge-blue   { background:#dbeafe; color:#1e40af; padding:.2rem .75rem; border-radius:9999px; font-size:.78rem; font-weight:700; }
     .progress-bar { background:#bbf7d0; border-radius:9999px; height:8px; overflow:hidden; }
-    .progress-fill { background:#16a34a; height:100%; border-radius:9999px; transition:width .5s; }
-    .skeleton { background:linear-gradient(90deg,#f0fdf4 25%,#dcfce7 50%,#f0fdf4 75%); background-size:200%; animation:shimmer 1.4s infinite; border-radius:.5rem; }
+    .progress-fill { background:#00B87C; height:100%; border-radius:9999px; transition:width .5s; }
+    .skeleton { background:linear-gradient(90deg,#F0FBF7 25%,#e6faf4 50%,#F0FBF7 75%); background-size:200%; animation:shimmer 1.4s infinite; border-radius:.5rem; }
     @keyframes shimmer { 0%{background-position:200%} 100%{background-position:-200%} }
 
     /* ── Premium SaaS Feature Cards ── */
@@ -546,8 +547,8 @@
         top: 16px;
         left: 50%;
         transform: translateX(-50%);
-        width: 92%;
-        max-width: 1120px;
+        width: calc(100% - 48px);
+        max-width: 1450px;
         z-index: 50;
       }
       .kz-nav-wrapper::before {
@@ -571,16 +572,18 @@
         background: rgba(255,255,255,0.78);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(0,0,0,0.07);
-        border-radius: 20px;
-        padding: 22px 28px;
+        border: 1px solid rgba(0,184,124,0.15);
+        border-radius: 24px;
+        padding: 0 40px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        min-height: 78px;
+        position: relative;
+        height: 88px;
+        min-height: 88px;
         /* Border highlight top (Linear trick) */
         box-shadow:
-          0 4px 24px rgba(0,0,0,0.06),
+          0 4px 20px rgba(0,184,124,0.06),
           0 1px 4px rgba(0,0,0,0.04),
           inset 0 1px 0 rgba(255,255,255,.85);
         /* Noise texture SVG inline — grain 1.5% */
@@ -603,10 +606,11 @@
       }
 
       /* Spacer pour compenser la navbar fixed */
-      .kz-nav-spacer { height: 84px; }
+      .kz-nav-spacer { height: 106px; }
 
       /* Nav links */
       .kz-navlink {
+        white-space: nowrap;
         font-size: 0.875rem;
         font-weight: 500;
         color: #374151;
@@ -616,9 +620,9 @@
         transition: color .18s ease, background .18s ease;
         position: relative;
       }
-      .kz-navlink:hover { color: #059669; background: rgba(5,150,105,.06); }
+      .kz-navlink:hover { color: #00B87C; background: rgba(0,184,124,.06); }
       .kz-navlink.active {
-        color: #059669;
+        color: #00B87C;
         background: rgba(5,150,105,.09);
         font-weight: 600;
       }
@@ -639,7 +643,7 @@
         opacity: .85;
         transition: color .18s ease, opacity .18s ease;
       }
-      .kz-dropdown-btn:hover { color: #059669; opacity: 1; }
+      .kz-dropdown-btn:hover { color: #00B87C; opacity: 1; }
       .kz-dropdown-btn svg { transition: transform .2s ease; }
       .kz-dropdown:hover .kz-dropdown-btn svg { transform: rotate(180deg); }
 
@@ -651,7 +655,7 @@
         transform: translateX(-50%);
         background: rgba(255,255,255,0.97);
         backdrop-filter: blur(16px);
-        border: 1px solid rgba(0,0,0,0.07);
+        border: 1px solid rgba(0,184,124,0.15);
         border-radius: 14px;
         padding: 8px;
         min-width: 180px;
@@ -669,11 +673,11 @@
         color: #374151;
         transition: background .15s ease;
       }
-      .kz-dropdown-item:hover { background: #f0fdf4; }
-      .kz-dropdown-item:hover .kz-dd-title { color: #059669; }
+      .kz-dropdown-item:hover { background: #F0FBF7; }
+      .kz-dropdown-item:hover .kz-dd-title { color: #00B87C; }
       .kz-dropdown-item span.icon {
         width: 34px; height: 34px;
-        background: #f0fdf4;
+        background: #F0FBF7;
         border-radius: 8px;
         display: grid; place-items: center;
         font-size: 1rem;
@@ -697,7 +701,7 @@
 
       /* CTA Button */
       .kz-cta {
-        background: #059669;
+        background: #00B87C;
         color: #fff;
         font-weight: 700;
         font-size: 0.875rem;
@@ -709,7 +713,7 @@
         transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
       }
       .kz-cta:hover {
-        background: #047857;
+        background: #009E6A;
         transform: translateY(-1px);
         box-shadow: 0 8px 20px rgba(16,185,129,.18);
       }
@@ -724,7 +728,7 @@
         border-radius: 10px;
         transition: color .18s ease, background .18s ease;
       }
-      .kz-login:hover { color: #059669; background: #f0fdf4; }
+      .kz-login:hover { color: #00B87C; background: #F0FBF7; }
 
       /* ── Mobile drawer ── */
       .kz-mobile-btn {
@@ -741,34 +745,82 @@
       @media (max-width: 768px) {
         .kz-mobile-btn { display: flex; align-items: center; justify-content: center; }
         .kz-nav-center { display: none !important; }
+
+        /* Header mobile */
+        .kz-nav-wrapper { top: 10px; width: calc(100% - 24px); }
+        .kz-nav { height: 60px; min-height: 60px; padding: 0 16px; border-radius: 16px; }
+        .kz-nav-spacer { height: 80px; }
+
+        /* Hero mobile — colonne, image en bas */
+        .kz-hero { padding: 28px 0 20px; }
+        .kz-hero > div > div.flex { flex-direction: column !important; gap: 32px !important; }
+
+        /* H1 mobile */
+        .kz-h1 { font-size: clamp(1.8rem, 7vw, 2.4rem) !important; }
+
+        /* Image hero mobile — pleine largeur, plus haute */
+        .kz-anim.kz-anim-d160 { max-width: 100% !important; width: 100% !important; }
+        .kz-anim.kz-anim-d160 img { max-height: 360px !important; width: 100% !important; }
+
+        /* Floating cards — cacher sur mobile */
+        .kz-float-card { display: none !important; }
+
+        /* Réassurance — vertical sur mobile */
+        .kz-reassurance { flex-direction: column !important; gap: 8px !important; }
+
+        /* Trust bar — wrap propre */
+        .kz-trust-bar .flex { flex-wrap: wrap; justify-content: center; gap: 0; }
+        .kz-trust-bar span, .kz-trust-bar div[style*="border-right"] {
+          border-right: none !important;
+          border-bottom: 1px solid #e2e8f0;
+          padding: 8px 16px !important;
+        }
+      }
+
+      /* Tablet 768px - 1024px */
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .kz-nav-wrapper { max-width: 960px; }
+        .kz-nav { height: 72px; min-height: 72px; padding: 0 28px; }
+        .kz-nav-spacer { height: 92px; }
+        .kz-nav-center { gap: 24px !important; }
+        .kz-h1 { font-size: clamp(2rem, 4vw, 2.8rem) !important; }
+        .kz-anim.kz-anim-d160 { max-width: 360px !important; }
+      }
+
+      /* Large desktop 1440px+ */
+      @media (min-width: 1440px) {
+        .kz-hero { padding: 64px 0 48px; }
       }
       .kz-drawer-overlay {
-        display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,.25);
-        backdrop-filter: blur(4px);
-        z-index: 40;
+        background: rgba(0,0,0,.35);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        z-index: 199;
         opacity: 0;
-        transition: opacity .25s ease;
+        pointer-events: none;
+        transition: opacity .28s ease;
       }
-      .kz-drawer-overlay.open { display: block; opacity: 1; }
+      .kz-drawer-overlay.open { opacity: 1; pointer-events: auto; }
       .kz-drawer {
         position: fixed;
-        top: 0; right: -100%;
+        top: 0; right: 0;
         width: min(320px, 85vw);
         height: 100vh;
         background: rgba(255,255,255,.97);
         backdrop-filter: blur(20px);
-        z-index: 45;
+        z-index: 200;
         padding: 24px 20px;
         box-shadow: -8px 0 40px rgba(0,0,0,.12);
-        transition: right .3s cubic-bezier(.25,.8,.25,1);
+        transform: translateX(100%);
+        transition: transform .28s cubic-bezier(0.32, 0.72, 0, 1);
+        will-change: transform;
         display: flex;
         flex-direction: column;
         gap: 4px;
       }
-      .kz-drawer.open { right: 0; }
+      .kz-drawer.open { transform: translateX(0); }
       .kz-drawer-header {
         display: flex;
         align-items: center;
@@ -789,7 +841,7 @@
         font-size: 0.95rem; font-weight: 500;
         transition: background .15s ease, color .15s ease;
       }
-      .kz-drawer-link:hover { background: #f0fdf4; color: #059669; }
+      .kz-drawer-link:hover { background: #F0FBF7; color: #00B87C; }
       .kz-drawer-divider { height: 1px; background: #f3f4f6; margin: 8px 0; }
       .kz-drawer-section-label {
         font-size: 0.72rem; font-weight: 700; color: #9ca3af;
@@ -822,7 +874,7 @@
       .kz-cmd-trigger:hover {
         background: rgba(5,150,105,.06);
         border-color: rgba(5,150,105,.2);
-        color: #059669;
+        color: #00B87C;
       }
       .kz-cmd-trigger svg { opacity: .55; }
       .kz-cmd-trigger:hover svg { opacity: 1; }
@@ -836,7 +888,7 @@
         letter-spacing: .02em;
         color: #9ca3af;
       }
-      .kz-cmd-trigger:hover .kz-cmd-kbd { background: rgba(5,150,105,.12); color: #059669; }
+      .kz-cmd-trigger:hover .kz-cmd-kbd { background: rgba(5,150,105,.12); color: #00B87C; }
 
       /* Overlay */
       .kz-cmd-overlay {
@@ -910,9 +962,9 @@
         text-decoration: none; color: #111827;
       }
       .kz-cmd-item:hover, .kz-cmd-item.focused {
-        background: #f0fdf4;
+        background: #F0FBF7;
       }
-      .kz-cmd-item.focused .kz-cmd-item-title { color: #059669; }
+      .kz-cmd-item.focused .kz-cmd-item-title { color: #00B87C; }
       .kz-cmd-item-icon {
         width: 34px; height: 34px;
         background: #f8fafc;
@@ -929,7 +981,7 @@
       .kz-cmd-item-sub   { font-size: 0.77rem; color: #9ca3af; line-height: 1.3; }
       .kz-cmd-item-arrow { color: #d1d5db; font-size: 0.8rem; transition: color .12s; }
       .kz-cmd-item:hover .kz-cmd-item-arrow,
-      .kz-cmd-item.focused .kz-cmd-item-arrow { color: #059669; }
+      .kz-cmd-item.focused .kz-cmd-item-arrow { color: #00B87C; }
 
       /* Footer */
       .kz-cmd-footer {
@@ -955,17 +1007,18 @@
     <nav class="kz-nav">
       <!-- Logo -->
       <div class="flex items-center gap-2 cursor-pointer" @click="page='home'; window.scrollTo(0,0)">
-        <svg style="width:26px;height:26px;" viewBox="0 0 32 32" fill="none">
-          <path d="M16 4L4 10l12 6 12-6L16 4z" fill="#059669"/>
-          <path d="M4 22l12 6 12-6" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
-          <path d="M4 16l12 6 12-6" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
+        <svg style="width:30px;height:30px;" viewBox="0 0 32 32" fill="none">
+          <path d="M16 4L4 10l12 6 12-6L16 4z" fill="#00B87C"/>
+          <path d="M4 22l12 6 12-6" stroke="#00B87C" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 16l12 6 12-6" stroke="#00D68F" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <span class="font-bold text-[0.97rem] text-[#0F172A] tracking-tight">Mosala</span>
+        <span class="font-bold text-[1.05rem] text-[#0F172A] tracking-tight">Mosala<span style="color:#00B87C;">.</span></span>
       </div>
 
       <!-- Navigation centre -->
-      <div class="kz-nav-center hidden md:flex items-center gap-8" style="white-space:nowrap;">
+      <div class="kz-nav-center hidden md:flex items-center" style="position:absolute;left:50%;transform:translateX(-50%);gap:32px;white-space:nowrap;" style="white-space:nowrap;">
         <a href="#" class="kz-navlink">Trouver un freelance</a>
+        <a href="#" class="kz-navlink" style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">Offres d'emploi<span style="font-size:.6rem;font-weight:700;background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;padding:2px 8px;border-radius:99px;line-height:1.4;flex-shrink:0;">NEW</span></a>
         <a href="#" class="kz-navlink">Devenir freelance</a>
         <a href="#" class="kz-navlink">Tarifs</a>
 
@@ -979,8 +1032,8 @@
           </button>
           <div class="kz-dropdown-menu">
             <a href="#" class="kz-dropdown-item">
-<div class="kz-cmd-item-icon" style="background:rgba(22,163,74,.08);border-color:rgba(22,163,74,.1);">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#16a34a" style="width:18px;height:18px;">
+<div class="kz-cmd-item-icon" style="background:rgba(0,184,124,.08);border-color:rgba(0,184,124,.1);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" style="width:18px;height:18px;">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
                 </svg>
               </div>
@@ -1035,8 +1088,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
           </svg>
         </button>
-        <button @click="page='login'; window.scrollTo(0,0)" class="kz-login hidden md:block">Se connecter</button>
-        <button @click="page='register'; window.scrollTo(0,0)" class="kz-cta hidden md:block">S'inscrire</button>
+        <button @click="page='login'; window.scrollTo(0,0)" class="kz-login hidden md:block" style="color:#0F172A;font-weight:600;font-size:.92rem;padding:9px 18px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;transition:all .2s;" onclick="window.kzNav('login')">Se connecter</button>
+        <button @click="page='register'; window.scrollTo(0,0)" class="kz-cta hidden md:block" style="background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;font-weight:700;padding:9px 22px;border-radius:10px;border:none;cursor:pointer;font-size:.92rem;box-shadow:0 2px 12px rgba(0,184,124,.30);transition:all .2s;">S'inscrire</button>
       </div>
     </nav>
     </div><!-- /kz-nav-wrapper -->
@@ -1046,18 +1099,20 @@
       /* Hero background */
       .kz-hero {
         background: #fff;
-        padding: 72px 0 56px;
+        padding: 56px 0 28px;
         overflow: hidden;
         position: relative;
       }
 
       /* H1 gradient word */
       .kz-h1-gradient {
-        background: linear-gradient(90deg, #059669, #22c55e);
+        background: linear-gradient(90deg, #00B87C, #00D68F);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
         display: block;
+        padding-bottom: 0.1em;
+        display: inline-block;
       }
 
       /* CTA primary hero */
@@ -1065,7 +1120,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: #059669;
+        background: #00B87C;
         color: #fff;
         font-weight: 700;
         font-size: 1rem;
@@ -1073,13 +1128,13 @@
         border-radius: 14px;
         border: none;
         cursor: pointer;
-        box-shadow: 0 4px 20px rgba(5,150,105,.28);
+        box-shadow: 0 4px 20px rgba(0,184,124,.28);
         transition: background .2s, transform .2s, box-shadow .2s;
       }
       .kz-hero-cta:hover {
-        background: #047857;
+        background: #009E6A;
         transform: translateY(-1px);
-        box-shadow: 0 8px 28px rgba(5,150,105,.35);
+        box-shadow: 0 8px 28px rgba(0,184,124,.35);
       }
       .kz-hero-cta .kz-arrow {
         transition: transform .2s ease;
@@ -1105,9 +1160,9 @@
         transition: border-color .2s, background .2s, transform .2s;
       }
       .kz-hero-cta2:hover {
-        border-color: #059669;
-        color: #059669;
-        background: #f0fdf4;
+        border-color: #00B87C;
+        color: #00B87C;
+        background: #F0FBF7;
         transform: translateY(-1px);
       }
 
@@ -1155,13 +1210,13 @@
 
       /* Progress bar */
       .kz-progress-track { background: #e5e7eb; border-radius: 9999px; height: 6px; overflow: hidden; width: 100%; }
-      .kz-progress-fill  { background: linear-gradient(90deg, #059669, #22c55e); height: 100%; border-radius: 9999px; width: 100%; }
+      .kz-progress-fill  { background: linear-gradient(90deg, #00B87C, #00D68F); height: 100%; border-radius: 9999px; width: 100%; }
 
       /* Ambient glow circle */
       .kz-glow {
         position: absolute;
         width: 420px; height: 420px;
-        background: radial-gradient(circle, rgba(16,185,129,.14), transparent 70%);
+        background: radial-gradient(circle, rgba(0,184,124,.14), transparent 70%);
         border-radius: 50%;
         top: 50%; left: 50%;
         transform: translate(-50%, -50%);
@@ -1172,8 +1227,9 @@
       /* Trust logos bar */
       .kz-trust-bar {
         border-top: 1px solid rgba(0,0,0,.06);
-        padding: 28px 0;
-        background: #fff;
+        border-bottom: 1px solid rgba(0,0,0,.06);
+        padding: 20px 0;
+        background: #f8fafc;
       }
       .kz-trust-logo {
         font-size: 0.85rem;
@@ -1288,24 +1344,24 @@
         <div class="flex-1 max-w-[540px]">
 
           <!-- Badge pill -->
-          <div class="kz-anim kz-anim-d0 kz-badge-shimmer inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-full px-4 py-1.5 text-sm font-semibold mb-8">
-            <span>🏆</span>
-            N°1 en RDC · La plateforme freelance de confiance
+          <div class="kz-anim kz-anim-d0 kz-badge-shimmer inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-full px-4 py-1.5 text-sm font-semibold mb-4">
+            <span>🇨🇩</span>
+            Le hub des talents et du travail au Congo
           </div>
 
           <!-- H1 -->
-          <h1 class="kz-anim kz-anim-d80" style="font-size:clamp(2.4rem,4.5vw,3.6rem); font-weight:900; line-height:1.07; color:#0F172A; margin-bottom:20px; letter-spacing:-.02em;">
-            Trouvez le talent.<br>
-            <span class="kz-h1-gradient">Réussissez ensemble.</span>
+          <h1 class="kz-anim kz-anim-d80" style="font-size:clamp(2.1rem,3.8vw,3.1rem); font-weight:900; line-height:1.1; color:#0F172A; margin-bottom:14px; letter-spacing:-.02em;">
+            Trouvez les meilleurs<br>
+            <span class="kz-h1-gradient">talents du Congo.</span>
           </h1>
 
           <!-- Subtitle -->
-          <p class="kz-anim kz-anim-d140" style="color:#64748b; font-size:1.1rem; line-height:1.7; margin-bottom:36px; max-width:460px;">
-            Mosala connecte entreprises et freelances talentueux<br>pour réaliser des projets d'exception.
+          <p class="kz-anim kz-anim-d140" style="color:#64748b; font-size:1rem; line-height:1.65; margin-bottom:24px; max-width:460px;">
+            Mosala connecte les entreprises, les freelances et les chercheurs d'emploi à travers toute la RDC.<br>Sécurisé, rapide et local.
           </p>
 
           <!-- CTAs -->
-          <div class="kz-anim kz-anim-d220 flex flex-wrap gap-4 mb-10">
+          <div class="kz-anim kz-anim-d220 flex flex-wrap gap-4 mb-4">
             <button @click="page='register'; window.scrollTo(0,0)" class="kz-hero-cta">
               Trouver un freelance
               <span class="kz-arrow">
@@ -1317,6 +1373,13 @@
             <button @click="page='register'; window.scrollTo(0,0)" class="kz-hero-cta2">
               Devenir freelance
             </button>
+          </div>
+
+          <!-- Réassurance -->
+          <div class="mt-0 mb-4 flex flex-row flex-wrap gap-x-5 gap-y-1.5 text-sm" style="color:#64748b;">
+            <div class="flex items-center gap-1.5">
+              <span style="color:#00B87C;">🔒</span> Paiements sécurisés via Mobile Money
+            </div>
           </div>
 
           <!-- Social proof -->
@@ -1361,11 +1424,13 @@
           <!-- Freelancer image -->
           <div class="kz-anim kz-anim-d160" style="position:relative;z-index:10;width:100%;max-width:420px;">
             <!-- Border subtile + micro shadow premium -->
-            <div style="border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.6);box-shadow:0 24px 64px rgba(0,0,0,.14),0 4px 16px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.8);position:relative;">
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=700&q=85"
+            <div style="border-radius:28px;overflow:hidden;border:1px solid rgba(255,255,255,.6);box-shadow:0 24px 64px rgba(0,0,0,.14),0 4px 16px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.8);position:relative;background:#e2e8f0;min-height:380px;">
+              <img src="/images/hero-pro.jpg"
                    alt="Freelance Mosala"
-                   style="width:100%;max-height:460px;object-fit:cover;object-position:top;display:block;"
-                   onerror="this.src='https://images.unsplash.com/photo-1531891570158-e71b35a485bc?w=600&q=80'" />
+                   loading="eager"
+                   fetchpriority="high"
+                   decoding="sync"
+                   style="width:100%;max-height:420px;object-fit:cover;object-position:center 20%;display:block;" />
               <!-- Glass overlay bas -->
               <div style="position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(to top,rgba(255,255,255,.12),transparent);pointer-events:none;border-radius:0 0 28px 28px;"></div>
             </div>
@@ -1374,7 +1439,7 @@
           <!-- Floating card A — Paiement sécurisé -->
           <div class="kz-float-card card-a" style="top:12%;right:-8px;min-width:190px;">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#16a34a" style="width:16px;height:16px;flex-shrink:0;">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#94a3b8" style="width:16px;height:16px;flex-shrink:0;">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/>
             </svg>
               <span style="font-size:0.82rem;font-weight:700;color:#111827;">Paiement sécurisé</span>
@@ -1397,38 +1462,57 @@
       </div>
     </section>
 
-    <!-- Trust logos bar -->
+    <!-- Secteurs qui recrutent -->
     <div class="kz-trust-bar">
-      <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center gap-8">
-        <span style="font-size:0.78rem;font-weight:600;color:#9ca3af;white-space:nowrap;flex-shrink:0;">Ils nous font confiance</span>
-        <div class="flex flex-wrap items-center gap-8 md:gap-12">
-          <!-- Airtel -->
-          <svg class="kz-trust-logo" height="22" viewBox="0 0 80 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <text y="18" font-family="Arial Black, sans-serif" font-size="16" font-weight="900" fill="#dc2626">airtel</text>
-          </svg>
-          <!-- RAWBANK -->
-          <span class="kz-trust-logo" style="font-size:0.88rem;letter-spacing:.04em;">RAWBANK</span>
-          <!-- M-PESA -->
-          <span class="kz-trust-logo" style="font-size:0.88rem;letter-spacing:.02em;">m-pesa</span>
-          <!-- Vodacom -->
-          <span class="kz-trust-logo" style="font-size:0.88rem;">Vodacom</span>
-          <!-- Ecobank -->
-          <span class="kz-trust-logo" style="font-size:0.88rem;font-style:italic;">Ecobank</span>
+      <div class="max-w-6xl mx-auto px-6 flex flex-col items-center gap-4">
+        <span style="font-size:0.72rem;font-weight:700;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase;">Secteurs qui recrutent</span>
+        <div class="flex flex-wrap justify-center items-center gap-0">
+
+          <!-- Banques -->
+          <div style="display:flex;align-items:center;gap:7px;padding:0 24px;border-right:1px solid #e2e8f0;opacity:.75;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#94a3b8" style="width:16px;height:16px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z"/></svg>
+            <span style="font-size:0.88rem;font-weight:700;color:#374151;">Banques</span>
+          </div>
+
+          <!-- Télécoms -->
+          <div style="display:flex;align-items:center;gap:7px;padding:0 24px;border-right:1px solid #e2e8f0;opacity:.75;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#94a3b8" style="width:16px;height:16px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12 20.25h.008v.008H12v-.008Z"/></svg>
+            <span style="font-size:0.88rem;font-weight:700;color:#374151;">Télécoms</span>
+          </div>
+
+          <!-- ONG -->
+          <div style="display:flex;align-items:center;gap:7px;padding:0 24px;border-right:1px solid #e2e8f0;opacity:.75;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#94a3b8" style="width:16px;height:16px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253M3.284 14.253A8.959 8.959 0 0 1 3 12c0-1.016.132-2 .382-2.936"/></svg>
+            <span style="font-size:0.88rem;font-weight:700;color:#374151;">ONG</span>
+          </div>
+
+          <!-- Technologie -->
+          <div style="display:flex;align-items:center;gap:7px;padding:0 24px;border-right:1px solid #e2e8f0;opacity:.75;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#94a3b8" style="width:16px;height:16px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/></svg>
+            <span style="font-size:0.88rem;font-weight:700;color:#374151;">Technologie</span>
+          </div>
+
+          <!-- BTP -->
+          <div style="display:flex;align-items:center;gap:7px;padding:0 24px;opacity:.75;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#94a3b8" style="width:16px;height:16px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"/></svg>
+            <span style="font-size:0.88rem;font-weight:700;color:#374151;">BTP & Construction</span>
+          </div>
+
         </div>
       </div>
     </div>
 
     <!-- 4 FEATURES — SaaS Style Cards -->
-    <section class="bg-white border-t border-gray-100 px-6 py-16">
-      <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+    <section class="bg-white border-t border-gray-100 px-6 pt-14 pb-6">
+      <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-5">
 
         <!-- Carte 1 : Vérifié -->
         <div class="feat-card c1 rounded-2xl p-8" style="background:linear-gradient(145deg,#F1FBF6,#ffffff);">
-          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-7" style="background:rgba(26,122,60,.1);"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#16a34a" class="w-7 h-7">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-7" style="background:rgba(26,122,60,.1);"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" class="w-7 h-7">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
             </svg></div>
           <h3 class="font-extrabold text-[#0F172A] text-base mb-2">Vérifié</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Freelances authentifiés et fiables</p>
+          <p class="text-gray-500 text-sm leading-relaxed">Profils vérifiés par téléphone et identité</p>
         </div>
 
         <!-- Carte 2 : Chat rapide -->
@@ -1437,7 +1521,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V20.25a.75.75 0 0 0 1.28.53l2.83-2.83A48.648 48.648 0 0 0 11.25 18c2.115 0 4.198-.137 6.24-.402 1.608-.209 2.76-1.613 2.76-3.235V8.511Z" />
             </svg></div>
           <h3 class="font-extrabold text-[#0F172A] text-base mb-2">Chat rapide</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Discutez facilement avec les talents</p>
+          <p class="text-gray-500 text-sm leading-relaxed">Réponse sous 24h, messagerie intégrée</p>
         </div>
 
         <!-- Carte 3 : Paiement sécurisé -->
@@ -1446,7 +1530,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
             </svg></div>
           <h3 class="font-extrabold text-[#0F172A] text-base mb-2">Paiement sécurisé</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Votre argent reste protégé</p>
+          <p class="text-gray-500 text-sm leading-relaxed">Paiement bloqué jusqu'à validation du travail</p>
         </div>
 
         <!-- Carte 4 : Livraison rapide -->
@@ -1455,14 +1539,117 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
             </svg></div>
           <h3 class="font-extrabold text-[#0F172A] text-base mb-2">Livraison rapide</h3>
-          <p class="text-gray-500 text-sm leading-relaxed">Réponses rapides et projets livrés vite</p>
+          <p class="text-gray-500 text-sm leading-relaxed">Délais respectés ou remboursement garanti</p>
+        </div>
+
+        <!-- Carte 5 : Offres d emploi -->
+        <div class="feat-card rounded-2xl p-8" style="background:linear-gradient(145deg,#F0FBF7,#ffffff);border:1.5px solid rgba(0,184,124,.12);">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-7" style="background:rgba(0,184,124,.1);">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" class="w-7 h-7">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"/>
+            </svg>
+          </div>
+          <h3 class="font-extrabold text-[#0F172A] text-base mb-2">Offres d'emploi</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Découvrez des opportunités partout en RDC</p>
         </div>
 
       </div>
     </section>
 
+    <!-- CATÉGORIES MÉTIERS -->
+    <section class="pt-10 pb-12 px-6 bg-[#F7FAF9]">
+      <div class="max-w-5xl mx-auto">
+        <!-- Titre -->
+        <div class="text-center mb-10">
+          <span style="font-size:0.72rem;font-weight:700;color:#00B87C;letter-spacing:.1em;text-transform:uppercase;">Trouvez le bon expert</span>
+          <h2 class="text-2xl font-black text-[#0F172A] mt-2">Explorez par catégorie</h2>
+          <p class="text-gray-500 text-sm mt-1">Les métiers les plus demandés en RDC</p>
+        </div>
+        <!-- Grille 6 catégories -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+
+          <!-- 1. Dev & Tech -->
+          <div class="group cursor-pointer bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-[#00B87C] hover:shadow-lg transition-all duration-200" style="box-shadow:0 2px 8px rgba(0,0,0,.05);">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" style="background:rgba(0,184,124,.1);">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" style="width:22px;height:22px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-[#0F172A] text-xs mb-1">Dev & Tech</h3>
+            <p class="text-gray-400 text-[0.68rem] leading-snug">Web · Mobile · IA</p>
+          </div>
+
+          <!-- 2. Design -->
+          <div class="group cursor-pointer bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-[#6366f1] hover:shadow-lg transition-all duration-200" style="box-shadow:0 2px 8px rgba(0,0,0,.05);">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" style="background:rgba(99,102,241,.1);">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#6366f1" style="width:22px;height:22px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-[#0F172A] text-xs mb-1">Design & Créatif</h3>
+            <p class="text-gray-400 text-[0.68rem] leading-snug">Logo · UI/UX · Brand</p>
+          </div>
+
+          <!-- 3. Marketing -->
+          <div class="group cursor-pointer bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-[#f59e0b] hover:shadow-lg transition-all duration-200" style="box-shadow:0 2px 8px rgba(0,0,0,.05);">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" style="background:rgba(245,158,11,.1);">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f59e0b" style="width:22px;height:22px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 1 8.835-2.535m0 0A23.74 23.74 0 0 1 18.795 3c1.372 0 2.7.184 3.915.526A18.03 18.03 0 0 1 24 7.5c0 3.456-.972 6.7-2.667 9.448m-8.993.032c-.085.12-.163.248-.232.38"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-[#0F172A] text-xs mb-1">Marketing Digital</h3>
+            <p class="text-gray-400 text-[0.68rem] leading-snug">Facebook · TikTok · Ads</p>
+          </div>
+
+          <!-- 4. Photo & Vidéo -->
+          <div class="group cursor-pointer bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-[#ec4899] hover:shadow-lg transition-all duration-200" style="box-shadow:0 2px 8px rgba(0,0,0,.05);">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" style="background:rgba(236,72,153,.1);">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#ec4899" style="width:22px;height:22px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-[#0F172A] text-xs mb-1">Photo & Vidéo</h3>
+            <p class="text-gray-400 text-[0.68rem] leading-snug">Mariage · Pub · Montage</p>
+          </div>
+
+          <!-- 5. Rédaction -->
+          <div class="group cursor-pointer bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-[#0ea5e9] hover:shadow-lg transition-all duration-200" style="box-shadow:0 2px 8px rgba(0,0,0,.05);">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" style="background:rgba(14,165,233,.1);">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#0ea5e9" style="width:22px;height:22px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-[#0F172A] text-xs mb-1">Rédaction & Trad.</h3>
+            <p class="text-gray-400 text-[0.68rem] leading-snug">FR · EN · Lingala</p>
+          </div>
+
+          <!-- 6. BTP -->
+          <div class="group cursor-pointer bg-white rounded-2xl p-5 text-center border border-gray-100 hover:border-[#f97316] hover:shadow-lg transition-all duration-200" style="box-shadow:0 2px 8px rgba(0,0,0,.05);">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-200" style="background:rgba(249,115,22,.1);">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f97316" style="width:22px;height:22px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-[#0F172A] text-xs mb-1">BTP & Architecture</h3>
+            <p class="text-gray-400 text-[0.68rem] leading-snug">Plans · Devis · Dessin</p>
+          </div>
+
+        </div>
+        <!-- Voir toutes les catégories -->
+        <div class="text-center mt-8">
+          <a href="#" class="text-sm font-semibold text-[#00B87C] hover:underline inline-flex items-center gap-1">
+            Voir tous les freelances
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px;">
+              <path fill-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clip-rule="evenodd"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- COMMENT ÇA MARCHE -->
-    <section class="py-16 px-6 bg-white">
+    <section class="pt-8 pb-16 px-6 bg-white">
       <div class="max-w-4xl mx-auto text-center mb-12">
         <h2 class="text-3xl font-black text-[#0F172A] mb-3">Comment ça marche ?</h2>
         <p class="text-gray-500">Simple, rapide et sécurisé en 3 étapes</p>
@@ -1470,7 +1657,7 @@
       <div class="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
         <div class="bg-[#F7FAF9] rounded-2xl p-7 text-center border border-gray-100">
           <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:rgba(22,163,74,.1);">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#16a34a" style="width:26px;height:26px;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" style="width:26px;height:26px;">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"/>
             </svg>
           </div>
@@ -1503,42 +1690,107 @@
 
     <!-- POUR QUI -->
     <section class="py-16 px-6 bg-[#F7FAF9]">
-      <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
-        <div class="bg-[#00B87C] rounded-3xl p-8 text-white">
-          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style="background:rgba(255,255,255,.2);">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white" style="width:26px;height:26px;">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"/>
-            </svg>
-          </div>
-          <h3 class="text-2xl font-black mb-3">Tu es Client ?</h3>
-          <ul class="space-y-3 text-[#F7FAF9] text-sm mb-8">
-            <li class="flex items-center gap-2"><span class="text-white font-bold">✓</span> Publie un projet gratuitement</li>
-            <li class="flex items-center gap-2"><span class="text-white font-bold">✓</span> Accède à des centaines de profils vérifiés</li>
-            <li class="flex items-center gap-2"><span class="text-white font-bold">✓</span> Paiement sécurisé par jalons</li>
-            <li class="flex items-center gap-2"><span class="text-white font-bold">✓</span> Satisfait ou remboursé</li>
-          </ul>
-          <button @click="page='register'; window.scrollTo(0,0)"
-                  class="w-full bg-white text-[#009E6A] font-bold py-3 rounded-xl hover:bg-[#F7FAF9] transition">
-            Poster un projet →
-          </button>
+      <div class="max-w-5xl mx-auto">
+        <!-- Titre centré -->
+        <div class="text-center mb-10">
+          <span style="font-size:0.72rem;font-weight:700;color:#00B87C;letter-spacing:.1em;text-transform:uppercase;">Pour qui ?</span>
+          <h2 class="text-2xl font-black text-[#0F172A] mt-2">Trouvez votre place sur Mosala</h2>
         </div>
-        <div class="bg-gray-900 rounded-3xl p-8 text-white">
-          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style="background:rgba(34,197,94,.15);">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#22c55e" style="width:26px;height:26px;">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/>
-            </svg>
+        <!-- Grid asymétrique : Client 60% / Freelance 40% -->
+        <div class="grid md:grid-cols-5 gap-6 items-start">
+
+          <!-- Carte Client — 3 colonnes (60%) MIS EN AVANT -->
+          <div class="md:col-span-3 rounded-3xl p-9 text-white relative overflow-hidden"
+               style="background:linear-gradient(135deg,#00B87C 0%,#00D68F 60%,#00c485 100%);
+                      box-shadow:0 20px 60px rgba(0,184,124,.35),0 4px 16px rgba(0,184,124,.2);
+                      transition:transform .25s ease,box-shadow .25s ease;"
+               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 28px 70px rgba(0,184,124,.45),0 8px 24px rgba(0,184,124,.25)'"
+               onmouseout="this.style.transform='';this.style.boxShadow='0 20px 60px rgba(0,184,124,.35),0 4px 16px rgba(0,184,124,.2)'">
+
+            <!-- Glow déco haut droite -->
+            <div style="position:absolute;top:-60px;right:-60px;width:240px;height:240px;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%);pointer-events:none;"></div>
+            <!-- Grain texture subtil -->
+            <div style="position:absolute;inset:0;background-image:url('data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E');pointer-events:none;border-radius:24px;"></div>
+
+            <!-- Badge RECOMMANDÉ -->
+            <span style="position:absolute;top:20px;right:20px;font-size:.62rem;font-weight:800;background:rgba(255,255,255,.22);backdrop-filter:blur(8px);color:#fff;padding:4px 12px;border-radius:99px;letter-spacing:.05em;border:1px solid rgba(255,255,255,.3);">⭐ RECOMMANDÉ</span>
+
+            <!-- Stat -->
+            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:4px 14px;font-size:.72rem;font-weight:700;color:#fff;margin-bottom:20px;">
+              <span style="width:6px;height:6px;background:#fff;border-radius:50%;display:inline-block;animation:pulse 2s infinite;"></span>
+              500+ talents disponibles
+            </div>
+
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style="background:rgba(255,255,255,.2);backdrop-filter:blur(8px);">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white" style="width:26px;height:26px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"/>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-black mb-1">Tu cherches un talent ?</h3>
+            <p style="color:rgba(255,255,255,.8);font-size:.9rem;margin-bottom:1.5rem;">Publie ton projet et reçois des candidatures en quelques heures.</p>
+            <ul style="display:flex;flex-direction:column;gap:12px;margin-bottom:2rem;">
+              <li style="display:flex;align-items:center;gap:10px;font-size:.875rem;color:#F0FBF7;">
+                <span style="width:20px;height:20px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;">✓</span> Publie gratuitement
+              </li>
+              <li style="display:flex;align-items:center;gap:10px;font-size:.875rem;color:#F0FBF7;">
+                <span style="width:20px;height:20px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;">✓</span> Talents vérifiés
+              </li>
+              <li style="display:flex;align-items:center;gap:10px;font-size:.875rem;color:#F0FBF7;">
+                <span style="width:20px;height:20px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;">✓</span> Paiement protégé par Mosala
+              </li>
+              <li style="display:flex;align-items:center;gap:10px;font-size:.875rem;color:#F0FBF7;">
+                <span style="width:20px;height:20px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;flex-shrink:0;">✓</span> Réponse rapide
+              </li>
+            </ul>
+            <button @click="page='register'; window.scrollTo(0,0)"
+                    style="width:100%;background:#fff;color:#009E6A;font-weight:800;padding:14px;border-radius:14px;border:none;cursor:pointer;font-size:.95rem;box-shadow:0 4px 16px rgba(0,0,0,.12);transition:all .2s;"
+                    onmouseover="this.style.background='#F0FBF7'"
+                    onmouseout="this.style.background='#fff'">
+              Poster un projet →
+            </button>
           </div>
-          <h3 class="text-2xl font-black mb-3">Tu es Freelance ?</h3>
-          <ul class="space-y-3 text-gray-300 text-sm mb-8">
-            <li class="flex items-center gap-2"><span class="text-[#33D6A0] font-bold">✓</span> Crée ton profil professionnel</li>
-            <li class="flex items-center gap-2"><span class="text-[#33D6A0] font-bold">✓</span> Reçois des offres de projets</li>
-            <li class="flex items-center gap-2"><span class="text-[#33D6A0] font-bold">✓</span> Paiement garanti à chaque jalon</li>
-            <li class="flex items-center gap-2"><span class="text-[#33D6A0] font-bold">✓</span> Développe ta réputation</li>
-          </ul>
-          <button @click="page='register'; window.scrollTo(0,0)"
-                  class="w-full bg-[#00B87C] hover:bg-[#009E6A] text-white font-bold py-3 rounded-xl transition">
-            Devenir freelance →
-          </button>
+
+          <!-- Carte Freelance — 2 colonnes (40%) glassmorphism sombre -->
+          <div class="md:col-span-2 rounded-3xl p-8 text-white relative overflow-hidden"
+               style="background:linear-gradient(145deg,#0f172a,#1a2744);
+                      border:1px solid rgba(0,184,124,.2);
+                      box-shadow:0 8px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(0,184,124,.15);
+                      transition:transform .25s ease,box-shadow .25s ease;"
+               onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 16px 48px rgba(0,0,0,.4),inset 0 1px 0 rgba(0,184,124,.25)'"
+               onmouseout="this.style.transform='';this.style.boxShadow='0 8px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(0,184,124,.15)'">
+
+            <!-- Glow vert Mosala coin -->
+            <div style="position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(0,184,124,.2),transparent 70%);pointer-events:none;"></div>
+
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style="background:rgba(0,184,124,.15);border:1px solid rgba(0,184,124,.25);">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00D68F" style="width:26px;height:26px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-black mb-1">Tu es Freelance ?</h3>
+            <p style="color:rgba(255,255,255,.5);font-size:.875rem;margin-bottom:1.5rem;">Crée ton profil et commence à gagner.</p>
+            <ul style="display:flex;flex-direction:column;gap:12px;margin-bottom:2rem;">
+              <li style="display:flex;align-items:center;gap:10px;font-size:.875rem;color:rgba(255,255,255,.8);">
+                <span style="width:20px;height:20px;background:rgba(0,184,124,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#00D68F;flex-shrink:0;">✓</span> Profil professionnel
+              </li>
+              <li style="display:flex;align-items:center;gap:10px;font-size:.875rem;color:rgba(255,255,255,.8);">
+                <span style="width:20px;height:20px;background:rgba(0,184,124,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#00D68F;flex-shrink:0;">✓</span> Reçois des missions
+              </li>
+              <li style="display:flex;align-items:center;gap:10px;font-size:.875rem;color:rgba(255,255,255,.8);">
+                <span style="width:20px;height:20px;background:rgba(0,184,124,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#00D68F;flex-shrink:0;">✓</span> Argent sécurisé jusqu'à validation
+              </li>
+              <li style="display:flex;align-items:center;gap:10px;font-size:.875rem;color:rgba(255,255,255,.8);">
+                <span style="width:20px;height:20px;background:rgba(0,184,124,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#00D68F;flex-shrink:0;">✓</span> Construis ta réputation
+              </li>
+            </ul>
+            <button @click="page='register'; window.scrollTo(0,0)"
+                    style="width:100%;background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;font-weight:800;padding:14px;border-radius:14px;border:none;cursor:pointer;font-size:.9rem;box-shadow:0 4px 16px rgba(0,184,124,.35);transition:all .2s;"
+                    onmouseover="this.style.boxShadow='0 6px 24px rgba(0,184,124,.5)'"
+                    onmouseout="this.style.boxShadow='0 4px 16px rgba(0,184,124,.35)'">
+              Devenir freelance →
+            </button>
+          </div>
+
         </div>
       </div>
     </section>
@@ -1546,8 +1798,8 @@
     <!-- CTA FINAL -->
     <section class="py-20 px-6 bg-[#00B87C] text-white text-center">
       <div class="max-w-2xl mx-auto">
-        <h2 class="text-3xl font-black mb-4">Prêt à rejoindre Mosala ?</h2>
-        <p class="text-[#F7FAF9] mb-8 text-lg">Rejoins des centaines de freelances et clients qui font confiance à Mosala.</p>
+        <h2 class="text-3xl font-black mb-4">Rejoignez le hub du travail et des talents en RDC.</h2>
+        <p class="text-[#F7FAF9] mb-8 text-lg">Trouvez des opportunités, développez votre activité et collaborez en toute confiance.</p>
         <button @click="page='register'; window.scrollTo(0,0)"
                 class="bg-white text-[#009E6A] font-bold px-10 py-4 rounded-2xl text-lg hover:bg-[#F7FAF9] transition shadow-xl">
           Créer mon compte — C'est gratuit
@@ -1866,7 +2118,7 @@
       <!-- Lien connexion -->
       <p class="text-center text-sm text-gray-500 mt-6">
         Déjà un compte ?
-        <button @click="page='login'; regStep = 1; window.scrollTo(0,0)" class="text-[#00B87C] hover:text-[#009E6A] font-semibold transition">Se connecter</button>
+        <button @click="page='login'; regStep = 1; window.scrollTo(0,0)" class="text-[#00B87C] hover:text-[#009E6A] font-semibold transition" onclick="window.kzNav('login')">Se connecter</button>
       </p>
 
     </div>
@@ -5076,10 +5328,14 @@
   <!-- ══════════════════════════════════════════
          WALLET — Portefeuille Mosala
     ══════════════════════════════════════════ -->
-  <div x-show="activeTab==='wallet'" class="min-h-screen pb-20" style="background:#F5F4F2;" x-data="{ walletTab: 'transactions', showRetrait: false, showDepot: false, retraitMontant: '', retraitMobile: '', retraitNumero: '', retraitLoading: false, retraitDone: false, walletTx: [], walletLoading: true, wDispo: 0, wBloque: 0, wTotal: 0, wMois: 0 }" x-init="
+  <div x-show="activeTab==='wallet'" class="min-h-screen pb-20" style="background:#F5F4F2;" x-data="{ walletTab: 'transactions', showRetrait: false, showDepot: false, retraitMontant: '', retraitMobile: '', retraitNumero: '', retraitLoading: false, retraitDone: false, walletTx: [], walletLoading: true, wDispo: 0, wBloque: 0, wTotal: 0, wMois: 0, mesEscrows: [], escrowsLoading: false }" x-init="
       fetch(API+'/wallets/moi/transactions', { headers: { Authorization: 'Bearer '+token } })
         .then(r=>r.json()).then(d=>{ walletTx = Array.isArray(d) ? d : (d.transactions||[]); walletLoading=false; })
         .catch(()=>{ walletLoading=false; });
+      escrowsLoading = true;
+      fetch(API+'/escrow/mes-escrows', { headers: { Authorization: 'Bearer '+token } })
+        .then(r=>r.json()).then(d=>{ mesEscrows = d.escrows||[]; escrowsLoading=false; })
+        .catch(()=>{ escrowsLoading=false; });
       // CountUp — lance quand la section devient visible
       $watch('$store', ()=>{});
       setTimeout(() => {
@@ -5676,6 +5932,45 @@
         </div>
       </div>
       <!-- ── /STATISTIQUES ──
+      <!-- PAIEMENTS EN COURS -->
+      <div class="px-4 mt-4" x-show="mesEscrows.length > 0">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-1 h-4 rounded-full" style="background:linear-gradient(135deg,#F59E0B,#D97706);"></div>
+          <h3 class="text-sm font-black" style="color:#0F172A;">Paiements en cours</h3>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#FFFBEB;color:#D97706;border:1px solid rgba(245,158,11,0.25);" x-text="mesEscrows.filter(e=>e.statut!=='libere'&&e.statut!=='annule').length"></span>
+        </div>
+        <div class="space-y-2.5">
+          <template x-for="esc in mesEscrows" :key="esc.id">
+            <div class="rounded-2xl p-4" style="background:white;border:1px solid #F1F5F9;box-shadow:0 2px 8px rgba(15,23,42,0.05);">
+              <div class="flex items-start justify-between gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
+                     :style="esc.statut==='bloque'?'background:#FEF3C7':esc.statut==='libere'?'background:#D1FAE5':'background:#F1F5F9'"
+                     x-text="esc.statut==='bloque'?'\U0001f512':esc.statut==='libere'?'\u2705':'\u23f3'"></div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-black truncate" style="color:#0F172A;" x-text="esc.projet_titre||esc.titre"></p>
+                  <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          :style="esc.statut==='bloque'?'background:#FEF3C7;color:#D97706':esc.statut==='libere'?'background:#D1FAE5;color:#059669':'background:#F1F5F9;color:#64748B'"
+                          x-text="esc.statut==='bloque'?'Fonds bloques':esc.statut==='libere'?'Libere':'En attente'"></span>
+                    <span class="text-[10px]" style="color:#94A3B8;" x-text="'$'+parseFloat(esc.montant||0).toFixed(2)"></span>
+                  </div>
+                  <p class="text-[10px] mt-0.5" style="color:#00B87C;" x-show="esc.montant_net">
+                    Freelance : <strong x-text="'$'+parseFloat(esc.montant_net||0).toFixed(2)"></strong>
+                  </p>
+                </div>
+                <template x-if="esc.statut==='bloque' && String(user.id)===String(esc.client_id)">
+                  <button @click="libererEscrow(esc.id).then(()=>{ fetch(API+'/escrow/mes-escrows',{headers:{Authorization:'Bearer '+(token||sessionStorage.getItem('kv_token'))}}).then(r=>r.json()).then(d=>mesEscrows=d.escrows||[]).catch(()=>{}); loadWallet(); })"
+                          class="flex-shrink-0 px-3 py-2 rounded-xl text-[11px] font-black text-white"
+                          style="background:linear-gradient(135deg,#00B87C,#059669);box-shadow:0 3px 10px rgba(0,184,124,0.30);">
+                    Valider
+                  </button>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+      <!-- /PAIEMENTS EN COURS -->
 <!-- ── ACTIVITÉ RÉCENTE ── -->
       <div class="px-4 mt-4 pb-4">
 
@@ -6480,21 +6775,22 @@
 
               <!-- ══ CARTE ESCROW ══ -->
               <template x-if="activeConv && activeConv.projet_id && activeConv.projet_statut === 'en_cours'">
-                <div x-data="{ _esc: null, _loaded: false }"
-                     x-init="
-                       if (!_loaded && activeConv.projet_statut === 'en_cours') {
-                         _loaded = true;
+                <div x-data="{ _esc: null, _convId: null }"
+                     x-effect="
+                       if (activeConv && activeConv.id !== _convId) {
+                         _convId = activeConv.id;
+                         _esc = null;
                          const tok = token || sessionStorage.getItem('kv_token');
                          fetch(`${API}/escrow/projet/${activeConv.projet_id}`, {headers:{Authorization:'Bearer '+tok}})
                            .then(r=>r.ok?r.json():null)
-                           .then(d=>{ if(d) _esc=d.escrow; })
-                           .catch(()=>{});
+                           .then(d=>{ _esc = (d && d.escrow) ? d.escrow : false; })
+                           .catch(()=>{ _esc = false; });
                        }
                      "
                      class="mx-1 mb-2">
 
                   <!-- Pas d escrow → bouton initier (client seulement) -->
-                  <template x-if="!_esc && String(user.id) === String(activeConv.client_id)">
+                  <template x-if="_esc === false && String(user.id) === String(activeConv.client_id)">
                     <div class="rounded-2xl p-4 border-2 border-dashed border-amber-200 bg-amber-50">
                       <p class="text-xs font-black text-amber-700 mb-1">💳 Paiement sécurisé requis</p>
                       <p class="text-[10px] text-amber-600 mb-3 leading-relaxed">Déposez le montant en escrow pour que le freelance puisse commencer en toute confiance.</p>
@@ -6506,7 +6802,15 @@
                     </div>
                   </template>
 
-                  <!-- En attente confirmation admin -->
+                  <!-- Chargement -->
+                  <template x-if="_esc === null">
+                    <div class="flex items-center gap-2 p-3 rounded-xl bg-gray-50">
+                      <div class="w-4 h-4 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin flex-shrink-0"></div>
+                      <span class="text-[10px] text-gray-400">Chargement escrow...</span>
+                    </div>
+                  </template>
+
+                  <!-- En attente confirmation -->
                   <template x-if="_esc && _esc.statut === 'en_attente'">
                     <div class="rounded-2xl p-4 bg-amber-50 border border-amber-200">
                       <p class="text-xs font-black text-amber-700 mb-1">⏳ Paiement en attente de confirmation</p>
@@ -7195,6 +7499,15 @@
             <i data-lucide="send" style="width:15px;height:15px;stroke-width:2.5"></i>
             <span x-text="mesCandidatures.includes(selectedProjet.id) ? '✓ Candidature envoyée' : 'Postuler à ce projet'"></span>
           </button>
+
+          <!-- BOUTON PAIEMENT ESCROW — visible si projet en_cours + tu es le client -->
+          <button x-show="selectedProjet.statut==='en_cours' && String(selectedProjet.client_id)===String(user.id)"
+                  @click="const _p=selectedProjet; selectedProjet=null; modalEscrow={show:true,projet_id:_p.id,montant:_p.budget?String(_p.budget):'',devise:_p.devise||'USD',operateur:'airtel',telephone:'',loading:false};"
+                  class="w-full mt-2 py-3.5 rounded-2xl text-sm font-black text-white flex items-center justify-center gap-2"
+                  style="background:linear-gradient(135deg,#F59E0B,#D97706);box-shadow:0 4px 14px rgba(245,158,11,0.35);">
+            <span>💰</span> Payer via Mobile Money
+          </button>
+
           <button class="btn-outline w-full mt-2" @click="selectedProjet=null">Fermer</button>
         </div>
       </template>
@@ -7207,8 +7520,72 @@
   <script>
     const API = "https://mosala.io";
 
+
+    // ── Jobs helpers ──────────────────────────────────────────
+    function kzTimeAgo(dateStr) {
+      const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+      if (diff < 3600)   return 'Il y a ' + Math.floor(diff/60) + 'min';
+      if (diff < 86400)  return 'Il y a ' + Math.floor(diff/3600) + 'h';
+      if (diff < 604800) return 'Il y a ' + Math.floor(diff/86400) + 'j';
+      return 'Il y a ' + Math.floor(diff/604800) + ' sem.';
+    }
+    function kzJobEmoji(cat) {
+      const m = { 'Tech':'💻','Finance':'🏦','ONG':'🌍','Marketing':'📣','Mines':'⛏️','Santé':'🏥','Consulting':'💼','Remote':'🌐' };
+      return m[cat] || '📋';
+    }
+    function kzJobColor(cat) {
+      const m = { 'Tech':'#7c3aed','Finance':'#2563eb','ONG':'#0284c7','Marketing':'#e11d48','Mines':'#d97706','Santé':'#dc2626','Consulting':'#1e293b','Remote':'#00B87C' };
+      return m[cat] || '#6b7280';
+    }
     function app() {
       return {
+
+      // ── JOBS — API réelle ──
+      jobSearch: '',
+      jobTypeFilter: 'all',
+      jobCityFilter: 'all',
+      jobCatFilter: 'all',
+      jobsData: [],
+      jobsLoading: false,
+      jobsError: false,
+      _jobsDebounce: null,
+
+      async fetchJobs() {
+        this.jobsLoading = true;
+        this.jobsError = false;
+        try {
+          const params = new URLSearchParams();
+          if (this.jobSearch)                    params.set('q',        this.jobSearch);
+          if (this.jobTypeFilter !== 'all')      params.set('type',     this.jobTypeFilter);
+          if (this.jobCityFilter !== 'all')      params.set('location', this.jobCityFilter);
+          if (this.jobCatFilter  !== 'all')      params.set('category', this.jobCatFilter);
+          params.set('limit', '50');
+          const res = await fetch('/jobs?' + params.toString());
+          if (!res.ok) throw new Error('API error');
+          const data = await res.json();
+          this.jobsData = data.map(j => ({
+            ...j,
+            type:   j.opportunity_type,
+            source: j.source_name,
+            salary: j.salary_range,
+            posted: j.created_at ? kzTimeAgo(j.created_at) : '',
+            emoji:  kzJobEmoji(j.category),
+            color:  kzJobColor(j.category),
+          }));
+        } catch(e) {
+          this.jobsError = true;
+        } finally {
+          this.jobsLoading = false;
+        }
+      },
+
+      jobsDebounceSearch() {
+        clearTimeout(this._jobsDebounce);
+        this._jobsDebounce = setTimeout(() => this.fetchJobs(), 350);
+      },
+
+      get filteredJobs() { return this.jobsData; },
+
         // ── état global ──
         page:        sessionStorage.getItem('kv_token') ? 'app' : 'home',
         activeTab:   'marketplace',
@@ -7618,8 +7995,16 @@
 
         async loginWithGoogle() {
           if (!window.google) {
-            this.showToast('Google non disponible, réessaie dans quelques secondes.', 'error');
-            return;
+            // Attendre que le script Google soit chargé (max 5s)
+            let waited = 0;
+            while (!window.google && waited < 5000) {
+              await new Promise(r => setTimeout(r, 200));
+              waited += 200;
+            }
+            if (!window.google) {
+              this.showToast('Google non disponible, réessaie dans quelques secondes.', 'error');
+              return;
+            }
           }
           this.loading = true;
           let _gOverlay = null;
@@ -7951,11 +8336,26 @@
             const d = await r.json();
             if (r.ok) {
               this.modalEscrow.show = false;
-              this.showAlerte(
-                '📲 Vérifiez votre téléphone !',
-                d.message,
-                { type: 'warning', btnLabel: 'OK compris' }
-              );
+              this.showAlerte('\U0001f4f2 Vérifiez votre téléphone !', d.message, { type: 'warning', btnLabel: 'OK compris' });
+              // Polling statut escrow (4x, toutes les 5s)
+              const _tok = this.token || sessionStorage.getItem('kv_token');
+              const _pid = m.projet_id;
+              let _polls = 0;
+              const _pt = setInterval(async () => {
+                _polls++;
+                try {
+                  const rp = await fetch(`${API}/escrow/projet/${_pid}`, { headers: { Authorization: `Bearer ${_tok}` } });
+                  const dp = await rp.json();
+                  if (dp.escrow && dp.escrow.statut === 'bloque') {
+                    this.showToast('\U0001f4b0 Fonds securises ! Le freelance peut commencer.', 'success');
+                    this.loadWallet();
+                    fetch(`${API}/escrow/mes-escrows`, { headers: { Authorization: `Bearer ${_tok}` } })
+                      .then(r2=>r2.json()).then(d2=>{ this.$store && (this.mesEscrows=d2.escrows||[]); }).catch(()=>{});
+                    clearInterval(_pt);
+                  }
+                } catch {}
+                if (_polls >= 4) clearInterval(_pt);
+              }, 5000);
             } else {
               this.showToast(d.detail || 'Erreur PawaPay', 'error');
             }
@@ -8832,42 +9232,6 @@
     </div>
   </div>
 
-  <!-- ── Mobile Drawer ── -->
-  <div id="kzOverlay" class="kz-drawer-overlay" onclick="this.classList.remove('open');document.getElementById('kzDrawer').classList.remove('open');"></div>
-  <div id="kzDrawer" class="kz-drawer">
-    <div class="kz-drawer-header">
-      <div class="flex items-center gap-2">
-        <svg style="width:26px;height:26px;" viewBox="0 0 32 32" fill="none">
-          <path d="M16 4L4 10l12 6 12-6L16 4z" fill="#059669"/>
-          <path d="M4 22l12 6 12-6" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
-          <path d="M4 16l12 6 12-6" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <span style="font-weight:900;font-size:1.1rem;color:#0F172A;">Mosala</span>
-      </div>
-      <button class="kz-drawer-close" onclick="document.getElementById('kzDrawer').classList.remove('open');document.getElementById('kzOverlay').classList.remove('open');" aria-label="Fermer">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px;height:18px;">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
-        </svg>
-      </button>
-    </div>
-
-    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#16a34a" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Trouver un freelance</a>
-    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#6366f1" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"/></svg> Devenir freelance</a>
-    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f59e0b" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/></svg> Tarifs</a>
-
-    <div class="kz-drawer-divider"></div>
-    <div class="kz-drawer-section-label">Ressources</div>
-    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#16a34a" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg> Blog</a>
-    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#6366f1" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/></svg> Freelances</a>
-    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f59e0b" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg> Guides</a>
-    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#22c55e" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V20.25a.75.75 0 0 0 1.28.53l2.83-2.83A48.648 48.648 0 0 0 11.25 18c2.115 0 4.198-.137 6.24-.402 1.608-.209 2.76-1.613 2.76-3.235V8.511Z"/></svg> Support</a>
-
-    <div class="kz-drawer-footer">
-      <button class="kz-login" style="border:1px solid #e5e7eb;border-radius:10px;width:100%;padding:11px;">Se connecter</button>
-      <button class="kz-cta" style="width:100%;padding:12px;text-align:center;">S'inscrire gratuitement</button>
-    </div>
-  </div>
-
   <!-- ── Navbar scroll state + active link (premium) ── -->
   <script>
     (function() {
@@ -9416,6 +9780,240 @@
   </script>
 
 
+
+
+
+  <!-- ── Mobile Drawer ── -->
+  <div id="kzOverlay" class="kz-drawer-overlay" onclick="this.classList.remove('open');document.getElementById('kzDrawer').classList.remove('open');"></div>
+  <div id="kzDrawer" class="kz-drawer">
+    <div class="kz-drawer-header">
+      <div class="flex items-center gap-2">
+        <svg style="width:26px;height:26px;" viewBox="0 0 32 32" fill="none">
+          <path d="M16 4L4 10l12 6 12-6L16 4z" fill="#059669"/>
+          <path d="M4 22l12 6 12-6" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 16l12 6 12-6" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span style="font-weight:900;font-size:1.1rem;color:#0F172A;">Mosala</span>
+      </div>
+      <button class="kz-drawer-close" onclick="document.getElementById('kzDrawer').classList.remove('open');document.getElementById('kzOverlay').classList.remove('open');" aria-label="Fermer">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px;height:18px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <a href="#" class="kz-drawer-link" onclick="window.kzNav('marketplace')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Trouver un freelance</a>
+    <a href="#" class="kz-drawer-link" onclick="window.kzNav('jobs')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"/></svg> Offres d'emploi <span style="background:#00B87C;color:#fff;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:4px;">NEW</span></a>
+    <a href="#" class="kz-drawer-link" onclick="window.kzNav('register')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#6366f1" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"/></svg> Devenir freelance</a>
+    <a href="#" class="kz-drawer-link" onclick="window.kzNav('tarifs')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f59e0b" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/></svg> Tarifs</a>
+
+    <div class="kz-drawer-divider"></div>
+    <div class="kz-drawer-section-label">Ressources</div>
+    <a href="#" class="kz-drawer-link" onclick="window.kzNav('marketplace')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg> Blog</a>
+    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#6366f1" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/></svg> Freelances</a>
+    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f59e0b" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg> Guides</a>
+    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#22c55e" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V20.25a.75.75 0 0 0 1.28.53l2.83-2.83A48.648 48.648 0 0 0 11.25 18c2.115 0 4.198-.137 6.24-.402 1.608-.209 2.76-1.613 2.76-3.235V8.511Z"/></svg> Support</a>
+
+    <div class="kz-drawer-footer">
+      <button class="kz-login" style="border:1px solid #e5e7eb;border-radius:10px;width:100%;padding:11px;" onclick="window.kzNav('login')">Se connecter</button>
+      <button class="kz-cta" style="width:100%;padding:12px;text-align:center;" onclick="window.kzNav('register')">S'inscrire gratuitement</button>
+    </div>
+  </div>
+
+
+
+  <script>
+    window.kzNav = function(page) {
+      document.getElementById('kzDrawer').classList.remove('open');
+      document.getElementById('kzOverlay').classList.remove('open');
+      var appEl = document.querySelector('[x-data]');
+      if (appEl && appEl._x_dataStack && appEl._x_dataStack[0]) {
+        appEl._x_dataStack[0].page = page;
+        window.scrollTo(0, 0);
+      }
+    };
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var overlay = document.getElementById('kzOverlay');
+      var drawer  = document.getElementById('kzDrawer');
+      if (overlay && overlay.parentElement !== document.body) {
+        document.body.appendChild(overlay);
+      }
+      if (drawer && drawer.parentElement !== document.body) {
+        document.body.appendChild(drawer);
+      }
+    });
+  </script>
+<!-- ═══════════════════════════════════════════
+     PAGE : JOBS — Agrégateur emplois RDC
+════════════════════════════════════════════ -->
+<div x-show="page==='jobs'" x-init="if(page==='jobs') fetchJobs()" @page-changed.window="if(page==='jobs' && jobsData.length===0) fetchJobs()" class="min-h-screen pb-24" style="background:#F5F4F2;">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#052e16 0%,#065f46 60%,#00B87C 100%);padding:48px 20px 32px;">
+    <div style="max-width:680px;margin:0 auto;text-align:center;">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 16px;margin-bottom:16px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite;display:inline-block;"></span>
+        <span style="color:rgba(255,255,255,.9);font-size:0.75rem;font-weight:600;">LIVE · Mis à jour toutes les 6h</span>
+      </div>
+      <h1 style="color:#fff;font-size:1.9rem;font-weight:900;margin-bottom:8px;line-height:1.2;">Emplois en <span style="color:#4ade80;">RDC</span></h1>
+      <p style="color:rgba(255,255,255,.7);font-size:0.95rem;margin-bottom:24px;">CDI, CDD, Freelance, Stages — toutes les offres au Congo</p>
+
+      <!-- Barre de recherche -->
+      <div style="position:relative;max-width:480px;margin:0 auto;">
+        <svg style="position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#9ca3af;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+        </svg>
+        <input x-model="jobSearch" @input="jobsDebounceSearch()" type="text" placeholder="Développeur, Marketing, ONG..." 
+          style="width:100%;padding:14px 16px 14px 46px;border-radius:14px;border:none;font-size:0.95rem;background:rgba(255,255,255,.95);box-shadow:0 4px 24px rgba(0,0,0,.15);outline:none;box-sizing:border-box;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div style="max-width:680px;margin:0 auto;padding:16px 16px 0;">
+    <!-- Type d'offre -->
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;">
+      <template x-for="f in [{l:'Tous',v:'all'},{l:'💼 CDI',v:'CDI'},{l:'📋 CDD',v:'CDD'},{l:'🚀 Freelance',v:'freelance'},{l:'🎓 Stage',v:'stage'},{l:'🤝 Consulting',v:'consulting'}]">
+        <button @click="jobTypeFilter=f.v; fetchJobs()"
+          :style="jobTypeFilter===f.v ? 'background:#00B87C;color:#fff;border-color:#00B87C;' : 'background:#fff;color:#374151;border-color:#e5e7eb;'"
+          style="border:1.5px solid;border-radius:999px;padding:7px 16px;font-size:0.8rem;font-weight:600;white-space:nowrap;cursor:pointer;transition:all .2s;flex-shrink:0;"
+          x-text="f.l"></button>
+      </template>
+    </div>
+
+    <!-- Ville + Catégorie -->
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <select x-model="jobCityFilter" @change="fetchJobs()" style="flex:1;padding:10px 12px;border-radius:12px;border:1.5px solid #e5e7eb;background:#fff;font-size:0.85rem;color:#374151;outline:none;">
+        <option value="all">📍 Toutes les villes</option>
+        <option value="Kinshasa">Kinshasa</option>
+        <option value="Lubumbashi">Lubumbashi</option>
+        <option value="Goma">Goma</option>
+        <option value="Bukavu">Bukavu</option>
+        <option value="Remote">Remote</option>
+      </select>
+      <select x-model="jobCatFilter" @change="fetchJobs()" style="flex:1;padding:10px 12px;border-radius:12px;border:1.5px solid #e5e7eb;background:#fff;font-size:0.85rem;color:#374151;outline:none;">
+        <option value="all">🏷️ Catégorie</option>
+        <option value="Tech">Tech</option>
+        <option value="Finance">Finance</option>
+        <option value="ONG">ONG</option>
+        <option value="Marketing">Marketing</option>
+        <option value="Mines">Mines</option>
+        <option value="Santé">Santé</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Compteur résultats -->
+  <div style="max-width:680px;margin:12px auto 0;padding:0 16px;">
+    <p style="font-size:0.82rem;color:#6b7280;">
+      <span style="font-weight:700;color:#111827;" x-text="filteredJobs.length"></span> offres trouvées
+      <span style="margin-left:8px;font-size:0.75rem;color:#9ca3af;">· Sources : Mosala, LinkedIn, MediaCongo, JobRDC</span>
+    </p>
+  </div>
+
+  <!-- Liste des jobs -->
+  <!-- Loading skeleton -->
+  <div x-show="jobsLoading" style="max-width:680px;margin:12px auto 0;padding:0 16px;display:flex;flex-direction:column;gap:12px;">
+    <template x-for="i in [1,2,3]" :key="i">
+      <div style="background:#fff;border-radius:18px;padding:18px;border:1.5px solid #f1f5f9;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:46px;height:46px;border-radius:12px;background:#f1f5f9;animation:pulse 1.5s infinite;flex-shrink:0;"></div>
+          <div style="flex:1;">
+            <div style="height:14px;background:#f1f5f9;border-radius:6px;width:60%;margin-bottom:8px;animation:pulse 1.5s infinite;"></div>
+            <div style="height:11px;background:#f1f5f9;border-radius:6px;width:40%;animation:pulse 1.5s infinite;"></div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Erreur -->
+  <div x-show="jobsError && !jobsLoading" style="max-width:680px;margin:12px auto 0;padding:0 16px;text-align:center;padding:32px 20px;">
+    <div style="font-size:2rem;margin-bottom:8px;">⚠️</div>
+    <p style="color:#ef4444;font-weight:600;font-size:0.9rem;">Erreur de chargement</p>
+    <button @click="fetchJobs()" style="margin-top:12px;background:#00B87C;color:#fff;border:none;border-radius:10px;padding:8px 20px;font-weight:600;cursor:pointer;">Réessayer</button>
+  </div>
+
+  <div x-show="!jobsLoading && !jobsError" style="max-width:680px;margin:12px auto 0;padding:0 16px;display:flex;flex-direction:column;gap:12px;">
+
+    <template x-for="job in filteredJobs" :key="job.id">
+      <div style="background:#fff;border-radius:18px;padding:18px;border:1.5px solid #f1f5f9;box-shadow:0 2px 12px rgba(0,0,0,.04);cursor:pointer;transition:all .2s;"
+           @mouseenter="$el.style.boxShadow='0 8px 32px rgba(0,184,124,.12)';$el.style.borderColor='#00B87C'"
+           @mouseleave="$el.style.boxShadow='0 2px 12px rgba(0,0,0,.04)';$el.style.borderColor='#f1f5f9'">
+
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+          <!-- Logo entreprise -->
+          <div :style="'width:46px;height:46px;border-radius:12px;background:' + job.color + '15;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.3rem;border:1.5px solid ' + job.color + '25;'">
+            <span x-text="job.emoji"></span>
+          </div>
+
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+              <!-- Badge type -->
+              <span :style="'font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:999px;background:' + (job.type==='freelance' ? '#f0fdf4' : job.type==='CDI' ? '#eff6ff' : job.type==='stage' ? '#fefce8' : '#f5f3ff') + ';color:' + (job.type==='freelance' ? '#16a34a' : job.type==='CDI' ? '#2563eb' : job.type==='stage' ? '#ca8a04' : '#7c3aed') + ';'"
+                x-text="job.type.toUpperCase()"></span>
+              <!-- Badge source -->
+              <span x-show="job.origin==='scraped'"
+                :style="'font-size:0.7rem;font-weight:600;padding:3px 10px;border-radius:999px;background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;'"
+                x-text="'via ' + job.source"></span>
+              <span x-show="job.origin==='native'"
+                style="font-size:0.7rem;font-weight:600;padding:3px 10px;border-radius:999px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;">
+                ✓ Mosala
+              </span>
+            </div>
+
+            <h3 style="font-size:0.95rem;font-weight:800;color:#0f172a;margin:0 0 3px;line-height:1.3;" x-text="job.title"></h3>
+            <p style="font-size:0.82rem;color:#64748b;margin:0;" x-text="job.company"></p>
+          </div>
+
+          <!-- Flèche -->
+          <svg style="width:18px;height:18px;color:#cbd5e1;flex-shrink:0;margin-top:4px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/>
+          </svg>
+        </div>
+
+        <!-- Infos bas de carte -->
+        <div style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;">
+          <span style="display:flex;align-items:center;gap:4px;font-size:0.78rem;color:#64748b;">
+            <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0z"/></svg>
+            <span x-text="job.location"></span>
+          </span>
+          <span x-show="job.salary" style="display:flex;align-items:center;gap:4px;font-size:0.78rem;color:#16a34a;font-weight:600;">
+            <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33"/></svg>
+            <span x-text="job.salary"></span>
+          </span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:0.78rem;color:#94a3b8;">
+            <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+            <span x-text="job.posted"></span>
+          </span>
+          <span x-show="job.category" :style="'font-size:0.72rem;padding:2px 8px;border-radius:6px;background:#f1f5f9;color:#64748b;font-weight:500;'" x-text="job.category"></span>
+        </div>
+      </div>
+    </template>
+
+    <!-- Empty state -->
+    <div x-show="filteredJobs.length===0" style="text-align:center;padding:48px 20px;">
+      <div style="font-size:2.5rem;margin-bottom:12px;">🔍</div>
+      <p style="color:#6b7280;font-weight:600;">Aucune offre trouvée</p>
+      <p style="color:#9ca3af;font-size:0.85rem;">Modifie tes filtres</p>
+    </div>
+
+  </div>
+
+  <!-- CTA poster une offre -->
+  <div style="max-width:680px;margin:24px auto;padding:0 16px 24px;">
+    <div style="background:linear-gradient(135deg,#052e16,#065f46);border-radius:18px;padding:24px;text-align:center;">
+      <p style="color:#fff;font-weight:800;font-size:1rem;margin-bottom:6px;">Tu recrutes ?</p>
+      <p style="color:rgba(255,255,255,.7);font-size:0.85rem;margin-bottom:16px;">Poste ton offre gratuitement sur Mosala</p>
+      <button style="background:#00B87C;color:#fff;border:none;border-radius:12px;padding:12px 28px;font-weight:700;font-size:0.9rem;cursor:pointer;">
+        Poster une offre →
+      </button>
+    </div>
+  </div>
+
+</div>
 
 </body>
 </body>
