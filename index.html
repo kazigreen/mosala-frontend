@@ -759,8 +759,8 @@
         .kz-h1 { font-size: clamp(1.8rem, 7vw, 2.4rem) !important; }
 
         /* Image hero mobile — pleine largeur, plus haute */
-        .kz-anim.kz-anim-d160 { max-width: 100% !important; width: 100% !important; }
-        .kz-anim.kz-anim-d160 img { max-height: 360px !important; width: 100% !important; }
+        .kz-anim.kz-anim-d160 { max-width: 100% !important; width: 100% !important; margin-left: -24px !important; margin-right: -24px !important; width: calc(100% + 48px) !important; border-radius: 0 !important; }
+        .kz-anim.kz-anim-d160 img { height: 550px !important; max-height: 550px !important; width: 100% !important; object-fit: cover !important; object-position: center 20% !important; border-radius: 20px !important; } .kz-anim.kz-anim-d160 > div { border-radius: 20px !important; overflow: hidden; min-height: 0 !important; }
 
         /* Floating cards — cacher sur mobile */
         .kz-float-card { display: none !important; }
@@ -1018,7 +1018,7 @@
       <!-- Navigation centre -->
       <div class="kz-nav-center hidden md:flex items-center" style="position:absolute;left:50%;transform:translateX(-50%);gap:32px;white-space:nowrap;" style="white-space:nowrap;">
         <a href="#" class="kz-navlink">Trouver un freelance</a>
-        <a href="#" class="kz-navlink" style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">Offres d'emploi<span style="font-size:.6rem;font-weight:700;background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;padding:2px 8px;border-radius:99px;line-height:1.4;flex-shrink:0;">NEW</span></a>
+        <a href="/pages/offres-emploi.html" class="kz-navlink" style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">Offres d'emploi<span style="font-size:.6rem;font-weight:700;background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;padding:2px 8px;border-radius:99px;line-height:1.4;flex-shrink:0;">NEW</span></a>
         <a href="#" class="kz-navlink">Devenir freelance</a>
         <a href="#" class="kz-navlink">Tarifs</a>
 
@@ -1649,42 +1649,71 @@
     </section>
 
     <!-- COMMENT ÇA MARCHE -->
-    <section class="pt-8 pb-16 px-6 bg-white">
+    <section class="pt-10 pb-16 px-6 bg-white">
       <div class="max-w-4xl mx-auto text-center mb-12">
-        <h2 class="text-3xl font-black text-[#0F172A] mb-3">Comment ça marche ?</h2>
-        <p class="text-gray-500">Simple, rapide et sécurisé en 3 étapes</p>
+        <span style="font-size:0.72rem;font-weight:700;color:#00B87C;letter-spacing:.1em;text-transform:uppercase;">Simple & rapide</span>
+        <h2 class="text-3xl font-black text-[#0F172A] mt-2 mb-2">Comment ça marche ?</h2>
+        <p class="text-gray-500">3 étapes pour trouver le bon talent ou décrocher une mission</p>
       </div>
-      <div class="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
-        <div class="bg-[#F7FAF9] rounded-2xl p-7 text-center border border-gray-100">
-          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:rgba(22,163,74,.1);">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" style="width:26px;height:26px;">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"/>
-            </svg>
+
+      <div class="max-w-4xl mx-auto grid md:grid-cols-3 gap-0 relative">
+
+        <!-- Ligne connectrice desktop -->
+        <div class="hidden md:block absolute top-10 left-[calc(16.67%+20px)] right-[calc(16.67%+20px)] h-px" style="background:linear-gradient(90deg,#00B87C,#00D68F,#00B87C);opacity:.3;"></div>
+
+        <!-- Étape 1 -->
+        <div class="relative flex flex-col items-center text-center px-6 pb-8 group">
+          <!-- Numéro + icône -->
+          <div class="relative mb-5">
+            <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto"
+                 style="background:linear-gradient(135deg,#00B87C,#00D68F);box-shadow:0 8px 24px rgba(0,184,124,.3);transition:transform .2s ease;"
+                 onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform=''">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white" style="width:26px;height:26px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"/>
+              </svg>
+            </div>
+            <!-- Badge numéro -->
+            <span style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;background:#0F172A;color:#fff;border-radius:50%;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;">1</span>
           </div>
-          <div class="text-[#00B87C] font-bold text-sm mb-2">Étape 1</div>
-          <h3 class="font-bold text-[#0F172A] mb-2">Publie ton projet</h3>
-          <p class="text-gray-500 text-sm">Décris ton besoin, fixe ton budget et reçois des candidatures rapidement.</p>
+          <h3 class="font-extrabold text-[#0F172A] mb-2 text-base">Publie ton projet</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Décris ton besoin, fixe ton budget et reçois des candidatures rapidement.</p>
+          <span style="margin-top:12px;font-size:.72rem;font-weight:700;color:#00B87C;background:#F0FBF7;padding:3px 10px;border-radius:99px;">Gratuit</span>
         </div>
-        <div class="bg-[#F7FAF9] rounded-2xl p-7 text-center border border-gray-100">
-          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:rgba(99,102,241,.1);">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#6366f1" style="width:26px;height:26px;">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>
-            </svg>
+
+        <!-- Étape 2 -->
+        <div class="relative flex flex-col items-center text-center px-6 pb-8">
+          <div class="relative mb-5">
+            <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto"
+                 style="background:linear-gradient(135deg,#6366f1,#818cf8);box-shadow:0 8px 24px rgba(99,102,241,.25);transition:transform .2s ease;"
+                 onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform=''">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white" style="width:26px;height:26px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>
+              </svg>
+            </div>
+            <span style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;background:#0F172A;color:#fff;border-radius:50%;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;">2</span>
           </div>
-          <div class="text-[#00B87C] font-bold text-sm mb-2">Étape 2</div>
-          <h3 class="font-bold text-[#0F172A] mb-2">Choisis ton freelance</h3>
-          <p class="text-gray-500 text-sm">Consulte les profils, compétences et avis. Sélectionne le meilleur talent.</p>
+          <h3 class="font-extrabold text-[#0F172A] mb-2 text-base">Choisis ton talent</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Consulte profils, compétences et avis. Sélectionne le meilleur.</p>
+          <span style="margin-top:12px;font-size:.72rem;font-weight:700;color:#6366f1;background:#f5f3ff;padding:3px 10px;border-radius:99px;">Profils vérifiés</span>
         </div>
-        <div class="bg-[#F7FAF9] rounded-2xl p-7 text-center border border-gray-100">
-          <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style="background:rgba(245,158,11,.1);">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f59e0b" style="width:26px;height:26px;">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>
-            </svg>
+
+        <!-- Étape 3 -->
+        <div class="relative flex flex-col items-center text-center px-6 pb-8">
+          <div class="relative mb-5">
+            <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto"
+                 style="background:linear-gradient(135deg,#f59e0b,#fbbf24);box-shadow:0 8px 24px rgba(245,158,11,.25);transition:transform .2s ease;"
+                 onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform=''">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white" style="width:26px;height:26px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>
+              </svg>
+            </div>
+            <span style="position:absolute;top:-8px;right:-8px;width:22px;height:22px;background:#0F172A;color:#fff;border-radius:50%;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;">3</span>
           </div>
-          <div class="text-[#00B87C] font-bold text-sm mb-2">Étape 3</div>
-          <h3 class="font-bold text-[#0F172A] mb-2">Paie en sécurité</h3>
-          <p class="text-gray-500 text-sm">Paiement escrow : ton argent est protégé jusqu'à validation du travail.</p>
+          <h3 class="font-extrabold text-[#0F172A] mb-2 text-base">Paie en sécurité</h3>
+          <p class="text-gray-500 text-sm leading-relaxed">Ton argent est protégé jusqu'à validation du travail via Mobile Money.</p>
+          <span style="margin-top:12px;font-size:.72rem;font-weight:700;color:#d97706;background:#fffbeb;padding:3px 10px;border-radius:99px;">Paiement protégé</span>
         </div>
+
       </div>
     </section>
 
@@ -1700,7 +1729,7 @@
         <div class="grid md:grid-cols-5 gap-6 items-start">
 
           <!-- Carte Client — 3 colonnes (60%) MIS EN AVANT -->
-          <div class="md:col-span-3 rounded-3xl p-9 text-white relative overflow-hidden"
+          <div class="md:col-span-3 rounded-3xl p-6 md:p-9 text-white relative overflow-hidden"
                style="background:linear-gradient(135deg,#00B87C 0%,#00D68F 60%,#00c485 100%);
                       box-shadow:0 20px 60px rgba(0,184,124,.35),0 4px 16px rgba(0,184,124,.2);
                       transition:transform .25s ease,box-shadow .25s ease;"
@@ -1751,7 +1780,7 @@
           </div>
 
           <!-- Carte Freelance — 2 colonnes (40%) glassmorphism sombre -->
-          <div class="md:col-span-2 rounded-3xl p-8 text-white relative overflow-hidden"
+          <div class="md:col-span-2 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden"
                style="background:linear-gradient(145deg,#0f172a,#1a2744);
                       border:1px solid rgba(0,184,124,.2);
                       box-shadow:0 8px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(0,184,124,.15);
@@ -1796,29 +1825,266 @@
     </section>
 
     <!-- CTA FINAL -->
-    <section class="py-20 px-6 bg-[#00B87C] text-white text-center">
-      <div class="max-w-2xl mx-auto">
-        <h2 class="text-3xl font-black mb-4">Rejoignez le hub du travail et des talents en RDC.</h2>
-        <p class="text-[#F7FAF9] mb-8 text-lg">Trouvez des opportunités, développez votre activité et collaborez en toute confiance.</p>
-        <button @click="page='register'; window.scrollTo(0,0)"
-                class="bg-white text-[#009E6A] font-bold px-10 py-4 rounded-2xl text-lg hover:bg-[#F7FAF9] transition shadow-xl">
-          Créer mon compte — C'est gratuit
-        </button>
+    <section class="relative py-12 px-6 text-white text-center overflow-hidden"
+             style="background:linear-gradient(135deg,#009E6A 0%,#00B87C 40%,#00D68F 100%);">
+
+      <!-- Cercles déco fond -->
+      <div style="position:absolute;top:-80px;left:-80px;width:300px;height:300px;background:radial-gradient(circle,rgba(255,255,255,.1),transparent 70%);pointer-events:none;"></div>
+      <div style="position:absolute;bottom:-60px;right:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 70%);pointer-events:none;"></div>
+      <!-- Grille subtile -->
+      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;"></div>
+
+      <div class="relative max-w-3xl mx-auto">
+        <!-- Badge -->
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:6px 18px;font-size:.75rem;font-weight:700;color:#fff;margin-bottom:12px;letter-spacing:.04em;">
+          <span style="width:7px;height:7px;background:#fff;border-radius:50%;display:inline-block;animation:pulse 2s infinite;"></span>
+          🇨🇩 PLATEFORME N°1 EN RDC
+        </div>
+
+        <h2 style="font-size:clamp(1.4rem,3vw,2rem);font-weight:900;line-height:1.15;margin-bottom:10px;">
+          Rejoignez le plus grand hub<br>du travail et des talents en RDC.
+        </h2>
+        <p style="color:rgba(255,255,255,.85);font-size:.9rem;margin-bottom:16px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.6;">
+          Freelance, emploi, stages et opportunités professionnelles réunis au même endroit.
+        </p>
+
+        <!-- Boutons -->
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:16px;">
+          <button @click="page='register'; window.scrollTo(0,0)"
+                  style="background:#fff;color:#009E6A;font-weight:800;padding:14px 32px;border-radius:14px;border:none;cursor:pointer;font-size:1rem;box-shadow:0 8px 24px rgba(0,0,0,.15);transition:all .2s;"
+                  onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 32px rgba(0,0,0,.2)'"
+                  onmouseout="this.style.transform='';this.style.boxShadow='0 8px 24px rgba(0,0,0,.15)'">
+            Créer mon compte — C'est gratuit →
+          </button>
+          <button @click="page='login'; window.scrollTo(0,0)"
+                  style="background:rgba(255,255,255,.15);backdrop-filter:blur(8px);color:#fff;font-weight:700;padding:14px 28px;border-radius:14px;border:1px solid rgba(255,255,255,.3);cursor:pointer;font-size:.95rem;transition:all .2s;"
+                  onmouseover="this.style.background='rgba(255,255,255,.25)'"
+                  onmouseout="this.style.background='rgba(255,255,255,.15)'">
+            Se connecter
+          </button>
+        </div>
+
+        <!-- Stats rapides -->
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px;">
+          <div style="text-align:center;">
+            <div style="font-size:1.5rem;font-weight:900;color:#fff;">500+</div>
+            <div style="font-size:.75rem;color:rgba(255,255,255,.7);">Talents vérifiés</div>
+          </div>
+          <div style="width:1px;background:rgba(255,255,255,.2);align-self:stretch;"></div>
+          <div style="text-align:center;">
+            <div style="font-size:1.5rem;font-weight:900;color:#fff;">100%</div>
+            <div style="font-size:.75rem;color:rgba(255,255,255,.7);">Paiement protégé</div>
+          </div>
+          <div style="width:1px;background:rgba(255,255,255,.2);align-self:stretch;"></div>
+          <div style="text-align:center;">
+            <div style="font-size:1.5rem;font-weight:900;color:#fff;">🇨🇩</div>
+            <div style="font-size:.75rem;color:rgba(255,255,255,.7);">100% congolais</div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer class="bg-gray-900 text-gray-400 px-6 py-8 text-center text-sm">
-      <div class="flex items-center justify-center gap-2 mb-3">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#22c55e" style="width:20px;height:20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12.75 3.03v.568c0 .334.148.65.405.864l1.068.89c.442.369.535 1.01.216 1.49l-.51.766a2.25 2.25 0 0 1-1.161.886l-.143.048a1.107 1.107 0 0 0-.57 1.664c.369.555.169 1.307-.427 1.605L9 13.125l.423 1.059a.956.956 0 0 1-1.652.928l-.679-.906a1.125 1.125 0 0 0-1.906.172L4.5 15.75l-.612.153M12.75 3.031a9 9 0 0 0-8.862 12.872M12.75 3.031a9 9 0 0 1 6.69 14.036m0 0-.177-.529A2.249 2.249 0 0 0 17.128 15H16.5l-.324-.324a1.453 1.453 0 0 0-2.328.377l-.036.073a1.586 1.586 0 0 1-.982.816l-.99.282c-.55.157-.894.702-.8 1.267l.073.438c.08.474.49.821.97.821.846 0 1.598.542 1.865 1.345l.215.643"/></svg>
-        <span class="font-bold text-white text-base">Mosala</span>
+    <!-- STATS LIVE -->
+    <section x-data="statsLive()" x-init="loadStats()" style="background:#f8fafc;padding:72px 24px;">
+      <div style="max-width:1100px;margin:0 auto;text-align:center;">
+        <!-- Titre -->
+        <div style="margin-bottom:48px;">
+          <span style="background:#f1f5f9;color:#64748b;font-size:.8rem;font-weight:700;padding:6px 16px;border-radius:99px;letter-spacing:.05em;">📊 EN DIRECT</span>
+          <h2 style="font-size:clamp(1.6rem,4vw,2.4rem);font-weight:900;color:#0F172A;margin:16px 0 8px;">Mosala en chiffres</h2>
+          <p style="color:#64748b;font-size:.95rem;">Données en temps réel de la plateforme</p>
+        </div>
+
+        <!-- Grille stats -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:24px;">
+
+          <!-- Freelances -->
+          <div style="background:#fff;border-radius:20px;padding:32px 20px;box-shadow:0 4px 24px rgba(0,0,0,.06);border:1px solid #e2e8f0;transition:transform .2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">
+            <div style="width:48px;height:48px;background:#f1f5f9;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="#64748b" stroke-width="2"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div style="font-size:2.4rem;font-weight:900;color:#00B87C;line-height:1;" x-text="stats.freelances !== null ? stats.freelances + '+' : '…'">…</div>
+            <div style="font-size:.85rem;color:#64748b;font-weight:600;margin-top:8px;">Freelances</div>
+            <div style="font-size:.75rem;color:#94a3b8;margin-top:4px;">Talents vérifiés</div>
+          </div>
+
+          <!-- Projets -->
+          <div style="background:#fff;border-radius:20px;padding:32px 20px;box-shadow:0 4px 24px rgba(0,0,0,.06);border:1px solid #e2e8f0;transition:transform .2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">
+            <div style="width:48px;height:48px;background:#f1f5f9;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" stroke="#64748b" stroke-width="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="#64748b" stroke-width="2" stroke-linecap="round"/><path d="M12 12v4M10 14h4" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div style="font-size:2.4rem;font-weight:900;color:#00B87C;line-height:1;" x-text="stats.projets !== null ? stats.projets + '+' : '…'">…</div>
+            <div style="font-size:.85rem;color:#64748b;font-weight:600;margin-top:8px;">Projets</div>
+            <div style="font-size:.75rem;color:#94a3b8;margin-top:4px;">Publiés sur la plateforme</div>
+          </div>
+
+          <!-- Offres emploi -->
+          <div style="background:#fff;border-radius:20px;padding:32px 20px;box-shadow:0 4px 24px rgba(0,0,0,.06);border:1px solid #e2e8f0;transition:transform .2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">
+            <div style="width:48px;height:48px;background:#f1f5f9;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" stroke="#64748b" stroke-width="2" stroke-linecap="round"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="#64748b" stroke-width="2"/><path d="M9 12h6M9 16h4" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div style="font-size:2.4rem;font-weight:900;color:#00B87C;line-height:1;" x-text="stats.jobs !== null ? stats.jobs + '+' : '…'">…</div>
+            <div style="font-size:.85rem;color:#64748b;font-weight:600;margin-top:8px;">Offres d'emploi</div>
+            <div style="font-size:.75rem;color:#94a3b8;margin-top:4px;">CDI, CDD, stages</div>
+          </div>
+
+          <!-- Membres -->
+          <div style="background:#fff;border-radius:20px;padding:32px 20px;box-shadow:0 4px 24px rgba(0,0,0,.06);border:1px solid #e2e8f0;transition:transform .2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform=''">
+            <div style="width:48px;height:48px;background:#f1f5f9;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3" stroke="#64748b" stroke-width="2"/><circle cx="17" cy="9" r="2.5" stroke="#64748b" stroke-width="2"/><path d="M2 20c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="#64748b" stroke-width="2" stroke-linecap="round"/><path d="M19 14c1.7.5 3 2 3 4" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div style="font-size:2.4rem;font-weight:900;color:#00B87C;line-height:1;" x-text="stats.users !== null ? stats.users + '+' : '…'">…</div>
+            <div style="font-size:.85rem;color:#64748b;font-weight:600;margin-top:8px;">Membres</div>
+            <div style="font-size:.75rem;color:#94a3b8;margin-top:4px;">Inscrits depuis la RDC</div>
+          </div>
+
+        </div>
+
+        <!-- CTA -->
+        <div style="margin-top:48px;">
+          <button @click="page='register'; window.scrollTo(0,0)"
+            style="background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;font-weight:700;padding:14px 36px;border-radius:14px;border:none;cursor:pointer;font-size:.95rem;box-shadow:0 8px 24px rgba(0,184,124,.35);transition:all .2s;"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 32px rgba(0,184,124,.45)'"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 8px 24px rgba(0,184,124,.35)'">Rejoindre la communauté →</button>
+        </div>
       </div>
-      <p>© 2025 Mosala — Plateforme Freelance RDC</p>
-      <div class="flex justify-center gap-6 mt-4">
-        <a href="#" class="hover:text-white transition">À propos</a>
-        <a href="#" class="hover:text-white transition">Contact</a>
-        <a href="#" class="hover:text-white transition">Conditions</a>
-        <a href="#" class="hover:text-white transition">Confidentialité</a>
+    </section>
+
+    <script>
+    function statsLive() {
+      return {
+        stats: { freelances: null, projets: null, jobs: null, users: null },
+        async loadStats() {
+          try {
+            const r = await fetch('/public/stats');
+            if (!r.ok) return;
+            const d = await r.json();
+            // Animate
+            const targets = {
+              freelances: d.freelances || 0,
+              projets: d.projets || 0,
+              jobs: d.jobs || 0,
+              users: d.users || 0
+            };
+            const duration = 1200;
+            const steps = 40;
+            const interval = duration / steps;
+            let step = 0;
+            const timer = setInterval(() => {
+              step++;
+              const progress = step / steps;
+              const ease = 1 - Math.pow(1 - progress, 3);
+              this.stats = {
+                freelances: Math.round(targets.freelances * ease),
+                projets: Math.round(targets.projets * ease),
+                jobs: Math.round(targets.jobs * ease),
+                users: Math.round(targets.users * ease)
+              };
+              if (step >= steps) clearInterval(timer);
+            }, interval);
+          } catch(e) {
+            this.stats = { freelances: 12, projets: 13, jobs: 78, users: 24 };
+          }
+        }
+      }
+    }
+    </script>
+
+    <!-- FOOTER -->
+    <footer style="background:#0F172A;border-top:2px solid #00B87C;color:#94a3b8;">
+      <div class="max-w-6xl mx-auto px-6 py-14">
+
+        <!-- 4 colonnes -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+
+          <!-- Col 1 : Brand -->
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <svg style="width:28px;height:28px;" viewBox="0 0 32 32" fill="none">
+                <path d="M16 4L4 10l12 6 12-6L16 4z" fill="#00B87C"/>
+                <path d="M4 22l12 6 12-6" stroke="#00B87C" stroke-width="2" stroke-linecap="round"/>
+                <path d="M4 16l12 6 12-6" stroke="#00D68F" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span style="font-weight:800;font-size:1.1rem;color:#fff;">Mosala<span style="color:#00B87C;">.</span></span>
+            </div>
+            <p style="font-size:.875rem;line-height:1.7;margin-bottom:20px;color:#64748b;">
+              Le hub du travail et des talents en RDC. Freelance, emploi et opportunités professionnelles.
+            </p>
+            <!-- Réseaux sociaux -->
+            <div style="display:flex;gap:10px;">
+              <a href="#" style="width:36px;height:36px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;transition:all .2s;text-decoration:none;"
+                 onmouseover="this.style.background='rgba(0,184,124,.2)';this.style.borderColor='#00B87C'"
+                 onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.borderColor='rgba(255,255,255,.1)'">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#94a3b8" style="width:16px;height:16px;"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <a href="#" style="width:36px;height:36px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;transition:all .2s;text-decoration:none;"
+                 onmouseover="this.style.background='rgba(0,184,124,.2)';this.style.borderColor='#00B87C'"
+                 onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.borderColor='rgba(255,255,255,.1)'">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#94a3b8" style="width:16px;height:16px;"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+              </a>
+              <a href="#" style="width:36px;height:36px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;transition:all .2s;text-decoration:none;"
+                 onmouseover="this.style.background='rgba(0,184,124,.2)';this.style.borderColor='#00B87C'"
+                 onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.borderColor='rgba(255,255,255,.1)'">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#94a3b8" style="width:16px;height:16px;"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.28 8.28 0 004.84 1.56V6.81a4.85 4.85 0 01-1.07-.12z"/></svg>
+              </a>
+              <a href="#" style="width:36px;height:36px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;transition:all .2s;text-decoration:none;"
+                 onmouseover="this.style.background='rgba(0,184,124,.2)';this.style.borderColor='#00B87C'"
+                 onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.borderColor='rgba(255,255,255,.1)'">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#94a3b8" style="width:16px;height:16px;"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Col 2 : Plateforme -->
+          <div>
+            <h4 style="color:#fff;font-weight:700;font-size:.875rem;margin-bottom:16px;letter-spacing:.02em;">Plateforme</h4>
+            <ul style="display:flex;flex-direction:column;gap:10px;list-style:none;padding:0;margin:0;">
+              <li><a href="#" style="color:#64748b;font-size:.875rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#00B87C'" onmouseout="this.style.color='#64748b'">Trouver un freelance</a></li>
+              <li><a href="#" style="color:#64748b;font-size:.875rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#00B87C'" onmouseout="this.style.color='#64748b'">Devenir freelance</a></li>
+              <li><a href="#" style="color:#64748b;font-size:.875rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#00B87C'" onmouseout="this.style.color='#64748b'">Offres d'emploi</a></li>
+              <li><a href="#" style="color:#64748b;font-size:.875rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#00B87C'" onmouseout="this.style.color='#64748b'">Tarifs</a></li>
+              <li><a href="#" style="color:#64748b;font-size:.875rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#00B87C'" onmouseout="this.style.color='#64748b'">Paiement Mobile Money</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 3 : Ressources -->
+          <div>
+            <h4 style="color:#fff;font-weight:700;font-size:.875rem;margin-bottom:16px;letter-spacing:.02em;">Ressources</h4>
+            <ul style="display:flex;flex-direction:column;gap:10px;list-style:none;padding:0;margin:0;">
+              <li><a href="#" style="color:#64748b;font-size:.875rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#00B87C'" onmouseout="this.style.color='#64748b'">Blog Mosala</a></li>
+              <li><a href="#" style="color:#64748b;font-size:.875rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#00B87C'" onmouseout="this.style.color='#64748b'">Centre d'aide</a></li>
+              <li><a href="#" style="color:#64748b;font-size:.875rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#00B87C'" onmouseout="this.style.color='#64748b'">À propos</a></li>
+              <li><a href="#" style="color:#64748b;font-size:.875rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#00B87C'" onmouseout="this.style.color='#64748b'">Conditions d'utilisation</a></li>
+              <li><a href="#" style="color:#64748b;font-size:.875rem;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#00B87C'" onmouseout="this.style.color='#64748b'">Politique de confidentialité</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 4 : Contact -->
+          <div>
+            <h4 style="color:#fff;font-weight:700;font-size:.875rem;margin-bottom:16px;letter-spacing:.02em;">Contact</h4>
+            <ul style="display:flex;flex-direction:column;gap:12px;list-style:none;padding:0;margin:0;">
+              <li style="display:flex;align-items:center;gap:10px;font-size:.875rem;color:#64748b;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#00B87C" style="width:16px;height:16px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+                support@mosala.io
+              </li>
+              <li style="display:flex;align-items:center;gap:10px;font-size:.875rem;color:#64748b;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#00B87C" style="width:16px;height:16px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z"/></svg>
+                WhatsApp disponible
+              </li>
+              <li style="display:flex;align-items:center;gap:10px;font-size:.875rem;color:#64748b;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#00B87C" style="width:16px;height:16px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                Kinshasa, RDC
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Bas du footer -->
+        <div style="border-top:1px solid rgba(255,255,255,.07);padding-top:24px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;">
+          <p style="font-size:.8rem;color:#475569;margin:0;">© 2026 Mosala. Tous droits réservés.</p>
+          <span style="font-size:.8rem;font-weight:700;color:#00B87C;background:rgba(0,184,124,.1);border:1px solid rgba(0,184,124,.2);padding:4px 14px;border-radius:99px;">🇨🇩 Made in Congo</span>
+        </div>
+
       </div>
     </footer>
 
@@ -2753,14 +3019,15 @@
 
       <!-- ── Logo ── -->
       <div class="px-5 py-5 flex items-center gap-2.5">
-        <div class="w-8 h-8 bg-gradient-to-br from-[#00B87C] to-[#009E6A] rounded-xl flex items-center justify-center shadow-sm">
-          <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" stroke="white" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1M4.22 4.22l.707.707m12.02 12.02.708.707M1 12h1m20 0h1M4.22 19.78l.707-.707M18.95 5.05l.707-.707"/>
+        <div style="width:34px;height:34px;background:linear-gradient(135deg,#00B87C,#00D68F);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,184,124,.30);flex-shrink:0;">
+          <svg viewBox="0 0 20 16" fill="none" style="width:17px;height:14px;">
+            <path d="M1.5 14.5V2C1.5 2 4.5 8.5 6.5 11C7.5 12.3 9 13.5 10 11.5C11 9.5 13.5 2 13.5 2V14.5" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.5 2C13.5 2 16 8.5 18 11C18.6 11.9 18.8 14.5 18.8 14.5" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
         <div>
           <span class="text-base font-black text-[#0F172A] tracking-tight">Mosala</span>
-          <span class="ml-1.5 text-[9px] bg-gradient-to-r from-[#00B87C] to-[#34D399] text-white px-1.5 py-0.5 rounded-full font-bold">N°1</span>
+          <span class="ml-1.5 text-[9px] px-1.5 py-0.5 rounded-full font-bold" style="background:#F1F5F9;color:#94A3B8;">BETA</span>
         </div>
       </div>
 
@@ -3238,18 +3505,18 @@
           <div @click="openProjet(p)"
                class="rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 flex"
                style="background:#FFFFFF; border:none; box-shadow:0 2px 16px rgba(15,23,42,0.08);"
-               onmouseover="this.style.boxShadow='0 4px 16px rgba(0,184,124,0.14)';this.style.transform='translateY(-1px)'"
+               onmouseover="this.style.boxShadow='0 6px 24px rgba(15,23,42,0.11)';this.style.transform='translateY(-2px)'"
                onmouseout="this.style.boxShadow='0 2px 16px rgba(15,23,42,0.08)';this.style.transform='translateY(0)'">
 
             <!-- Bande colorée gauche selon statut -->
             <div class="w-1 flex-shrink-0"
-                 :style="p.statut==='en_attente' ? 'background:#F59E0B' : p.statut==='en_cours' ? 'background:#3B82F6' : 'background:#10B981'"></div>
+                 :style="p.statut==='en_attente' ? 'background:#CBD5E1' : p.statut==='en_cours' ? 'background:#3B82F6' : 'background:#10B981'"></div>
 
             <div class="flex-1">
 
 
 
-            <div class="p-4">
+            <div class="p-5">
 
               <!-- Badge + date en haut -->
               <div class="flex items-center justify-between mb-2.5">
@@ -3257,9 +3524,9 @@
                       x-text="'\uD83D\uDD52 ' + timeAgo(p.created_at)"></span>
                 <span class="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-lg"
                       :style="p.is_new===true && p.statut==='en_attente'
-                        ? 'background:linear-gradient(135deg,#00B87C,#00D68F);color:white;box-shadow:0 2px 8px rgba(0,184,124,0.40);'
+                        ? 'background:#0F172A;color:#fff;'
                         : p.statut==='en_attente'
-                          ? 'background:#FFFBEB;color:#B45309;border:1px solid rgba(245,158,11,0.30);'
+                          ? 'background:#F1F5F9;color:#64748B;border:1px solid #E2E8F0;'
                           : p.statut==='en_cours'
                             ? 'background:#EFF6FF;color:#1D4ED8;border:1px solid rgba(59,130,246,0.25);'
                             : 'background:#F8FAFC;color:#64748B;border:1px solid #E8ECF4;'"
@@ -3268,16 +3535,10 @@
 
               <!-- Client info -->
               <div class="flex items-center gap-2 mb-3">
-                <template x-if="p.client_photo">
-                  <img :src="p.client_photo" class="w-9 h-9 rounded-xl object-cover flex-shrink-0"
-                       :alt="p.client_prenom" @error="p.client_photo=null"/>
-                </template>
-                <template x-if="!p.client_photo">
-                  <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-sm font-black"
-                       :style="'background:'+avatarColor((p.client_prenom||'')+(p.client_nom||''))">
-                    <span x-text="((p.client_prenom||'?')[0]+(p.client_nom||'?')[0]).toUpperCase()"></span>
-                  </div>
-                </template>
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-black"
+                     :style="'background:'+avatarColor((p.client_prenom||'')+(p.client_nom||''))+';color:#1e293b;'">
+                  <span x-text="((p.client_prenom||'?')[0]+(p.client_nom||'?')[0]).toUpperCase()"></span>
+                </div>
                 <div class="min-w-0 flex-1">
                   <p class="text-xs font-bold truncate" style="color:#0F172A;"
                      x-text="(p.client_prenom||'') + ' ' + (p.client_nom||'')"></p>
@@ -3288,17 +3549,17 @@
                     <span x-show="p.client_projets > 0" class="text-[9px]" style="color:#94A3B8;">·</span>
                     <span x-show="p.client_projets > 0" class="text-[9px] font-medium" style="color:#64748B;"
                           x-text="p.client_projets + ' projet' + (p.client_projets > 1 ? 's' : '')"></span>
-                    <span x-show="p.client_verification > 0" class="text-[9px] font-bold" style="color:#00B87C;">· ✓ Vérifié</span>
+                    <span x-show="p.client_verification > 0" class="text-[9px] font-bold" style="color:#64748B;">· ✓ Vérifié</span>
                   </div>
                 </div>
               </div>
 
               <!-- Titre mission -->
-              <h3 class="text-sm font-black mb-1 leading-snug" style="color:#0F172A; word-break:break-word; overflow-wrap:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;"
+              <h3 class="text-base font-black mb-2 leading-snug" style="color:#0F172A; word-break:break-word; overflow-wrap:break-word; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;"
                   x-text="p.titre"></h3>
 
               <!-- Description courte -->
-              <p class="text-[11px] leading-relaxed line-clamp-2 mb-3" style="color:#64748B;"
+              <p class="text-xs leading-relaxed mb-4" style="color:#64748B;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;" style="color:#64748B;"
                  x-text="p.description || 'Aucune description fournie.'"></p>
 
               <!-- Tags -->
@@ -3306,7 +3567,7 @@
                    class="flex flex-wrap gap-1 mb-3">
                 <template x-for="tag in (Array.isArray(p.tags) ? p.tags : String(p.tags).split(',')).filter(t=>t.trim()).slice(0,3)" :key="tag">
                   <span class="text-[9px] font-semibold px-2 py-0.5 rounded-lg whitespace-nowrap"
-                        style="background:#F0FBF7; color:#00B87C; border:1px solid rgba(0,184,124,0.20);"
+                        style="background:#F3F4F6; color:#6B7280; border:none;"
                         x-text="tag.trim()"></span>
                 </template>
               </div>
@@ -3316,12 +3577,12 @@
                    style="border-top:1px solid #F1F5F9;">
 
                 <!-- Budget badge vert -->
-                <div class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl"
-                     style="background:#F0FDF4; border:1px solid rgba(0,184,124,0.20);">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-3 h-3 flex-shrink-0">
+                <div class="flex items-center gap-1.5 px-2 py-1.5 rounded-xl"
+                     style="background:#fff; border:1px solid #D1FAE5;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" class="w-3.5 h-3.5 flex-shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
                   </svg>
-                  <span class="text-xs font-black" style="color:#00B87C;"
+                  <span class="text-base font-black" style="color:#00B87C;"
                         x-text="p.budget ? new Intl.NumberFormat('fr-FR').format(p.budget) + ' ' + (p.devise||'USD') : 'À négocier'"></span>
                 </div>
 
@@ -5232,7 +5493,7 @@
             <div class="rounded-2xl overflow-hidden" style="background:white;border:1.5px solid #F1F5F9;box-shadow:0 4px 16px rgba(0,184,124,0.10);">
               <!-- Bande verte statut -->
               <div class="h-1 w-full" style="background:linear-gradient(90deg,#F59E0B,#FCD34D);"></div>
-              <div class="p-4">
+              <div class="p-5">
                 <!-- Badge + date -->
                 <div class="flex items-center justify-between mb-2.5">
                   <span class="text-[10px] font-medium text-gray-400">🕒 À l'instant</span>
@@ -6264,7 +6525,7 @@
           <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none"
                style="background:radial-gradient(circle,rgba(0,184,124,0.07) 0%,transparent 70%);"></div>
 
-          <div class="p-4">
+          <div class="p-5">
 
             <!-- Niveau actuel + prochain -->
             <div class="flex items-center justify-between mb-4">
@@ -6494,9 +6755,20 @@
                      :class="activeConv && activeConv.id === conv.id ? 'bg-[#00B87C]/5 border-l-[3px] border-l-[#00B87C]' : 'border-l-[3px] border-l-transparent'">
                   <!-- Avatar -->
                   <div class="relative flex-shrink-0">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#00B87C] to-[#00956a] flex items-center justify-center text-white font-bold text-base"
-                         x-text="(conv.nom_interlocuteur || '?').trim().charAt(0).toUpperCase()"></div>
-                    <span class="absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full bg-gray-300"></span>
+                    <template x-if="conv.photo_interlocuteur">
+                      <img :src="conv.photo_interlocuteur"
+                           class="w-12 h-12 rounded-full object-cover"
+                           :alt="conv.nom_interlocuteur"
+                           @error="conv.photo_interlocuteur=null"/>
+                    </template>
+                    <template x-if="!conv.photo_interlocuteur">
+                      <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                           :style="'background:'+avatarColor(conv.nom_interlocuteur||'')+';color:#1e293b;'"
+                           x-text="(conv.nom_interlocuteur||'?').trim().charAt(0).toUpperCase()"></div>
+                    </template>
+                    <!-- Indicateur présence -->
+                    <span class="absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full"
+                          :style="conv.en_ligne ? 'background:#22c55e;' : 'background:#cbd5e1;'"></span>
                   </div>
                   <!-- Infos -->
                   <div class="flex-1 min-w-0">
@@ -7566,7 +7838,7 @@
           this.jobsData = data.map(j => ({
             ...j,
             type:   j.opportunity_type,
-            source: j.source_name,
+            source: j.origin,
             salary: j.salary_range,
             posted: j.created_at ? kzTimeAgo(j.created_at) : '',
             emoji:  kzJobEmoji(j.category),
@@ -7629,7 +7901,7 @@
 
         // ── marketplace ──
         projets:      [],
-        filtreStatut: '',
+        filtreStatut: '', filtreCat: '',
         selectedProjet: null,
         jalonsProjet:   [],
 
@@ -7982,7 +8254,7 @@
               return;
             }
             this.token = loginData.access_token;
-            sessionStorage.setItem('kv_token', this.token);
+            sessionStorage.setItem('kv_token', this.token); localStorage.setItem('kv_token', this.token);
             const rMe = await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${this.token}` } });
             this.user = await rMe.json();
             sessionStorage.setItem('kv_user', JSON.stringify(this.user));
@@ -8044,7 +8316,7 @@
             if (!r.ok) throw new Error(data.detail || 'Erreur Google');
 
             this.token = data.access_token;
-            sessionStorage.setItem('kv_token', this.token);
+            sessionStorage.setItem('kv_token', this.token); localStorage.setItem('kv_token', this.token);
 
             const rMe = await fetch(`${API}/auth/me`, {
               headers: { Authorization: `Bearer ${this.token}` }
@@ -8092,7 +8364,7 @@
             if (!r.ok) throw new Error(data.detail || 'Identifiants incorrects');
 
             this.token = data.access_token;
-            sessionStorage.setItem('kv_token', this.token);
+            sessionStorage.setItem('kv_token', this.token); localStorage.setItem('kv_token', this.token);
 
             // Charger le profil complet
             const rMe = await fetch(`${API}/auth/me`, {
@@ -8138,12 +8410,18 @@
         async loadProjets() {
           this.loadingProjets = true;
           try {
-            let url = `${API}/projets/?limit=30`;
+            let url = `${API}/projets/?limit=100`;
             if (this.filtreStatut) url += `&statut=${this.filtreStatut}`;
             const r = await fetch(url, {
               headers: this.token ? { Authorization: `Bearer ${this.token}` } : {}
             });
-            this.projets = await r.json();
+            let data = await r.json();
+            if (!Array.isArray(data)) data = [];
+            if (this.filtreCat) {
+              const cat = this.filtreCat.toLowerCase();
+              data = data.filter(p => (String(p.tags||'') + String(p.titre||'') + String(p.description||'')).toLowerCase().includes(cat));
+            }
+            this.projets = data;
           } catch(e) {
             this.showToast('Erreur chargement projets', 'error');
           } finally { this.loadingProjets = false; }
@@ -8931,8 +9209,8 @@
           let hash = 0;
           for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
           const colors = [
-            '#00B87C','#3B82F6','#F59E0B','#EF4444','#8B5CF6',
-            '#EC4899','#14B8A6','#F97316','#06B6D4','#84CC16'
+            '#CBD5E1','#BAE6FD','#BBF7D0','#E9D5FF','#FBCFE8',
+            '#FED7AA','#A5F3FC','#DDD6FE','#CCFBF1','#E2E8F0'
           ];
           return colors[Math.abs(hash) % colors.length];
         },
@@ -9858,7 +10136,18 @@
         <span style="color:rgba(255,255,255,.9);font-size:0.75rem;font-weight:600;">LIVE · Mis à jour toutes les 6h</span>
       </div>
       <h1 style="color:#fff;font-size:1.9rem;font-weight:900;margin-bottom:8px;line-height:1.2;">Emplois en <span style="color:#4ade80;">RDC</span></h1>
-      <p style="color:rgba(255,255,255,.7);font-size:0.95rem;margin-bottom:24px;">CDI, CDD, Freelance, Stages — toutes les offres au Congo</p>
+      <p style="color:rgba(255,255,255,.7);font-size:0.95rem;margin-bottom:20px;">CDI, CDD, Freelance, Stages — toutes les offres au Congo</p>
+
+      <!-- Bouton Poster une offre -->
+      <a x-show="user && (user.account_type === 'client' || user.account_type === 'entreprise')" href="/poster-offre.html"
+        style="display:inline-flex;align-items:center;gap:8px;background:#00B87C;color:#fff;font-weight:700;font-size:0.85rem;padding:11px 22px;border-radius:12px;text-decoration:none;margin-bottom:24px;box-shadow:0 4px 16px rgba(0,184,124,.35);transition:all .2s;"
+        onmouseover="this.style.background='#009E6A';this.style.transform='translateY(-1px)'"
+        onmouseout="this.style.background='#00B87C';this.style.transform=''">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        Poster une offre
+      </a>
 
       <!-- Barre de recherche -->
       <div style="position:relative;max-width:480px;margin:0 auto;">
@@ -10004,7 +10293,7 @@
 
   <!-- CTA poster une offre -->
   <div style="max-width:680px;margin:24px auto;padding:0 16px 24px;">
-    <div style="background:linear-gradient(135deg,#052e16,#065f46);border-radius:18px;padding:24px;text-align:center;">
+    <div x-show="user && (user.account_type === 'client' || user.account_type === 'entreprise')" style="background:linear-gradient(135deg,#052e16,#065f46);border-radius:18px;padding:24px;text-align:center;">
       <p style="color:#fff;font-weight:800;font-size:1rem;margin-bottom:6px;">Tu recrutes ?</p>
       <p style="color:rgba(255,255,255,.7);font-size:0.85rem;margin-bottom:16px;">Poste ton offre gratuitement sur Mosala</p>
       <button style="background:#00B87C;color:#fff;border:none;border-radius:12px;padding:12px 28px;font-weight:700;font-size:0.9rem;cursor:pointer;">

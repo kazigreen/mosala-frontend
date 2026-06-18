@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mosala — Offres d'emploi en RDC</title>
+  <meta name="description" content="CDI, CDD, stages et consulting — toutes les offres d'emploi au Congo RDC"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak]{display:none!important}
+    body{animation:bodyFadeIn .18s ease;}
+    @keyframes bodyFadeIn{from{opacity:0}to{opacity:1}}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#f8fafc;}
+
+    /* Navbar */
+    .kz-nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 1px 8px rgba(0,0,0,.06);}
+
+    /* Filtres */
+    .filter-btn{border:1.5px solid #e2e8f0;background:#fff;color:#374151;padding:.45rem 1.1rem;border-radius:99px;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;}
+    .filter-btn.active{background:#00B87C;color:#fff;border-color:#00B87C;}
+    .filter-btn:hover:not(.active){border-color:#00B87C;color:#00B87C;}
+
+    /* Cards */
+    .job-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:1.4rem;transition:all .2s;box-shadow:0 1px 4px rgba(0,0,0,.04);display:flex;flex-direction:column;}
+    .job-card:hover{border-color:#00B87C;box-shadow:0 4px 20px rgba(0,184,124,.10);transform:translateY(-2px);}
+
+    /* Badge type */
+    .badge-CDI{background:#eff6ff;color:#2563eb;}
+    .badge-CDD{background:#f5f3ff;color:#7c3aed;}
+    .badge-stage{background:#fefce8;color:#ca8a04;}
+    .badge-freelance{background:#f0fdf4;color:#16a34a;}
+    .badge-consulting{background:#fff7ed;color:#ea580c;}
+    .badge-remote{background:#f0f9ff;color:#0284c7;}
+
+    /* Boutons */
+    .btn-green{background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;font-weight:700;padding:.65rem 1.25rem;border-radius:10px;border:none;cursor:pointer;font-size:.875rem;transition:all .2s;box-shadow:0 2px 8px rgba(0,184,124,.25);}
+    .btn-green:hover{opacity:.9;transform:translateY(-1px);}
+    .btn-outline{border:1.5px solid #e2e8f0;background:#fff;color:#374151;font-weight:700;padding:.65rem 1.25rem;border-radius:10px;cursor:pointer;font-size:.875rem;transition:all .2s;}
+    .btn-outline:hover{border-color:#00B87C;color:#00B87C;}
+
+    /* Search */
+    .search-input{border:1.5px solid #e5e7eb;border-radius:12px;padding:.7rem 1rem .7rem 2.8rem;font-size:.95rem;outline:none;transition:border .2s;background:#fff;width:100%;}
+    .search-input:focus{border-color:#00B87C;box-shadow:0 0 0 3px rgba(0,184,124,.08);}
+
+    /* Empty state */
+    .empty-state{text-align:center;padding:4rem 2rem;color:#94a3b8;}
+
+    /* Toast */
+    .toast{position:fixed;top:1.2rem;left:50%;transform:translateX(-50%);z-index:200;padding:.75rem 1.5rem;border-radius:12px;font-weight:600;font-size:.9rem;box-shadow:0 4px 20px rgba(0,0,0,.12);white-space:nowrap;}
+  </style>
+</head>
+<body x-data="jobsPage()" x-init="init()">
+
+  <!-- Toast -->
+  <div x-show="toast.show" x-transition
+       :class="toast.type==='error'?'bg-red-500 text-white':'bg-emerald-600 text-white'"
+       class="toast" x-text="toast.msg"></div>
+
+  <!-- ── MODAL Auth ── -->
+  <div x-show="showAuthModal" x-transition
+       style="position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:1.5rem;"
+       @click.self="showAuthModal=false">
+    <div style="background:#fff;border-radius:20px;padding:2rem;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+
+      <!-- Icône -->
+      <div style="text-align:center;margin-bottom:1.25rem;">
+        <div style="width:52px;height:52px;background:linear-gradient(135deg,#00B87C,#00D68F);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3 style="font-size:1.15rem;font-weight:900;color:#0F172A;margin:.75rem 0 .35rem;">Pour postuler à cette offre</h3>
+        <p style="font-size:.85rem;color:#64748b;">Tu as besoin d'un compte Mosala — c'est gratuit !</p>
+      </div>
+
+      <!-- Boutons -->
+      <div style="display:flex;flex-direction:column;gap:.75rem;">
+        <button @click="showAuthModal=false; window.location.href='/?goto=login'"
+          style="background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;font-weight:700;padding:.85rem;border-radius:12px;border:none;cursor:pointer;font-size:.95rem;box-shadow:0 2px 10px rgba(0,184,124,.25);">
+          Se connecter
+        </button>
+        <button @click="showAuthModal=false; window.location.href='/?goto=register'"
+          style="background:#f8fafc;color:#0F172A;font-weight:700;padding:.85rem;border-radius:12px;border:1.5px solid #e2e8f0;cursor:pointer;font-size:.95rem;">
+          Créer un compte gratuit
+        </button>
+      </div>
+
+      <!-- Fermer -->
+      <button @click="showAuthModal=false"
+        style="width:100%;margin-top:.75rem;background:none;border:none;color:#94a3b8;font-size:.82rem;cursor:pointer;font-weight:600;">
+        Annuler
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ── NAVBAR ── -->
+  <header class="kz-nav">
+    <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="window.location.href='/'">
+      <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#00B87C,#00D68F);display:flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <span style="font-weight:900;font-size:1.1rem;color:#111;">Mosala<span style="color:#00B87C;">.</span></span>
+    </div>
+
+    <span style="font-size:.95rem;font-weight:800;color:#0F172A;">💼 Offres d'emploi</span>
+
+    <div style="display:flex;gap:.75rem;align-items:center;">
+      <!-- Bouton poster — visible pour TOUS -->
+      <button @click="openPostForm()"
+         style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;font-weight:700;padding:8px 16px;border-radius:10px;font-size:.85rem;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(0,184,124,.25);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        ➕ Poster une offre
+      </button>
+      <!-- Connexion si pas connecté -->
+      <a x-show="!token" href="/pages/login.html"
+         style="color:#0F172A;font-weight:600;font-size:.88rem;padding:8px 16px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;text-decoration:none;">
+        Se connecter
+      </a>
+    </div>
+  </header>
+
+  <!-- ── HERO COMPACT ── -->
+  <div style="background:linear-gradient(135deg,#0F172A 0%,#1e3a5f 100%);padding:48px 24px 40px;text-align:center;">
+    <h1 style="font-size:1.9rem;font-weight:900;color:#fff;margin:0 0 10px;">Trouvez votre prochain emploi</h1>
+    <p style="color:rgba(255,255,255,.65);font-size:.95rem;margin:0 0 1.5rem;">CDI, CDD, Freelance, Stages — toutes les offres en RDC</p>
+
+    <!-- Barre de recherche -->
+    <div style="max-width:500px;margin:0 auto;position:relative;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="position:absolute;left:.9rem;top:50%;transform:translateY(-50%);pointer-events:none;">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" class="search-input" x-model="query" @input.debounce.400ms="search()"
+             placeholder="Titre, entreprise, ville…"/>
+    </div>
+  </div>
+
+  <!-- ── CONTENU ── -->
+  <div style="max-width:1100px;margin:0 auto;padding:2rem 24px 4rem;">
+
+    <!-- Filtres type + stats -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;">
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
+        <template x-for="f in filters" :key="f.val">
+          <button @click="activeFilter=f.val; load()" class="filter-btn" :class="activeFilter===f.val?'active':''">
+            <span x-text="f.label"></span>
+          </button>
+        </template>
+      </div>
+      <span x-show="!loading" style="font-size:.82rem;color:#64748b;font-weight:600;"  x-text="totalCount + ' offre(s) disponible(s)'"></span>
+    </div>
+
+    <!-- Loading -->
+    <div x-show="loading" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;">
+      <template x-for="i in [1,2,3,4,5,6]" :key="i">
+        <div style="background:#fff;border-radius:16px;padding:1.4rem;border:1.5px solid #e2e8f0;animation:pulse 1.5s infinite;">
+          <div style="height:16px;background:#f1f5f9;border-radius:8px;margin-bottom:.75rem;width:70%;"></div>
+          <div style="height:12px;background:#f1f5f9;border-radius:8px;margin-bottom:.5rem;width:50%;"></div>
+          <div style="height:12px;background:#f1f5f9;border-radius:8px;width:85%;"></div>
+        </div>
+      </template>
+    </div>
+    <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}</style>
+
+    <!-- Empty -->
+    <div x-show="!loading && jobs.length===0" class="empty-state">
+      <div style="font-size:3rem;margin-bottom:1rem;">📭</div>
+      <p style="font-weight:700;color:#374151;font-size:1.05rem;">Aucune offre trouvée</p>
+      <p style="font-size:.875rem;margin-top:.4rem;">Essaie d'autres filtres ou reviens plus tard</p>
+    </div>
+
+    <!-- Grid offres -->
+    <div x-show="!loading && jobs.length>0"
+         style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;">
+      <template x-for="job in jobs" :key="job.id">
+        <div class="job-card">
+
+          <!-- Top -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.75rem;margin-bottom:.85rem;">
+            <div style="flex:1;">
+              <h3 x-text="job.title" style="font-size:1rem;font-weight:800;color:#0F172A;margin:0 0 .3rem;line-height:1.3;"></h3>
+              <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;">
+                <span x-text="job.company" style="font-size:.82rem;font-weight:600;color:#374151;"></span>
+                <span style="color:#d1d5db;">•</span>
+                <span x-text="job.location" style="font-size:.82rem;color:#64748b;"></span>
+              </div>
+            </div>
+            <span x-text="job.opportunity_type.toUpperCase()"
+                  :class="'badge-'+job.opportunity_type"
+                  style="font-size:.68rem;font-weight:800;padding:3px 10px;border-radius:99px;white-space:nowrap;flex-shrink:0;"></span>
+          </div>
+
+          <!-- Badges -->
+          <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.85rem;">
+            <span x-show="job.category" x-text="job.category"
+                  style="font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:99px;background:#f1f5f9;color:#475569;"></span>
+            <span x-show="job.salary_range" x-text="'💰 '+job.salary_range"
+                  style="font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:99px;background:#fefce8;color:#92400e;"></span>
+          </div>
+
+          <!-- Description -->
+          <p x-text="job.description.length>130 ? job.description.substring(0,130)+'…' : job.description"
+             style="font-size:.82rem;color:#64748b;line-height:1.55;margin:0 0 1rem;flex:1;"></p>
+
+          <!-- Date + badge source -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 .85rem;">
+            <p x-text="'Publié le '+new Date(job.created_at).toLocaleDateString('fr-FR')"
+               style="font-size:.72rem;color:#94a3b8;margin:0;"></p>
+            <span x-show="job.source !== 'native'"
+                  style="font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:99px;background:#fff7ed;color:#ea580c;">🔗 Externe</span>
+          </div>
+
+          <!-- Postuler -->
+          <button @click="postuler(job)" class="btn-green" style="width:100%;">
+            Postuler →
+          </button>
+
+        </div>
+      </template>
+    </div>
+
+    <!-- Voir plus -->
+    <div x-show="!loading && hasMore" style="text-align:center;margin-top:2rem;">
+      <button @click="loadMore()" class="btn-outline" :disabled="loadingMore">
+        <span x-show="!loadingMore">Voir plus d'offres ↓</span>
+        <span x-show="loadingMore">Chargement…</span>
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+  function jobsPage() {
+    return {
+      jobs: [],
+      total: 0,
+      loading: true,
+      totalCount: 0,
+      loadingMore: false,
+      hasMore: false,
+      activeFilter: 'all',
+      query: '',
+      offset: 0,
+      limit: 12,
+      token: sessionStorage.getItem('kv_token') || localStorage.getItem('kv_token') || null,
+      user: JSON.parse(sessionStorage.getItem('kv_user') || localStorage.getItem('kv_user') || '{}'),
+      showPostModal: false,
+      pfLoading: false,
+      pfError: '',
+      pf: { title:'', company:'', opportunity_type:'CDI', location:'Kinshasa', category:'', salary_range:'', description:'', apply_url:'' },
+      toast: { show: false, msg: '', type: 'success' },
+      showAuthModal: false,
+
+      filters: [
+        { label: '🗂 Tous',       val: 'all'        },
+        { label: '📄 CDI',        val: 'CDI'        },
+        { label: '📋 CDD',        val: 'CDD'        },
+        { label: '🎓 Stage',      val: 'stage'      },
+        { label: '💻 Freelance',  val: 'freelance'  },
+        { label: '🤝 Consulting', val: 'consulting' },
+      ],
+
+      async init() {
+        // Rafraîchir user si connecté
+        if (this.token) {
+          try {
+            const r = await fetch('/auth/me', { headers: { Authorization: 'Bearer ' + this.token } });
+            if (r.ok) {
+              const me = await r.json();
+              this.user = me;
+              sessionStorage.setItem('kv_user', JSON.stringify(me));
+            }
+          } catch(e) {}
+        }
+        await this.load();
+      },
+
+      buildUrl(offset) {
+        let url = `/jobs/all/feed?limit=${this.limit}&offset=${offset}`;
+        if (this.activeFilter !== 'all') url += `&type=${this.activeFilter}`;
+        if (this.query.trim()) url += `&q=${encodeURIComponent(this.query.trim())}`;
+        return url;
+      },
+
+      async load() {
+        this.loading = true;
+        this.offset = 0;
+        this.jobs = [];
+        this.hasMore = false;
+        try {
+          const countUrl = '/jobs/all/count'
+            + (this.activeFilter !== 'all' ? '?type='+this.activeFilter : '')
+            + (this.query.trim() ? (this.activeFilter !== 'all' ? '&' : '?')+'q='+encodeURIComponent(this.query.trim()) : '');
+          const [r, rc] = await Promise.all([fetch(this.buildUrl(0)), fetch(countUrl)]);
+          if (!r.ok) throw new Error();
+          const data = await r.json();
+          this.jobs = data;
+          this.total = data.length;
+          this.hasMore = data.length >= this.limit;
+          if (rc.ok) { const dc = await rc.json(); this.totalCount = dc.total; }
+        } catch(e) {
+          this.jobs = [];
+          this.total = 0;
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      async search() {
+        await this.load();
+      },
+
+      async loadMore() {
+        this.loadingMore = true;
+        this.offset += this.limit;
+        try {
+          const r = await fetch(this.buildUrl(this.offset));
+          if (r.ok) {
+            const data = await r.json();
+            this.jobs = [...this.jobs, ...data];
+            this.total = this.jobs.length;
+            this.hasMore = data.length >= this.limit;
+          }
+        } catch(e) {}
+        finally { this.loadingMore = false; }
+      },
+
+      postuler(job) {
+        if (!this.token) {
+          sessionStorage.setItem('kz_return', '/pages/offres-emploi.html');
+          sessionStorage.setItem('kz_apply_job', job.id);
+          // Afficher modal choix login/register
+          this.showAuthModal = true;
+          return;
+        }
+        if (job.apply_url) {
+          window.open(job.apply_url, '_blank');
+        } else {
+          this.showToast('Candidature via Mosala — bientôt disponible !', 'success');
+        }
+      },
+
+      openPostForm() {
+        this.pfError = '';
+        this.pf = { title:'', company:'', opportunity_type:'CDI', location:'Kinshasa', category:'', salary_range:'', description:'', apply_url:'' };
+        this.showPostModal = true;
+      },
+
+      async submitPostForm() {
+        this.pfError = '';
+        if (!this.pf.title.trim())       { this.pfError = 'Titre requis.'; return; }
+        if (!this.pf.company.trim())     { this.pfError = 'Entreprise requise.'; return; }
+        if (!this.pf.description.trim()) { this.pfError = 'Description requise.'; return; }
+        this.pfLoading = true;
+        try {
+          const headers = { 'Content-Type': 'application/json' };
+          if (this.token) headers['Authorization'] = 'Bearer ' + this.token;
+          const r = await fetch('/jobs', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ ...this.pf, origin: 'native' })
+          });
+          if (r.status === 401) {
+            this.showPostModal = false;
+            window.location.href = '/pages/login.html';
+            return;
+          }
+          if (!r.ok) {
+            const e = await r.json().catch(()=>({}));
+            this.pfError = e?.detail || "Erreur lors de l'envoi.";
+            return;
+          }
+          this.showPostModal = false;
+          this.showToast('✅ Offre soumise ! Visible après validation (24h max).', 'success');
+          this.pf = { title:'', company:'', opportunity_type:'CDI', location:'Kinshasa', category:'', salary_range:'', description:'', apply_url:'' };
+        } catch { this.pfError = 'Erreur réseau. Réessaie.'; }
+        finally { this.pfLoading = false; }
+      },
+
+      showToast(msg, type='success') {
+        this.toast = { show: true, msg, type };
+        setTimeout(() => this.toast.show = false, 3000);
+      },
+    }
+  }
+  </script>
+
+  <!-- ══ MODALE POSTER UNE OFFRE ══════════════════════════════════════ -->
+  <div x-show="showPostModal" x-transition.opacity
+       style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;"
+       @click.self="showPostModal=false">
+    <div style="background:#fff;border-radius:20px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:2rem;box-shadow:0 20px 60px rgba(0,0,0,.2);"
+         @click.stop>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <h2 style="font-size:1.2rem;font-weight:900;color:#0F172A;margin:0;">📋 Poster une offre d'emploi</h2>
+        <button @click="showPostModal=false" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:1.4rem;line-height:1;">✕</button>
+      </div>
+
+      <!-- Formulaire -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div style="grid-column:1/3;">
+          <label style="display:block;font-size:.82rem;font-weight:700;color:#374151;margin-bottom:.35rem;">Titre du poste *</label>
+          <input x-model="pf.title" placeholder="Ex: Développeur Full Stack" style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:.65rem .9rem;font-size:.9rem;outline:none;box-sizing:border-box;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:.82rem;font-weight:700;color:#374151;margin-bottom:.35rem;">Entreprise *</label>
+          <input x-model="pf.company" placeholder="Ex: Vodacom Congo" style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:.65rem .9rem;font-size:.9rem;outline:none;box-sizing:border-box;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:.82rem;font-weight:700;color:#374151;margin-bottom:.35rem;">Type *</label>
+          <select x-model="pf.opportunity_type" style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:.65rem .9rem;font-size:.9rem;outline:none;background:#fff;box-sizing:border-box;">
+            <option value="CDI">CDI</option>
+            <option value="CDD">CDD</option>
+            <option value="Stage">Stage</option>
+            <option value="Freelance">Freelance</option>
+            <option value="Consulting">Consulting</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:.82rem;font-weight:700;color:#374151;margin-bottom:.35rem;">Ville *</label>
+          <select x-model="pf.location" style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:.65rem .9rem;font-size:.9rem;outline:none;background:#fff;box-sizing:border-box;">
+            <option value="Kinshasa">Kinshasa</option>
+            <option value="Lubumbashi">Lubumbashi</option>
+            <option value="Goma">Goma</option>
+            <option value="Bukavu">Bukavu</option>
+            <option value="Mbuji-Mayi">Mbuji-Mayi</option>
+            <option value="Kisangani">Kisangani</option>
+            <option value="Matadi">Matadi</option>
+            <option value="Kolwezi">Kolwezi</option>
+            <option value="Bunia">Bunia</option>
+            <option value="Kananga">Kananga</option>
+            <option value="Beni">Beni</option>
+            <option value="Mbandaka">Mbandaka</option>
+            <option value="Kalemie">Kalemie</option>
+            <option value="Remote">🌐 Remote</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:.82rem;font-weight:700;color:#374151;margin-bottom:.35rem;">Catégorie</label>
+          <input x-model="pf.category" placeholder="Tech, Finance, Santé…" style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:.65rem .9rem;font-size:.9rem;outline:none;box-sizing:border-box;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:.82rem;font-weight:700;color:#374151;margin-bottom:.35rem;">Salaire</label>
+          <input x-model="pf.salary_range" placeholder="Ex: $800-1200/mois" style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:.65rem .9rem;font-size:.9rem;outline:none;box-sizing:border-box;" />
+        </div>
+        <div style="grid-column:1/3;">
+          <label style="display:block;font-size:.82rem;font-weight:700;color:#374151;margin-bottom:.35rem;">Description *</label>
+          <textarea x-model="pf.description" rows="4" placeholder="Décris le poste, les missions, les requis…" style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:.65rem .9rem;font-size:.9rem;outline:none;resize:vertical;box-sizing:border-box;"></textarea>
+        </div>
+        <div style="grid-column:1/3;">
+          <label style="display:block;font-size:.82rem;font-weight:700;color:#374151;margin-bottom:.35rem;">Lien pour postuler</label>
+          <input x-model="pf.apply_url" placeholder="https://…" style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:.65rem .9rem;font-size:.9rem;outline:none;box-sizing:border-box;" />
+        </div>
+      </div>
+
+      <p x-show="pfError" x-text="pfError" style="color:#ef4444;font-size:.82rem;font-weight:600;margin-bottom:.75rem;"></p>
+
+      <div style="display:flex;gap:.75rem;">
+        <button @click="submitPostForm()" :disabled="pfLoading"
+          style="flex:1;background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;font-weight:700;padding:.75rem;border-radius:10px;border:none;cursor:pointer;font-size:.9rem;"
+          :style="pfLoading?'opacity:.6;cursor:not-allowed;':''">
+          <span x-text="pfLoading ? 'Envoi en cours…' : '✅ Soumettre l\'offre'"></span>
+        </button>
+        <button @click="showPostModal=false" style="padding:.75rem 1.2rem;border-radius:10px;border:1.5px solid #e5e7eb;background:#fff;cursor:pointer;font-weight:600;color:#374151;">
+          Annuler
+        </button>
+      </div>
+
+      <p style="font-size:.75rem;color:#9ca3af;text-align:center;margin-top:1rem;">
+        L'offre sera visible après validation par notre équipe (24h max).
+      </p>
+    </div>
+  </div>
+</body>
+</html>

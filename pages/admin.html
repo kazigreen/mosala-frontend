@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mosala — Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak]{display:none!important}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9;}
+    .sidebar{background:#0f172a;min-height:100vh;width:220px;flex-shrink:0;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:.65rem 1rem;color:#94a3b8;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;transition:all .2s;margin:.15rem .4rem;}
+    .nav-item:hover{background:#1e293b;color:#fff;}
+    .nav-item.active{background:#1e293b;color:#00B87C;border-left:3px solid #00B87C;}
+    .stat-card{background:#fff;border-radius:16px;padding:1.4rem;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+    .badge{display:inline-block;padding:.2rem .65rem;border-radius:99px;font-size:.75rem;font-weight:700;}
+    .badge-green{background:#d1fae5;color:#065f46;}
+    .badge-red{background:#fee2e2;color:#991b1b;}
+    .badge-yellow{background:#fef9c3;color:#854d0e;}
+    .badge-blue{background:#dbeafe;color:#1e40af;}
+    .btn-g{background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;font-weight:700;padding:.45rem .9rem;border-radius:8px;border:none;cursor:pointer;font-size:.82rem;}
+    .btn-r{background:#fee2e2;color:#991b1b;font-weight:700;padding:.45rem .9rem;border-radius:8px;border:none;cursor:pointer;font-size:.82rem;}
+    table{width:100%;border-collapse:collapse;}
+    th{text-align:left;padding:.7rem 1rem;font-size:.78rem;font-weight:700;color:#64748b;text-transform:uppercase;background:#f8fafc;}
+    td{padding:.8rem 1rem;font-size:.86rem;border-bottom:1px solid #f1f5f9;color:#374151;}
+    tr:hover td{background:#f8fafc;}
+    .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#0f172a;color:#fff;padding:.75rem 1.3rem;border-radius:12px;font-size:.88rem;z-index:9999;box-shadow:0 4px 24px rgba(0,0,0,.2);}
+  </style>
+</head>
+<body x-data="app()" x-init="init()" x-cloak>
+
+<!-- Loading -->
+<div x-show="!ready" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50">
+  <div class="text-center text-white">
+    <div class="text-5xl mb-4">🦺</div>
+    <p class="text-lg font-bold" x-text="msg"></p>
+  </div>
+</div>
+
+<!-- Layout -->
+<div x-show="ready" class="flex">
+
+  <!-- Sidebar -->
+  <aside class="sidebar flex flex-col py-6">
+    <div class="px-5 mb-8">
+      <div class="text-white font-black text-xl">Mosala</div>
+      <div class="text-xs text-emerald-400 font-bold mt-1">ADMIN PANEL</div>
+    </div>
+    <nav class="flex-1 space-y-1">
+      <div @click="go('stats')" :class="tab==='stats'?'active':''" class="nav-item">📊 Dashboard</div>
+      <div @click="go('users')" :class="tab==='users'?'active':''" class="nav-item">👥 Utilisateurs</div>
+      <div @click="go('jobs')"  :class="tab==='jobs'?'active':''"  class="nav-item">💼 Offres d'emploi</div>
+      <div @click="go('transactions')" :class="tab==='transactions'?'active':''" class="nav-item">💰 Transactions</div>
+      <div @click="go('notifications')" :class="tab==='notifications'?'active':''" class="nav-item">🔔 Notifications</div>
+    </nav>
+    <div class="px-5 mt-6 border-t border-slate-700 pt-4">
+      <p class="text-slate-400 text-xs mb-2 truncate" x-text="adminName"></p>
+      <button @click="logout()" class="text-red-400 text-sm font-bold hover:text-red-300">🚪 Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-8 overflow-auto min-h-screen">
+
+    <!-- STATS -->
+    <div x-show="tab==='stats'">
+      <h1 class="text-2xl font-black text-slate-800 mb-6">Dashboard</h1>
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <div class="stat-card"><div class="text-3xl mb-2">👥</div><div class="text-2xl font-black" x-text="stats.total_users??'…'"></div><div class="text-sm text-slate-500 font-semibold mt-1">Utilisateurs</div></div>
+        <div class="stat-card"><div class="text-3xl mb-2">💼</div><div class="text-2xl font-black" x-text="stats.total_offres_actives??'…'"></div><div class="text-sm text-slate-500 font-semibold mt-1">Offres actives</div></div>
+        <div class="stat-card"><div class="text-3xl mb-2">💰</div><div class="text-2xl font-black" x-text="stats.total_transactions??'…'"></div><div class="text-sm text-slate-500 font-semibold mt-1">Transactions</div></div>
+        <div class="stat-card"><div class="text-3xl mb-2">🏦</div><div class="text-2xl font-black text-emerald-600" x-text="'$'+(stats.total_frais_plateforme??0)"></div><div class="text-sm text-slate-500 font-semibold mt-1">Frais plateforme</div></div>
+        <div class="stat-card"><div class="text-3xl mb-2">🔔</div><div class="text-2xl font-black text-orange-500" x-text="stats.notifications_non_lues??'…'"></div><div class="text-sm text-slate-500 font-semibold mt-1">Notifs non lues</div></div>
+      </div>
+      <div class="bg-white rounded-2xl p-5 shadow-sm">
+        <p class="font-bold text-slate-700 mb-3">Accès rapides</p>
+        <div class="flex flex-wrap gap-3">
+          <button @click="go('users')" class="btn-g">👥 Utilisateurs</button>
+          <button @click="go('jobs')" class="btn-g">💼 Offres</button>
+          <button @click="go('transactions')" class="btn-g">💰 Transactions</button>
+          <button @click="go('notifications')" class="btn-g">🔔 Notifications</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div x-show="tab==='users'">
+      <div class="flex items-center justify-between mb-5">
+        <h1 class="text-2xl font-black text-slate-800">Utilisateurs</h1>
+        <span class="badge badge-blue" x-text="users.length+' chargés'"></span>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="p-4 border-b">
+          <input x-model="uq" @input.debounce.400ms="loadUsers()" placeholder="Rechercher nom, email…"
+            class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-emerald-400"/>
+        </div>
+        <div class="overflow-x-auto">
+          <table>
+            <thead><tr><th>Nom</th><th>Email</th><th>Statut</th><th>Rôle</th><th>Inscrit</th><th>Actions</th></tr></thead>
+            <tbody>
+              <template x-for="u in users" :key="u.id">
+                <tr>
+                  <td class="font-semibold" x-text="u.prenom+' '+u.nom"></td>
+                  <td x-text="u.email||'—'"></td>
+                  <td><span :class="u.statut==='actif'?'badge-green':u.statut==='suspendu'?'badge-red':'badge-yellow'" class="badge" x-text="u.statut"></span></td>
+                  <td x-text="u.role"></td>
+                  <td x-text="fd(u.created_at)"></td>
+                  <td class="flex gap-2 flex-wrap">
+                    <button @click="viewUser(u)" class="btn-g">👁 Voir</button>
+                    <button @click="openNotifUser(u)" title="Envoyer une notification"
+                      class="px-2 py-1 rounded-lg text-sm font-bold border border-orange-200 bg-orange-50 text-orange-500 hover:bg-orange-100 transition">🔔</button>
+                    <button x-show="u.statut!=='actif'" @click="setUserStatut(u.id,'actif')"
+                      class="px-2 py-1 rounded-lg text-sm font-bold border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition">✅ Activer</button>
+                    <button x-show="u.statut==='actif'" @click="setUserStatut(u.id,'suspendu')" class="btn-r">Suspendre</button>
+                  </td>
+                </tr>
+              </template>
+              <tr x-show="!users.length"><td colspan="6" class="text-center text-slate-400 py-10">Aucun utilisateur</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOBS -->
+    <div x-show="tab==='jobs'">
+      <div class="flex items-center justify-between mb-5">
+        <h1 class="text-2xl font-black text-slate-800">Offres d'emploi</h1>
+        <span class="badge badge-blue" x-text="jobs.length+' offres'"></span>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="p-4 border-b flex gap-3 flex-wrap">
+          <input x-model="jq" @input.debounce.400ms="loadJobs()" placeholder="Rechercher une offre…"
+            class="flex-1 min-w-0 border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-emerald-400"/>
+          <select x-model="jstatus" @change="loadJobs()" class="border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none">
+            <option value="">Tous statuts</option>
+            <option value="active">Active</option>
+            <option value="filled">Pourvue</option>
+            <option value="expired">Expirée</option>
+          </select>
+        </div>
+        <div class="overflow-x-auto">
+          <table>
+            <thead><tr><th>Titre</th><th>Entreprise</th><th>Type</th><th>Statut</th><th>Lieu</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody>
+              <template x-for="j in jobs" :key="j.id">
+                <tr>
+                  <td class="font-semibold" x-text="j.title"></td>
+                  <td x-text="j.company||'—'"></td>
+                  <td><span class="badge badge-blue" x-text="j.type"></span></td>
+                  <td><span :class="j.status==='active'?'badge-green':j.status==='filled'?'badge-yellow':'badge-red'" class="badge" x-text="j.status"></span></td>
+                  <td x-text="j.location||'—'"></td>
+                  <td x-text="fd(j.created_at)"></td>
+                  <td class="flex gap-2">
+                    <button x-show="j.status!=='active'" @click="setJobStatus(j.id,'active')" class="btn-g">Activer</button>
+                    <button x-show="j.status==='active'" @click="setJobStatus(j.id,'expired')" class="btn-r">Expirer</button>
+                    <button @click="delJob(j.id)" class="btn-r">🗑</button>
+                  </td>
+                </tr>
+              </template>
+              <tr x-show="!jobs.length"><td colspan="7" class="text-center text-slate-400 py-10">Aucune offre</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div x-show="tab==='notifications'">
+      <div class="flex items-center justify-between mb-5">
+        <h1 class="text-2xl font-black text-slate-800">🔔 Notifications</h1>
+        <span class="badge" style="background:#fff7ed;color:#9a3412;" x-text="(stats.notifications_non_lues??0)+' non lues'"></span>
+      </div>
+
+      <!-- Formulaire envoi -->
+      <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+        <h2 class="text-lg font-black text-slate-700 mb-4">📤 Envoyer une notification</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Titre</label>
+            <input x-model="notifForm.titre" placeholder="Ex: Nouvelle fonctionnalité…"
+              class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-emerald-400"/>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Type</label>
+            <select x-model="notifForm.type" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none">
+              <option value="info">ℹ️ Info</option>
+              <option value="success">✅ Succès</option>
+              <option value="warning">⚠️ Avertissement</option>
+              <option value="promo">🎁 Promo</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Message</label>
+          <textarea x-model="notifForm.message" rows="3" placeholder="Contenu de la notification…"
+            class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-emerald-400 resize-none"></textarea>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Canal</label>
+            <select x-model="notifForm.canal" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none">
+              <option value="inapp">📱 In-app seulement</option>
+              <option value="email">📧 Email seulement</option>
+              <option value="both">📱+📧 Les deux</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Destinataire</label>
+            <select x-model="notifForm.user_id" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400">
+              <option value="">📢 Tous les utilisateurs</option>
+              <template x-for="u in users" :key="u.id">
+                <option :value="u.id" x-text="(u.prenom||'')+' '+(u.nom||'')+' — '+(u.email||'')"></option>
+              </template>
+            </select>
+          </div>
+        </div>
+        <button @click="sendNotif()"
+          :disabled="!notifForm.titre || !notifForm.message || notifSending"
+          class="btn-g px-6 py-2" :style="(!notifForm.titre||!notifForm.message||notifSending)?'opacity:.5;cursor:not-allowed':''">
+          <span x-show="!notifSending">🚀 Envoyer</span>
+          <span x-show="notifSending">⏳ Envoi…</span>
+        </button>
+      </div>
+
+      <!-- Liste notifications -->
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+          <div class="flex items-center gap-2"><h2 class="font-black text-slate-700 text-sm">📋 Historique récent</h2><span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-semibold">7 derniers jours</span></div>
+          <button @click="loadNotifications()" class="text-emerald-600 text-xs font-bold hover:underline">🔄 Rafraîchir</button>
+        </div>
+        <!-- Cards compactes -->
+        <div class="divide-y divide-slate-50">
+          <template x-for="n in notifications.filter(n => n.created_at && (Date.now() - new Date(n.created_at)) < 7*24*60*60*1000)" :key="n.id">
+            <div>
+              <!-- Ligne principale cliquable -->
+              <div @click="n._open = !n._open"
+                class="flex items-start gap-3 px-4 py-2.5 hover:bg-slate-50 transition cursor-pointer select-none">
+                <!-- Icône type -->
+                <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs mt-0.5"
+                  :class="n.type==='success'?'bg-green-100 text-green-600':n.type==='warning'?'bg-red-100 text-red-600':n.type==='promo'?'bg-yellow-100 text-yellow-600':'bg-blue-100 text-blue-600'"
+                  x-text="n.type==='success'?'✅':n.type==='warning'?'⚠️':n.type==='promo'?'🎁':'ℹ️'">
+                </div>
+                <!-- Contenu -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-semibold text-slate-800 text-sm truncate" x-text="n.titre"></span>
+                    <span :class="n.lu?'bg-green-100 text-green-700':'bg-orange-100 text-orange-700'"
+                      class="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                      x-text="n.lu?'✓ Lu':'● Non lu'"></span>
+                  </div>
+                  <p class="text-xs text-slate-400 truncate mt-0.5" x-text="n.message"></p>
+                </div>
+                <!-- Date + chevron -->
+                <div class="flex-shrink-0 text-right flex flex-col items-end gap-1">
+                  <div class="text-[10px] text-slate-400" x-text="fd(n.created_at)"></div>
+                  <svg :class="n._open?'rotate-180':''" class="w-3.5 h-3.5 text-slate-300 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+              </div>
+              <!-- Panneau expandé -->
+              <div x-show="n._open" x-transition class="bg-slate-50 px-4 py-3 border-t border-slate-100">
+                <p class="text-sm text-slate-700 leading-relaxed mb-3" x-text="n.message"></p>
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] text-slate-400 font-mono" x-text="'User : '+(n.user_id ? n.user_id.slice(0,12)+'…' : 'Tous les utilisateurs')"></span>
+                  <button x-show="!n.lu"
+                    @click.stop="markNotifLu(n)"
+                    class="text-xs font-bold px-3 py-1 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition">
+                    ✓ Marquer comme lu
+                  </button>
+                  <span x-show="n.lu" class="text-xs text-green-600 font-semibold">✓ Déjà lu</span>
+                </div>
+              </div>
+            </div>
+          </template>
+          <div x-show="!notifications.filter(n=>n.created_at&&(Date.now()-new Date(n.created_at))<7*24*60*60*1000).length" class="text-center text-slate-400 py-8 text-sm">Aucune notification cette semaine</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div x-show="tab==='transactions'">
+      <div class="flex items-center justify-between mb-5">
+        <h1 class="text-2xl font-black text-slate-800">Transactions</h1>
+        <span class="badge badge-blue" x-text="transactions.length+' transactions'"></span>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table>
+            <thead><tr><th>ID</th><th>Type</th><th>Montant</th><th>Frais</th><th>Statut</th><th>Date</th></tr></thead>
+            <tbody>
+              <template x-for="t in transactions" :key="t.id">
+                <tr>
+                  <td class="font-mono text-xs text-slate-400" x-text="t.id.slice(0,8)+'…'"></td>
+                  <td x-text="t.type||'—'"></td>
+                  <td class="font-bold" x-text="'$'+t.montant"></td>
+                  <td x-text="'$'+t.frais"></td>
+                  <td><span :class="t.statut==='success'?'badge-green':t.statut==='failed'?'badge-red':'badge-yellow'" class="badge" x-text="t.statut"></span></td>
+                  <td x-text="fd(t.created_at)"></td>
+                </tr>
+              </template>
+              <tr x-show="!transactions.length"><td colspan="6" class="text-center text-slate-400 py-10">Aucune transaction</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal Publier Offre -->
+<div x-show="showPublishModal" x-transition class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto" @click.self="showPublishModal=false">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 my-4">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-black text-slate-800">✏️ Publier une offre</h2>
+      <button @click="showPublishModal=false" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
+    </div>
+    <div class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Titre *</label>
+          <input x-model="publishForm.title" placeholder="Ex: Développeur Web" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Entreprise *</label>
+          <input x-model="publishForm.company" placeholder="Nom de l'entreprise" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400"/>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Type</label>
+          <select x-model="publishForm.opportunity_type" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none">
+            <option>CDI</option><option>CDD</option><option>Stage</option><option>Freelance</option><option>Temps partiel</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Lieu</label>
+          <select x-model="publishForm.location" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none">
+            <option>Kinshasa</option><option>Lubumbashi</option><option>Goma</option><option>Bukavu</option><option>Mbuji-Mayi</option><option>Kisangani</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Catégorie</label>
+          <input x-model="publishForm.category" placeholder="Ex: Tech, Design…" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Salaire</label>
+          <input x-model="publishForm.salary_range" placeholder="Ex: 500–800$" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400"/>
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Description *</label>
+        <textarea x-model="publishForm.description" rows="4" placeholder="Décrivez le poste, les responsabilités, les exigences…"
+          class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400 resize-none"></textarea>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Lien de candidature</label>
+        <input x-model="publishForm.apply_url" placeholder="https://…" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400"/>
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button @click="publishJob()" :disabled="!publishForm.title||!publishForm.company||!publishForm.description||publishLoading"
+          class="btn-g flex-1 py-2.5" :style="(!publishForm.title||!publishForm.company||!publishForm.description||publishLoading)?'opacity:.5;cursor:not-allowed':''">
+          <span x-show="!publishLoading">🚀 Publier</span>
+          <span x-show="publishLoading">⏳ En cours…</span>
+        </button>
+        <button @click="showPublishModal=false" class="flex-1 bg-slate-100 text-slate-600 font-bold py-2.5 rounded-lg text-sm hover:bg-slate-200">Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Détail Offre -->
+<div x-show="showJobModal" x-transition class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto" @click.self="showJobModal=false">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 my-4">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-black text-slate-800">📋 Détail de l'offre</h2>
+      <button @click="showJobModal=false" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
+    </div>
+    <template x-if="selectedJob">
+      <div class="space-y-3">
+        <div><p class="text-xs font-bold text-slate-400 uppercase">Titre</p><p class="font-black text-slate-800 text-lg" x-text="selectedJob.title"></p></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><p class="text-xs font-bold text-slate-400 uppercase">Entreprise</p><p class="text-slate-700" x-text="selectedJob.company"></p></div>
+          <div><p class="text-xs font-bold text-slate-400 uppercase">Lieu</p><p class="text-slate-700" x-text="selectedJob.location||'—'"></p></div>
+          <div><p class="text-xs font-bold text-slate-400 uppercase">Type</p><p class="text-slate-700" x-text="selectedJob.opportunity_type||selectedJob.type||'—'"></p></div>
+          <div><p class="text-xs font-bold text-slate-400 uppercase">Salaire</p><p class="text-slate-700" x-text="selectedJob.salary_range||'Non précisé'"></p></div>
+        </div>
+        <div><p class="text-xs font-bold text-slate-400 uppercase mb-1">Description</p><p class="text-sm text-slate-600 leading-relaxed" x-text="selectedJob.description"></p></div>
+        <div x-show="selectedJob.apply_url"><p class="text-xs font-bold text-slate-400 uppercase">Lien candidature</p><a :href="selectedJob.apply_url" target="_blank" class="text-emerald-600 text-sm underline" x-text="selectedJob.apply_url"></a></div>
+        <div class="flex gap-2 pt-2">
+          <button x-show="selectedJob.status==='pending'" @click="setJobStatus(selectedJob.id,'active'); pendingJobs=pendingJobs.filter(x=>x.id!==selectedJob.id); showJobModal=false" class="btn-g flex-1">✅ Valider</button>
+          <button x-show="selectedJob.status==='pending'" @click="setJobStatus(selectedJob.id,'rejected'); pendingJobs=pendingJobs.filter(x=>x.id!==selectedJob.id); showJobModal=false" class="btn-r flex-1">❌ Rejeter</button>
+          <button @click="showJobModal=false" class="flex-1 bg-slate-100 text-slate-600 font-bold py-2 rounded-lg text-sm hover:bg-slate-200">Fermer</button>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+
+<!-- Modal Notification Utilisateur -->
+<div x-show="showNotifUserModal" x-transition class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click.self="closeNotifUserModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h2 class="text-lg font-black text-slate-800">🔔 Envoyer une notification</h2>
+        <p class="text-xs text-slate-400 mt-0.5" x-show="notifTargetUser" x-text="'À : '+(notifTargetUser?.prenom||'')+' '+(notifTargetUser?.nom||'')+' — '+(notifTargetUser?.email||'')"></p>
+      </div>
+      <button @click="closeNotifUserModal()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Titre</label>
+        <input x-model="notifForm.titre" placeholder="Ex: Votre profil a été vérifié…"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-emerald-400"/>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Message</label>
+        <textarea x-model="notifForm.message" rows="3" placeholder="Contenu…"
+          class="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-emerald-400 resize-none"></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Type</label>
+          <select x-model="notifForm.type" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none">
+            <option value="info">ℹ️ Info</option>
+            <option value="success">✅ Succès</option>
+            <option value="warning">⚠️ Avertissement</option>
+            <option value="promo">🎁 Promo</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Canal</label>
+          <select x-model="notifForm.canal" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none">
+            <option value="inapp">📱 In-app</option>
+            <option value="email">📧 Email</option>
+            <option value="both">📱+📧 Les deux</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex gap-2 pt-1">
+        <button @click="sendNotif(); if(!notifSending) closeNotifUserModal()"
+          :disabled="!notifForm.titre || !notifForm.message || notifSending"
+          class="btn-g flex-1 py-2.5" :style="(!notifForm.titre||!notifForm.message||notifSending)?'opacity:.5;cursor:not-allowed':''">
+          <span x-show="!notifSending">🚀 Envoyer</span>
+          <span x-show="notifSending">⏳ Envoi…</span>
+        </button>
+        <button @click="closeNotifUserModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-2.5 rounded-lg text-sm hover:bg-slate-200">Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Utilisateur -->
+<div x-show="showUserModal" x-transition class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click.self="closeUserModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-xl font-black text-slate-800">👤 Détail utilisateur</h2>
+      <button @click="closeUserModal()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
+    </div>
+    <template x-if="selectedUser">
+      <div class="space-y-3">
+        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+          <span class="text-slate-500 text-sm font-semibold">Nom complet</span>
+          <span class="font-bold text-slate-800" x-text="selectedUser.prenom+' '+selectedUser.nom"></span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+          <span class="text-slate-500 text-sm font-semibold">Email</span>
+          <span class="text-slate-700" x-text="selectedUser.email||'—'"></span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+          <span class="text-slate-500 text-sm font-semibold">Téléphone</span>
+          <span class="text-slate-700" x-text="selectedUser.telephone||'—'"></span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+          <span class="text-slate-500 text-sm font-semibold">Ville</span>
+          <span class="text-slate-700" x-text="selectedUser.ville||'—'"></span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+          <span class="text-slate-500 text-sm font-semibold">Rôle</span>
+          <span class="text-slate-700" x-text="selectedUser.role"></span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+          <span class="text-slate-500 text-sm font-semibold">Statut</span>
+          <span :class="selectedUser.statut==='actif'?'badge-green':selectedUser.statut==='suspendu'?'badge-red':'badge-yellow'" class="badge" x-text="selectedUser.statut"></span>
+        </div>
+        <div class="flex justify-between items-center py-2 border-b border-slate-100">
+          <span class="text-slate-500 text-sm font-semibold">Inscrit le</span>
+          <span class="text-slate-700" x-text="fd(selectedUser.created_at)"></span>
+        </div>
+        <div class="flex gap-2 pt-3">
+          <button x-show="selectedUser.statut!=='suspendu'" @click="setUserStatut(selectedUser.id,'suspendu'); closeUserModal()" class="btn-r flex-1">🚫 Suspendre</button>
+          <button x-show="selectedUser.statut==='suspendu'" @click="setUserStatut(selectedUser.id,'actif'); closeUserModal()" class="btn-g flex-1">✅ Réactiver</button>
+          <button @click="closeUserModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-2 rounded-lg text-sm hover:bg-slate-200">Fermer</button>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+
+<!-- Toast -->
+<div x-show="toast" x-transition class="toast" x-text="toast"></div>
+
+<script>
+const API = 'https://mosala.io';
+function app() { return {
+  ready:false, msg:'Vérification des droits…', tab:'stats',
+  adminName:'', stats:{},
+  users:[], jobs:[], pendingJobs:[], transactions:[],
+  jobTab:'pending', showPublishModal:false,
+  publishForm:{title:'',company:'',location:'Kinshasa',opportunity_type:'CDI',category:'',description:'',salary_range:'',apply_url:''},
+  publishLoading:false, selectedJob:null, showJobModal:false,
+  uq:'', jq:'', jstatus:'', toast:'',
+  selectedUser: null, showUserModal: false,
+  notifications: [],
+  notifForm: { titre:'', message:'', type:'info', canal:'inapp', user_id:'' },
+  notifSending: false,
+  showNotifUserModal: false, notifTargetUser: null,
+
+  async init() {
+    const token = sessionStorage.getItem('kv_token') || localStorage.getItem('kv_token');
+    if (!token) { this.msg='⛔ Non connecté…'; setTimeout(()=>location.href='/',1500); return; }
+    try {
+      const r = await fetch(API+'/auth/me', {headers:{Authorization:'Bearer '+token}});
+      if (!r.ok) throw new Error();
+      const u = await r.json();
+      if (u.role !== 'admin') { this.msg='⛔ Accès refusé'; setTimeout(()=>location.href='/',2000); return; }
+      this.adminName = u.prenom+' '+u.nom;
+      this.ready = true;
+      this.loadStats();
+    } catch { this.msg='⛔ Session invalide'; setTimeout(()=>location.href='/',1500); }
+  },
+
+  tok() { return sessionStorage.getItem('kv_token') || localStorage.getItem('kv_token'); },
+
+  go(t) {
+    this.tab = t;
+    if (t==='users') this.loadUsers();
+    if (t==='jobs') { this.loadPendingJobs(); this.jobTab='pending'; }
+    if (t==='transactions') this.loadTransactions();
+    if (t==='notifications') { this.loadNotifications(); if (!this.users.length) this.loadUsers(); }
+  },
+
+  async loadStats() {
+    const r = await fetch(API+'/admin/stats', {headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) this.stats = await r.json();
+  },
+
+  async loadUsers() {
+    let url = API+'/admin/users?limit=100';
+    if (this.uq) url += '&q='+encodeURIComponent(this.uq);
+    const r = await fetch(url, {headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) this.users = await r.json();
+  },
+
+  async loadPendingJobs() {
+    const r = await fetch(API+'/admin/jobs/pending', {headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) this.pendingJobs = await r.json();
+  },
+
+  async publishJob() {
+    if (!this.publishForm.title || !this.publishForm.company || !this.publishForm.description) return;
+    this.publishLoading = true;
+    const r = await fetch(API+'/jobs', {
+      method:'POST',
+      headers:{'Content-Type':'application/json', Authorization:'Bearer '+this.tok()},
+      body: JSON.stringify(this.publishForm)
+    });
+    this.publishLoading = false;
+    if (r.ok) {
+      this.showToast('✅ Offre publiée !');
+      this.showPublishModal = false;
+      this.publishForm = {title:'',company:'',location:'Kinshasa',opportunity_type:'CDI',category:'',description:'',salary_range:'',apply_url:''};
+      this.loadJobs();
+    } else {
+      this.showToast('❌ Erreur lors de la publication');
+    }
+  },
+
+  viewJobDetail(j) { this.selectedJob = j; this.showJobModal = true; },
+
+  async loadJobs() {
+    let url = API+'/admin/jobs?limit=100';
+    if (this.jq) url += '&q='+encodeURIComponent(this.jq);
+    if (this.jstatus) url += '&status='+this.jstatus;
+    const r = await fetch(url, {headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) this.jobs = await r.json();
+  },
+
+
+
+  async loadTransactions() {
+    const r = await fetch(API+'/admin/transactions?limit=100', {headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) this.transactions = await r.json();
+  },
+
+  async setUserStatut(id, statut) {
+    const r = await fetch(API+'/admin/users/'+id+'/statut?statut='+statut, {method:'PATCH', headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) { this.showToast('✅ Statut mis à jour : '+statut); this.loadUsers(); }
+    else this.showToast('❌ Erreur lors de la mise à jour');
+  },
+
+  async setJobStatus(id, status) {
+    const r = await fetch(API+'/admin/jobs/'+id+'/status?status='+status, {method:'PATCH', headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) { this.showToast('✅ Offre: '+status); this.loadJobs(); }
+    else this.showToast('❌ Erreur');
+  },
+
+  async delJob(id) {
+    if (!confirm('Supprimer cette offre ?')) return;
+    const r = await fetch(API+'/admin/jobs/'+id, {method:'DELETE', headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) { this.showToast('🗑 Supprimée'); this.loadJobs(); }
+    else this.showToast('❌ Erreur');
+  },
+
+  viewUser(u) { this.selectedUser = u; this.showUserModal = true; },
+  openNotifUser(u) {
+    this.notifTargetUser = u;
+    this.notifForm = { titre:'', message:'', type:'info', canal:'inapp', user_id: u.id };
+    this.showNotifUserModal = true;
+  },
+  closeNotifUserModal() { this.showNotifUserModal = false; this.notifTargetUser = null; },
+  closeUserModal() { this.showUserModal = false; this.selectedUser = null; },
+
+  async markNotifLu(n) {
+    const r = await fetch(API+'/notifications/'+n.id+'/lu', {method:'PATCH', headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) {
+      n.lu = true;
+      n._open = false;
+      if (this.stats.notifications_non_lues > 0) this.stats.notifications_non_lues--;
+      this.showToast('✓ Notification marquée comme lue');
+    }
+  },
+
+  async loadNotifications() {
+    const r = await fetch(API+'/admin/notifications/list?limit=50', {headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) this.notifications = await r.json();
+  },
+
+  async sendNotif() {
+    if (!this.notifForm.titre || !this.notifForm.message) return;
+    this.notifSending = true;
+    const body = { titre: this.notifForm.titre, message: this.notifForm.message, type: this.notifForm.type, canal: this.notifForm.canal };
+    if (this.notifForm.user_id) body.user_id = this.notifForm.user_id;
+    const r = await fetch(API+'/admin/notifications/send', {
+      method:'POST',
+      headers:{'Content-Type':'application/json', Authorization:'Bearer '+this.tok()},
+      body: JSON.stringify(body)
+    });
+    this.notifSending = false;
+    if (r.ok) {
+      const d = await r.json();
+      this.showToast('✅ Envoyé à '+d.sent+' utilisateur(s)');
+      this.notifForm = { titre:'', message:'', type:'info', canal:'inapp', user_id:'' };
+      this.loadNotifications();
+      this.loadStats();
+    } else {
+      this.showToast('Erreur lors de l envoi');
+    }
+  },
+
+  logout() { sessionStorage.clear(); localStorage.removeItem('kv_token'); location.href='/'; },
+
+  fd(d) { return d ? new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}) : '—'; },
+
+  showToast(m) { this.toast = m; setTimeout(()=>this.toast='',3000); }
+}}
+</script>
+</body>
+</html>
