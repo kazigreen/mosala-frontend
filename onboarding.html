@@ -468,6 +468,9 @@
         },
 
         goToDashboard() {
+          // Retourner vers la page d'origine si kz_return est défini
+          const _ret = sessionStorage.getItem('kz_return');
+          if (_ret) { sessionStorage.removeItem('kz_return'); window.location.replace(_ret); return; }
           window.location.replace('/');
         }
       }
