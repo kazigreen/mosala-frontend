@@ -1,64 +1,404 @@
-<div x-show="activeTab==='nouveau'" class="p-4">
-      <div class="card p-6">
-        <h2 class="text-xl font-black text-kv-dark mb-1">📋 Publier un projet</h2>
-        <p class="text-gray-500 text-sm mb-5">Décris ton besoin — les freelances te trouveront</p>
+    <div x-show="activeTab==='nouveau'" class="min-h-screen pb-24" style="background:#F5F4F2;">
 
-        <form @submit.prevent="createProjet()">
-          <div class="mb-4">
-            <label class="text-xs font-semibold text-gray-600 mb-1 block">Titre du projet *</label>
-            <input x-model="projetForm.titre" class="input"
-                   placeholder="Ex: Électricien pour installation à Gombe" required />
+      <!-- ── HEADER ── -->
+      <div class="bg-white border-b border-gray-100 px-4 pt-5 pb-4" style="box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+        <div class="max-w-2xl mx-auto">
+          <h2 class="text-lg font-black text-gray-900">📋 Publier un projet</h2>
+          <p class="text-xs text-gray-400 mt-0.5">Décris ton besoin — les freelances te trouveront</p>
+          <!-- Stepper progress -->
+          <div class="flex items-center gap-1 mt-4">
+            <template x-for="s in [1,2,3,4]" :key="s">
+              <div class="flex items-center flex-1">
+                <div class="flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-black transition-all duration-300 flex-shrink-0"
+                     :style="projetStep > s ? 'background:#00B87C;color:white;' : projetStep === s ? 'background:#0F172A;color:white;box-shadow:0 0 0 3px rgba(15,23,42,0.12);' : 'background:#F1F5F9;color:#94A3B8;'"
+                     x-text="projetStep > s ? '✓' : s"></div>
+                <div x-show="s < 4" class="flex-1 h-0.5 mx-1 rounded-full transition-all duration-300"
+                     :style="projetStep > s ? 'background:#00B87C;' : 'background:#F1F5F9;'"></div>
+              </div>
+            </template>
+          </div>
+          <div class="flex justify-between mt-1.5">
+            <template x-for="(label, i) in ['Catégorie','Description','Budget','Jalons']" :key="i">
+              <span class="text-[9px] font-semibold transition-colors duration-200"
+                    :style="projetStep === i+1 ? 'color:#0F172A;' : projetStep > i+1 ? 'color:#00B87C;' : 'color:#CBD5E1;'"
+                    x-text="label"></span>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 pt-5 max-w-2xl mx-auto">
+
+        <!-- ══ ÉTAPE 1 : Catégorie + Titre ══ -->
+        <div x-show="projetStep === 1" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+
+          <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
+            <p class="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">Catégorie du projet</p>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <template x-for="cat in [
+                {id:'dev',      icon:'💻', label:'Développement'},
+                {id:'design',   icon:'🎨', label:'Design & Créa'},
+                {id:'redac',    icon:'✍️',  label:'Rédaction'},
+                {id:'marketing',icon:'📣', label:'Marketing'},
+                {id:'btp',      icon:'🏗️', label:'BTP & Travaux'},
+                {id:'compta',   icon:'📊', label:'Comptabilité'},
+                {id:'photo',    icon:'📸', label:'Photo & Vidéo'},
+                {id:'autre',    icon:'🔧', label:'Autre'}
+              ]" :key="cat.id">
+                <button type="button"
+                        @click="projetForm.categorie = cat.id"
+                        class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 text-left transition-all duration-150"
+                        :style="projetForm.categorie === cat.id
+                          ? 'border-color:#00B87C;background:#F0FBF7;'
+                          : 'border-color:#F1F5F9;background:white;'">
+                  <span class="text-lg leading-none" x-text="cat.icon"></span>
+                  <span class="text-xs font-bold leading-tight"
+                        :style="projetForm.categorie === cat.id ? 'color:#00B87C;' : 'color:#475569;'"
+                        x-text="cat.label"></span>
+                </button>
+              </template>
+            </div>
           </div>
 
-          <div class="mb-4">
-            <label class="text-xs font-semibold text-gray-600 mb-1 block">Description</label>
-            <textarea x-model="projetForm.description" class="input" rows="4"
-                      placeholder="Décris les détails, le lieu, les délais..."></textarea>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 mb-4">
-            <div>
-              <label class="text-xs font-semibold text-gray-600 mb-1 block">Budget</label>
-              <input x-model="projetForm.budget" type="number" class="input" placeholder="50000" />
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-600 mb-1 block">Devise</label>
-              <select x-model="projetForm.devise" class="input">
-                <option value="GNF">GNF</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="CDF">CDF</option>
-              </select>
+          <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-5">
+            <label class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2 block">Titre du projet *</label>
+            <input x-model="projetForm.titre"
+                   type="text" maxlength="80"
+                   placeholder="Ex: Développeur mobile pour app de livraison"
+                   class="w-full px-4 py-3 rounded-xl border-2 text-sm font-semibold text-gray-900 outline-none transition-all"
+                   :style="projetForm.titre.length > 0 ? 'border-color:#00B87C;background:#FAFFFE;' : 'border-color:#E8ECF4;background:white;'"
+                   @focus="$el.style.borderColor='#00B87C'"
+                   @blur="$el.style.borderColor=projetForm.titre?'#00B87C':'#E8ECF4'" />
+            <div class="flex justify-between mt-1.5">
+              <span class="text-[10px] text-gray-400">Sois précis — c'est la première chose vue</span>
+              <span class="text-[10px] font-semibold"
+                    :style="projetForm.titre.length > 60 ? 'color:#F59E0B;' : 'color:#94A3B8;'"
+                    x-text="projetForm.titre.length + '/80'"></span>
             </div>
           </div>
 
-          <!-- Jalons -->
-          <div class="mb-4 bg-kv-bg rounded-xl p-3">
-            <div class="flex justify-between items-center mb-2">
-              <label class="text-xs font-semibold text-gray-600">🔒 Jalons Escrow</label>
-              <button type="button" @click="addJalon()" class="text-kv-green text-xs font-bold">+ Ajouter</button>
-            </div>
-            <p class="text-xs text-gray-400 mb-2">Découpe le paiement en étapes sécurisées</p>
+          <button @click="if(!projetForm.titre.trim()){showToast('Ajoute un titre','error');return;} if(!projetForm.categorie){showToast('Choisis une catégorie','error');return;} projetStep=2"
+                  class="w-full py-3.5 rounded-2xl font-black text-sm text-white transition-all"
+                  style="background:linear-gradient(135deg,#0F172A,#1E293B);box-shadow:0 4px 14px rgba(15,23,42,0.25);">
+            Continuer →
+          </button>
+        </div>
 
-            <div class="space-y-2">
+        <!-- ══ ÉTAPE 2 : Description + Tags ══ -->
+        <div x-show="projetStep === 2" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+
+          <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
+            <label class="text-xs font-black text-gray-500 uppercase tracking-wider mb-2 block">Description du projet *</label>
+            <textarea x-model="projetForm.description" rows="5" maxlength="600"
+                      placeholder="Décris clairement ton besoin : contexte, objectifs, contraintes, délais souhaités..."
+                      class="w-full px-4 py-3 rounded-xl border-2 text-sm text-gray-800 outline-none transition-all resize-none leading-relaxed"
+                      :style="projetForm.description.length > 0 ? 'border-color:#00B87C;background:#FAFFFE;' : 'border-color:#E8ECF4;background:white;'"
+                      @focus="$el.style.borderColor='#00B87C'"
+                      @blur="$el.style.borderColor=projetForm.description?'#00B87C':'#E8ECF4'"></textarea>
+            <div class="flex justify-between mt-1">
+              <span class="text-[10px] text-gray-400">Plus c'est détaillé, plus tu reçois des bons profils</span>
+              <span class="text-[10px] font-semibold" :style="projetForm.description.length>500?'color:#F59E0B;':'color:#94A3B8;'"
+                    x-text="projetForm.description.length+'/600'"></span>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-5">
+            <label class="text-xs font-black text-gray-500 uppercase tracking-wider mb-1 block">Compétences recherchées</label>
+            <p class="text-[10px] text-gray-400 mb-3">Clique pour ajouter · max 5 tags</p>
+            <!-- Tags suggestions par catégorie -->
+            <div class="flex flex-wrap gap-1.5 mb-3">
+              <template x-for="tag in (
+                projetForm.categorie==='dev'       ? ['React','Node.js','Flutter','Python','API REST','Laravel','Vue.js','Mobile','TypeScript','Django'] :
+                projetForm.categorie==='design'    ? ['Figma','Logo','UI/UX','Illustrator','Photoshop','Branding','Motion','Canva','3D','Webflow'] :
+                projetForm.categorie==='redac'     ? ['SEO','Blog','Copywriting','Web3','Traduction','Script','Newsletter','Fiche produit','LinkedIn','Ghostwriting'] :
+                projetForm.categorie==='marketing' ? ['Facebook Ads','Google Ads','TikTok','Emailing','Stratégie','Communauté','Influenceur','Analytics','Growth','WhatsApp'] :
+                projetForm.categorie==='btp'       ? ['Maçonnerie','Électricité','Plomberie','Peinture','Carrelage','Menuiserie','Climatisation','Toiture','Soudure','Architecture'] :
+                projetForm.categorie==='compta'    ? ['Bilan','Paie','Fiscalité','Excel','Audit','Déclaration','Comptabilité','ERP','Trésorerie','Facturation'] :
+                projetForm.categorie==='photo'     ? ['Portrait','Événement','YouTube','Montage','Drone','Publicité','Reportage','Podcast','Clip','Instagram'] :
+                ['Communication','Formation','Traduction','Juridique','Transport','Ménage','Cuisine','Jardinage','Gardiennage','Autre']
+              )" :key="tag">
+                <button type="button"
+                        @click="projetForm.tags.includes(tag) ? projetForm.tags.splice(projetForm.tags.indexOf(tag),1) : projetForm.tags.length < 5 ? projetForm.tags.push(tag) : showToast('Max 5 tags','error')"
+                        class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all duration-150"
+                        :style="projetForm.tags.includes(tag)
+                          ? 'background:#00B87C;color:white;border-color:#00B87C;'
+                          : 'background:#F8FAFC;color:#475569;border-color:#E8ECF4;'">
+                  <span x-text="tag"></span>
+                </button>
+              </template>
+            </div>
+            <!-- Tags sélectionnés -->
+            <div x-show="projetForm.tags.length > 0" class="flex flex-wrap gap-1.5 pt-3 border-t border-gray-100">
+              <template x-for="tag in projetForm.tags" :key="tag">
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg"
+                      style="background:#F0FBF7;color:#00B87C;border:1px solid rgba(0,184,124,0.25);">
+                  <span x-text="tag"></span>
+                  <button type="button" @click="projetForm.tags.splice(projetForm.tags.indexOf(tag),1)"
+                          class="text-[#00B87C] hover:text-red-400 font-black leading-none ml-0.5">×</button>
+                </span>
+              </template>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button @click="projetStep=1"
+                    class="flex-1 py-3.5 rounded-2xl font-black text-sm transition-all"
+                    style="background:#F5F4F2;color:#475569;border:1.5px solid #E8ECF4;">
+              ← Retour
+            </button>
+            <button @click="if(!projetForm.description.trim()){showToast('Ajoute une description','error');return;} projetStep=3"
+                    class="flex-[2] py-3.5 rounded-2xl font-black text-sm text-white transition-all"
+                    style="background:linear-gradient(135deg,#0F172A,#1E293B);box-shadow:0 4px 14px rgba(15,23,42,0.25);">
+              Continuer →
+            </button>
+          </div>
+        </div>
+
+        <!-- ══ ÉTAPE 3 : Budget + Devise + Délai ══ -->
+        <div x-show="projetStep === 3" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+
+          <!-- Budget -->
+          <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
+            <label class="text-xs font-black text-gray-500 uppercase tracking-wider mb-3 block">Budget du projet</label>
+
+            <!-- Devise selector pills -->
+            <div class="flex gap-2 mb-3">
+              <template x-for="d in ['CDF','USD','EUR']" :key="d">
+                <button type="button" @click="projetForm.devise = d"
+                        class="flex-1 py-2 rounded-xl text-xs font-black border-2 transition-all"
+                        :style="projetForm.devise === d
+                          ? 'background:#0F172A;color:white;border-color:#0F172A;'
+                          : 'background:white;color:#64748B;border-color:#E8ECF4;'">
+                  <span x-text="d"></span>
+                </button>
+              </template>
+            </div>
+
+            <!-- Montant -->
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-gray-400"
+                    x-text="projetForm.devise === 'CDF' ? 'FC' : projetForm.devise === 'USD' ? '$' : '€'"></span>
+              <input x-model="projetForm.budget" type="number" min="0"
+                     placeholder="0"
+                     class="w-full pl-10 pr-4 py-3.5 rounded-xl border-2 text-xl font-black text-gray-900 outline-none transition-all"
+                     :style="projetForm.budget ? 'border-color:#00B87C;background:#FAFFFE;' : 'border-color:#E8ECF4;background:white;'"
+                     @focus="$el.style.borderColor='#00B87C'"
+                     @blur="$el.style.borderColor=projetForm.budget?'#00B87C':'#E8ECF4'" />
+            </div>
+
+            <!-- Raccourcis montants -->
+            <div class="grid grid-cols-4 gap-1.5 mt-2">
+              <template x-for="preset in (projetForm.devise==='USD' ? [50,100,200,500] : projetForm.devise==='EUR' ? [50,100,200,500] : [10000,25000,50000,100000])" :key="preset">
+                <button type="button" @click="projetForm.budget = preset"
+                        class="py-1.5 rounded-lg text-[10px] font-bold border transition-all"
+                        :style="Number(projetForm.budget)===preset
+                          ? 'background:#00B87C;color:white;border-color:#00B87C;'
+                          : 'background:#F8FAFC;color:#64748B;border-color:#E8ECF4;'"
+                        x-text="projetForm.devise==='CDF' ? new Intl.NumberFormat('fr-FR').format(preset) : preset"></button>
+              </template>
+            </div>
+
+            <p class="text-[10px] text-gray-400 mt-2">Laisse vide si le budget est à négocier</p>
+          </div>
+
+          <!-- Délai -->
+          <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-5">
+            <label class="text-xs font-black text-gray-500 uppercase tracking-wider mb-3 block">Délai souhaité</label>
+            <div class="grid grid-cols-2 gap-2">
+              <template x-for="opt in [
+                {val:'3j',   label:'Urgent',      sub:'Sous 3 jours',  icon:'⚡'},
+                {val:'1sem', label:'Cette semaine',sub:'3 à 7 jours',   icon:'📅'},
+                {val:'2sem', label:'2 semaines',  sub:'7 à 14 jours',  icon:'🗓️'},
+                {val:'1mois',label:'1 mois',      sub:'Ce mois-ci',    icon:'📆'},
+                {val:'flex', label:'Flexible',    sub:'Pas de rush',   icon:'🤝'},
+                {val:'disc', label:'À discuter',  sub:'Avec le talent',icon:'💬'}
+              ]" :key="opt.val">
+                <button type="button" @click="projetForm.delai = opt.val"
+                        class="flex items-center gap-2 p-3 rounded-xl border-2 text-left transition-all"
+                        :style="projetForm.delai === opt.val
+                          ? 'border-color:#00B87C;background:#F0FBF7;'
+                          : 'border-color:#F1F5F9;background:white;'">
+                  <span class="text-base leading-none" x-text="opt.icon"></span>
+                  <div>
+                    <p class="text-xs font-black leading-tight"
+                       :style="projetForm.delai===opt.val ? 'color:#00B87C;' : 'color:#0F172A;'"
+                       x-text="opt.label"></p>
+                    <p class="text-[9px] text-gray-400 mt-0.5" x-text="opt.sub"></p>
+                  </div>
+                </button>
+              </template>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button @click="projetStep=2"
+                    class="flex-1 py-3.5 rounded-2xl font-black text-sm transition-all"
+                    style="background:#F5F4F2;color:#475569;border:1.5px solid #E8ECF4;">
+              ← Retour
+            </button>
+            <button @click="projetStep=4"
+                    class="flex-[2] py-3.5 rounded-2xl font-black text-sm text-white transition-all"
+                    style="background:linear-gradient(135deg,#0F172A,#1E293B);box-shadow:0 4px 14px rgba(15,23,42,0.25);">
+              Continuer →
+            </button>
+          </div>
+        </div>
+
+        <!-- ══ ÉTAPE 4 : Jalons + Preview + Publier ══ -->
+        <div x-show="projetStep === 4" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-x-4" x-transition:enter-end="opacity-100 translate-x-0">
+
+          <!-- Jalons escrow -->
+          <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:#F0FBF7;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/><path stroke-linecap="round" d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-black text-gray-900">Jalons Escrow</span>
+              </div>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#F0FBF7;color:#00B87C;">Optionnel</span>
+            </div>
+            <p class="text-[10px] text-gray-400 mb-4">Découpe le paiement en étapes — plus de sécurité pour toi et le freelance</p>
+
+            <div class="space-y-2 mb-3">
               <template x-for="(j, i) in projetForm.jalons" :key="i">
-                <div class="flex gap-2 items-center">
-                  <input x-model="j.titre" class="input flex-1 text-sm" :placeholder="'Jalon ' + (i+1)" />
-                  <input x-model="j.montant" type="number" class="input w-24 text-sm" placeholder="Montant" />
+                <div class="flex gap-2 items-center p-2.5 rounded-xl" style="background:#F8FAFC;border:1px solid #F1F5F9;">
+                  <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-black text-white"
+                       style="background:#00B87C;" x-text="i+1"></div>
+                  <input x-model="j.titre"
+                         class="flex-1 bg-transparent text-xs font-semibold text-gray-800 outline-none border-b border-gray-200 pb-0.5"
+                         :placeholder="'Ex: Livraison ' + (i+1)" />
+                  <div class="flex items-center gap-1 flex-shrink-0">
+                    <input x-model="j.montant" type="number" min="0"
+                           class="w-20 text-right text-xs font-black text-gray-900 bg-transparent outline-none border-b border-gray-200 pb-0.5"
+                           placeholder="Montant" />
+                    <span class="text-[9px] text-gray-400 font-semibold" x-text="projetForm.devise"></span>
+                  </div>
                   <button type="button" @click="projetForm.jalons.splice(i,1)"
-                          class="text-red-400 hover:text-red-600 text-lg">×</button>
+                          class="w-5 h-5 flex items-center justify-center rounded-full text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors flex-shrink-0 font-black text-sm">×</button>
                 </div>
               </template>
-              <div x-show="projetForm.jalons.length === 0" class="text-xs text-gray-400 text-center py-2">
-                Aucun jalon — paiement en une fois
+              <div x-show="projetForm.jalons.length === 0"
+                   class="text-center py-4 rounded-xl text-[11px] text-gray-400"
+                   style="background:#F8FAFC;border:1.5px dashed #E8ECF4;">
+                Aucun jalon — paiement en une seule fois
+              </div>
+            </div>
+
+            <button type="button" @click="addJalon()"
+                    class="w-full py-2.5 rounded-xl text-xs font-black border-2 border-dashed transition-all"
+                    style="border-color:#00B87C;color:#00B87C;background:transparent;"
+                    onmouseover="this.style.background='#F0FBF7'"
+                    onmouseout="this.style.background='transparent'">
+              + Ajouter un jalon
+            </button>
+          </div>
+
+          <!-- ── PREVIEW CARD ── -->
+          <div class="mb-5">
+            <p class="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">👁 Aperçu de ta carte</p>
+            <div class="rounded-2xl overflow-hidden" style="background:white;border:1.5px solid #F1F5F9;box-shadow:0 4px 16px rgba(0,184,124,0.10);">
+              <!-- Bande verte statut -->
+              <div class="h-1 w-full" style="background:linear-gradient(90deg,#F59E0B,#FCD34D);"></div>
+              <div class="p-5">
+                <!-- Badge + date -->
+                <div class="flex items-center justify-between mb-2.5">
+                  <span class="text-[10px] font-medium text-gray-400">🕒 À l'instant</span>
+                  <span class="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-lg"
+                        style="background:#FFFBEB;color:#B45309;border:1px solid rgba(245,158,11,0.30);">⏳ En attente</span>
+                </div>
+                <!-- Client -->
+                <div class="flex items-center gap-2 mb-3">
+                  <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-sm font-black"
+                       style="background:linear-gradient(135deg,#00B87C,#00956a);"
+                       x-text="((user.prenom||'?')[0]).toUpperCase()"></div>
+                  <div>
+                    <p class="text-xs font-bold text-gray-900" x-text="(user.prenom||'') + ' ' + (user.nom||'')"></p>
+                    <p class="text-[9px] text-gray-400">Nouveau client</p>
+                  </div>
+                </div>
+                <!-- Titre -->
+                <h3 class="text-sm font-black text-gray-900 mb-1 leading-snug"
+                    x-text="projetForm.titre || 'Titre de ton projet'"></h3>
+                <!-- Description -->
+                <p class="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-3"
+                   x-text="projetForm.description || 'Ta description apparaîtra ici...'"></p>
+                <!-- Tags -->
+                <div x-show="projetForm.tags.length > 0" class="flex flex-wrap gap-1 mb-3">
+                  <template x-for="tag in projetForm.tags.slice(0,3)" :key="tag">
+                    <span class="text-[9px] font-semibold px-2 py-0.5 rounded-lg"
+                          style="background:#F0FBF7;color:#00B87C;border:1px solid rgba(0,184,124,0.20);"
+                          x-text="tag"></span>
+                  </template>
+                </div>
+                <!-- Footer -->
+                <div class="flex items-center justify-between pt-2.5" style="border-top:1px solid #F1F5F9;">
+                  <div>
+                    <p class="text-[9px] text-gray-400 font-semibold">Budget</p>
+                    <p class="text-sm font-black leading-none" style="color:#00B87C;"
+                       x-text="projetForm.budget ? new Intl.NumberFormat('fr-FR').format(projetForm.budget) : 'À négocier'"></p>
+                    <p class="text-[9px] text-gray-400" x-text="projetForm.devise"></p>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" class="w-3 h-3">
+                      <path stroke-linecap="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0z"/>
+                    </svg>
+                    <span class="text-[10px] text-gray-400">0 candidat</span>
+                  </div>
+                  <span class="flex items-center gap-1.5 font-black text-white text-[11px] px-3 py-2 rounded-xl"
+                        style="background:linear-gradient(135deg,#00B87C,#00D68F);">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-2.5 h-2.5">
+                      <path d="M13 2L4.09 12.97A1 1 0 005 14.5h5.5L11 22l8.91-10.97A1 1 0 0019 9.5H13.5L13 2z"/>
+                    </svg>
+                    Postuler
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          <button type="submit" class="btn-primary" :disabled="loading">
-            <span x-show="!loading">🚀 Publier le projet</span>
-            <span x-show="loading">⏳ Publication...</span>
-          </button>
-        </form>
+          <!-- Boutons finaux -->
+          <div class="flex gap-3 mb-4">
+            <button @click="projetStep=3"
+                    class="flex-1 py-3.5 rounded-2xl font-black text-sm transition-all"
+                    style="background:#F5F4F2;color:#475569;border:1.5px solid #E8ECF4;">
+              ← Retour
+            </button>
+            <button @click="createProjet()"
+                    :disabled="loading"
+                    class="flex-[2] py-3.5 rounded-2xl font-black text-sm text-white flex items-center justify-center gap-2 transition-all"
+                    :style="loading ? 'background:#94A3B8;cursor:not-allowed;' : 'background:linear-gradient(135deg,#00B87C,#00D68F);box-shadow:0 6px 20px rgba(0,184,124,0.40);'">
+              <template x-if="loading">
+                <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+              </template>
+              <template x-if="!loading">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                  <path d="M13 2L4.09 12.97A1 1 0 005 14.5h5.5L11 22l8.91-10.97A1 1 0 0019 9.5H13.5L13 2z"/>
+                </svg>
+              </template>
+              <span x-text="loading ? 'Publication...' : '🚀 Publier le projet'"></span>
+            </button>
+          </div>
+
+        </div>
+
       </div>
     </div>
+  </div><!-- /max-w profil -->
+
+
+    <!-- ─────────────────────────────────────
+         MESSAGES
+    ───────────────────────────────────────── -->
+  <!-- ══════════════════════════════════════════
+         WALLET — Portefeuille Mosala
+    ══════════════════════════════════════════ -->

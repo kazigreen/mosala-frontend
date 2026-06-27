@@ -231,6 +231,7 @@
             <input type="url" class="form-input" x-model="form.apply_url"
               placeholder="https://… ou laisse vide pour recevoir via Mosala"/>
             <div x-show="errors.apply_url" x-text="errors.apply_url" style="color:#ef4444;font-size:.78rem;margin-top:.3rem;font-weight:600;"></div>
+<div style="margin-top:1rem"><label style="font-size:.88rem;font-weight:700;">Date expiration (optionnel)</label><input type="date" x-model="form.expires_at" style="display:block;margin-top:.4rem;border:1px solid #d1d5db;border-radius:8px;padding:.45rem .75rem;font-size:.88rem"></div>
           </div>
 
         </div>
@@ -337,8 +338,6 @@
           category: '',
           description: '',
           salary_range: '',
-          apply_url: '',
-        },
 
         errors: {},
 

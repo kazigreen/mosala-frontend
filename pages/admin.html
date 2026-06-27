@@ -52,6 +52,8 @@
       <div @click="go('users')" :class="tab==='users'?'active':''" class="nav-item">👥 Utilisateurs</div>
       <div @click="go('jobs')"  :class="tab==='jobs'?'active':''"  class="nav-item">💼 Offres d'emploi</div>
       <div @click="go('transactions')" :class="tab==='transactions'?'active':''" class="nav-item">💰 Transactions</div>
+      <div @click="go('pro')" :class="tab==='pro'?'active':''" class="nav-item">⭐ Abonnements Pro</div>
+      <div @click="go('kyc')" :class="tab==='kyc'?'active':''" class="nav-item">🪪 KYC</div>
       <div @click="go('notifications')" :class="tab==='notifications'?'active':''" class="nav-item">🔔 Notifications</div>
     </nav>
     <div class="px-5 mt-6 border-t border-slate-700 pt-4">
@@ -70,8 +72,10 @@
         <div class="stat-card"><div class="text-3xl mb-2">👥</div><div class="text-2xl font-black" x-text="stats.total_users??'…'"></div><div class="text-sm text-slate-500 font-semibold mt-1">Utilisateurs</div></div>
         <div class="stat-card"><div class="text-3xl mb-2">💼</div><div class="text-2xl font-black" x-text="stats.total_offres_actives??'…'"></div><div class="text-sm text-slate-500 font-semibold mt-1">Offres actives</div></div>
         <div class="stat-card"><div class="text-3xl mb-2">💰</div><div class="text-2xl font-black" x-text="stats.total_transactions??'…'"></div><div class="text-sm text-slate-500 font-semibold mt-1">Transactions</div></div>
+        <div class="stat-card" @click="go('pro')" style="cursor:pointer;"><div class="text-3xl mb-2">⭐</div><div class="text-2xl font-black text-yellow-500" x-text="proStats.total_pro??'…'"></div><div class="text-sm text-slate-500 font-semibold mt-1">Abonnés Pro</div></div>
         <div class="stat-card"><div class="text-3xl mb-2">🏦</div><div class="text-2xl font-black text-emerald-600" x-text="'$'+(stats.total_frais_plateforme??0)"></div><div class="text-sm text-slate-500 font-semibold mt-1">Frais plateforme</div></div>
         <div class="stat-card"><div class="text-3xl mb-2">🔔</div><div class="text-2xl font-black text-orange-500" x-text="stats.notifications_non_lues??'…'"></div><div class="text-sm text-slate-500 font-semibold mt-1">Notifs non lues</div></div>
+        <div class="stat-card" @click="go('kyc')" style="cursor:pointer;"><div class="text-3xl mb-2">🪪</div><div class="text-2xl font-black text-yellow-600" x-text="stats.kyc_en_attente??'…'"></div><div class="text-sm text-slate-500 font-semibold mt-1">KYC en attente</div></div>
       </div>
       <div class="bg-white rounded-2xl p-5 shadow-sm">
         <p class="font-bold text-slate-700 mb-3">Accès rapides</p>
@@ -79,6 +83,9 @@
           <button @click="go('users')" class="btn-g">👥 Utilisateurs</button>
           <button @click="go('jobs')" class="btn-g">💼 Offres</button>
           <button @click="go('transactions')" class="btn-g">💰 Transactions</button>
+          <button @click="go('kyc')" class="btn-g">🪪 KYC</button>
+          <button @click="go('pro')" class="btn-g">⭐ Abonnements Pro</button>
+          <button @click="go('pro')" class="btn-g">🏆 Pro</button>
           <button @click="go('notifications')" class="btn-g">🔔 Notifications</button>
         </div>
       </div>
@@ -306,7 +313,130 @@
       </div>
     </div>
 
-  </main>
+  
+    <!-- KYC_ADMIN -->
+    <div x-show="tab==='kyc'">
+      <div class="flex items-center justify-between mb-5">
+        <h1 class="text-2xl font-black text-slate-800">🪪 Vérification KYC</h1>
+        <div class="flex gap-2">
+          <button @click="kycStatutFilter='en_attente'; loadKyc()" :class="kycStatutFilter==='en_attente'?'bg-emerald-500 text-white':'bg-white border border-slate-200 text-slate-600'" class="px-3 py-1.5 rounded-xl text-sm font-bold transition">⏳ En attente</button>
+          <button @click="kycStatutFilter='valide'; loadKyc()" :class="kycStatutFilter==='valide'?'bg-emerald-500 text-white':'bg-white border border-slate-200 text-slate-600'" class="px-3 py-1.5 rounded-xl text-sm font-bold transition">✅ Validés</button>
+          <button @click="kycStatutFilter='rejete'; loadKyc()" :class="kycStatutFilter==='rejete'?'bg-red-500 text-white':'bg-white border border-slate-200 text-slate-600'" class="px-3 py-1.5 rounded-xl text-sm font-bold transition">❌ Rejetés</button>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50"><tr>
+              <th class="text-left p-3 font-semibold text-slate-600">Utilisateur</th>
+              <th class="text-left p-3 font-semibold text-slate-600">Soumis le</th>
+              <th class="text-left p-3 font-semibold text-slate-600">Documents</th>
+              <th class="text-left p-3 font-semibold text-slate-600">Statut</th>
+              <th class="text-left p-3 font-semibold text-slate-600">Actions</th>
+            </tr></thead>
+            <tbody>
+              <template x-for="k in kycList" :key="k.id">
+                <tr class="border-t border-slate-100">
+                  <td class="p-3">
+                    <p class="font-semibold text-slate-800" x-text="k.prenom+' '+k.postnom+' '+k.nom"></p>
+                    <p class="text-xs text-slate-500" x-text="k.telephone"></p>
+                    <p class="text-xs text-slate-400" x-text="k.email"></p>
+                    <p x-show="k.date_naissance" class="text-xs text-slate-400" x-text="'🎂 '+k.date_naissance"></p>
+                    <p x-show="k.ville" class="text-xs text-slate-400" x-text="'📍 '+k.ville"></p>
+                  </td>
+                  <td class="p-3 text-slate-500 text-xs" x-text="k.kyc_submitted_at ? new Date(k.kyc_submitted_at).toLocaleDateString('fr-FR') : '—'"></td>
+                  <td class="p-3">
+                    <div class="flex gap-2">
+                      <a x-show="k.kyc_recto_url" href="#" @click.prevent="viewKycFile(k.kyc_recto_url)" class="text-xs text-blue-500 underline">Recto</a>
+                      <a x-show="k.kyc_verso_url" href="#" @click.prevent="viewKycFile(k.kyc_verso_url)" class="text-xs text-blue-500 underline">Verso</a>
+                      <a x-show="k.kyc_selfie_url" href="#" @click.prevent="viewKycFile(k.kyc_selfie_url)" class="text-xs text-blue-500 underline">Selfie</a>
+                    </div>
+                  </td>
+                  <td class="p-3">
+                    <span class="px-2 py-0.5 rounded-full text-xs font-bold"
+                      :class="k.kyc_status==='valide'?'bg-emerald-100 text-emerald-700':k.kyc_status==='rejete'?'bg-red-100 text-red-600':'bg-yellow-100 text-yellow-700'"
+                      x-text="k.kyc_status"></span>
+                    <p x-show="k.kyc_note" x-text="k.kyc_note" class="text-xs text-slate-400 mt-1"></p>
+                  </td>
+                  <td class="p-3">
+                    <div class="flex gap-2">
+                      <button x-show="k.kyc_status !== 'valide'" @click="validerKyc(k.id)" class="px-2 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 hover:bg-emerald-100">✅ Valider</button>
+                      <button x-show="k.kyc_status !== 'rejete'" @click="rejeterKyc(k.id)" class="px-2 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-500 border border-red-200 hover:bg-red-100">❌ Rejeter</button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+              <tr x-show="!kycList.length && !kycLoading"><td colspan="5" class="text-center text-slate-400 py-10">Aucune demande KYC</td></tr>
+              <tr x-show="kycLoading"><td colspan="5" class="text-center text-slate-400 py-10">Chargement...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- FIN KYC_ADMIN -->
+
+    
+
+
+
+    <!-- ══ SECTION PRO ══ -->
+    <div x-show="tab==='pro'">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-black text-slate-800">⭐ Abonnements Pro</h1>
+        <div class="flex gap-3">
+          <div class="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-2 text-center">
+            <div class="text-xl font-black text-yellow-600" x-text="proStats.total_pro ?? '…'"></div>
+            <div class="text-xs text-slate-500">Abonnés Pro</div>
+          </div>
+          <div class="bg-green-50 border border-green-200 rounded-xl px-4 py-2 text-center">
+            <div class="text-xl font-black text-green-600" x-text="(proStats.taux_conversion ?? '…') + '%'"></div>
+            <div class="text-xs text-slate-500">Taux conversion</div>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-center">
+            <div class="text-xl font-black text-slate-700" x-text="proStats.total_users ?? '…'"></div>
+            <div class="text-xs text-slate-500">Total users</div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-4">
+        <input x-model="proSearch" @input="filterPro()"
+               placeholder="🔍 Filtrer par nom, email..."
+               class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-emerald-400"/>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-100">
+            <tr>
+              <th class="text-left px-4 py-3 font-semibold text-slate-600">Utilisateur</th>
+              <th class="text-left px-4 py-3 font-semibold text-slate-600">Contact</th>
+              <th class="text-left px-4 py-3 font-semibold text-slate-600">Ville</th>
+              <th class="text-left px-4 py-3 font-semibold text-slate-600">Plan</th>
+              <th class="text-left px-4 py-3 font-semibold text-slate-600">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr x-show="proLoading"><td colspan="5" class="text-center text-slate-400 py-10">⏳ Chargement...</td></tr>
+            <tr x-show="!proLoading && proUsersFiltered.length === 0"><td colspan="5" class="text-center text-slate-400 py-10">Aucun abonné Pro</td></tr>
+            <template x-for="u in proUsersFiltered" :key="u.id">
+              <tr class="border-b border-slate-50 hover:bg-slate-50 transition">
+                <td class="px-4 py-3 font-semibold" x-text="u.prenom + ' ' + u.nom"></td>
+                <td class="px-4 py-3 text-slate-500">
+                  <div x-text="u.email"></div>
+                  <div class="text-xs" x-text="u.telephone"></div>
+                </td>
+                <td class="px-4 py-3 text-slate-500" x-text="u.ville || '—'"></td>
+                <td class="px-4 py-3"><span class="px-2 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">⭐ Pro</span></td>
+                <td class="px-4 py-3">
+                  <button @click="togglePro(u.id, false)" class="px-3 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition">Désactiver</button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- ══ /PRO ══ -->
+</main>
 </div>
 
 <!-- Modal Publier Offre -->
@@ -501,14 +631,17 @@
 </div>
 
 <!-- Toast -->
+
+
 <div x-show="toast" x-transition class="toast" x-text="toast"></div>
 
 <script>
 const API = 'https://mosala.io';
 function app() { return {
-  ready:false, msg:'Vérification des droits…', tab:'stats',
+  ready:false, msg:'Vérification des droits…', tab:'stats', proSearch:'', proUsers:[], proUsersFiltered:[], proLoading:false, proStats:{},
   adminName:'', stats:{},
-  users:[], jobs:[], pendingJobs:[], transactions:[],
+  users:[],
+  kycList:[], kycStatutFilter:'en_attente', kycLoading:false, kycImgUrl:null, jobs:[], pendingJobs:[], transactions:[],
   jobTab:'pending', showPublishModal:false,
   publishForm:{title:'',company:'',location:'Kinshasa',opportunity_type:'CDI',category:'',description:'',salary_range:'',apply_url:''},
   publishLoading:false, selectedJob:null, showJobModal:false,
@@ -538,8 +671,10 @@ function app() { return {
   go(t) {
     this.tab = t;
     if (t==='users') this.loadUsers();
+    if (t==='kyc') this.loadKyc();
     if (t==='jobs') { this.loadPendingJobs(); this.jobTab='pending'; }
     if (t==='transactions') this.loadTransactions();
+    if (t==='pro') { this.loadPro(); this.loadProStats(); this.loadProList(); }
     if (t==='notifications') { this.loadNotifications(); if (!this.users.length) this.loadUsers(); }
   },
 
@@ -590,6 +725,31 @@ function app() { return {
   },
 
 
+
+  async loadPro() {
+    this.proLoading = true;
+    try {
+      const r = await fetch(this.api + '/admin/abonnements/pro', { headers: { Authorization: 'Bearer ' + this.token } });
+      this.proList = await r.json();
+    } catch(e) { this.proList = []; }
+    this.proLoading = false;
+  },
+
+  async loadProStats() {
+    try {
+      const r = await fetch(this.api + '/admin/abonnements/stats', { headers: { Authorization: 'Bearer ' + this.token } });
+      this.proStats = await r.json();
+    } catch(e) {}
+  },
+
+  async togglePro(userId, estPro) {
+    if (!confirm(estPro ? 'Activer le Pro ?' : 'Désactiver le Pro ?')) return;
+    const r = await fetch(this.api + '/admin/abonnements/pro/' + userId + '?est_pro=' + estPro, {
+      method: 'PATCH',
+      headers: { Authorization: 'Bearer ' + this.token }
+    });
+    if (r.ok) { this.showToast('Abonnement mis à jour'); this.loadPro(); this.loadProStats(); }
+  },
 
   async loadTransactions() {
     const r = await fetch(API+'/admin/transactions?limit=100', {headers:{Authorization:'Bearer '+this.tok()}});
@@ -657,7 +817,7 @@ function app() { return {
       this.loadNotifications();
       this.loadStats();
     } else {
-      this.showToast('Erreur lors de l envoi');
+      this.showToast('❌ Erreur lors de l\'envoi');
     }
   },
 
@@ -665,8 +825,98 @@ function app() { return {
 
   fd(d) { return d ? new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}) : '—'; },
 
-  showToast(m) { this.toast = m; setTimeout(()=>this.toast='',3000); }
+
+  async loadKyc() {
+    this.kycLoading = true;
+    const r = await fetch(API+'/admin/kyc?statut='+this.kycStatutFilter, {headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) this.kycList = await r.json();
+    this.kycLoading = false;
+  },
+
+  async validerKyc(id) {
+    if (!confirm('Valider ce KYC ?')) return;
+    const r = await fetch(API+'/admin/kyc/'+id+'?statut=valide', {method:'PATCH', headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) { this.showToast('KYC valide'); this.loadKyc(); }
+  },
+
+  async rejeterKyc(id) {
+    const note = prompt('Motif de rejet:');
+    if (!note) return;
+    const r = await fetch(API+'/admin/kyc/'+id+'?statut=rejete&note='+encodeURIComponent(note), {method:'PATCH', headers:{Authorization:'Bearer '+this.tok()}});
+    if (r.ok) { this.showToast('KYC rejete'); this.loadKyc(); }
+  },
+
+  async viewKycFile(path) {
+    try {
+      const r = await fetch(API+'/admin/kyc-file?path='+encodeURIComponent(path), {
+        headers: { Authorization: 'Bearer ' + this.tok() }
+      });
+      if (!r.ok) { alert('Fichier non accessible'); return; }
+      const blob = await r.blob();
+      if (this.kycImgUrl) URL.revokeObjectURL(this.kycImgUrl);
+      this.kycImgUrl = URL.createObjectURL(blob);
+    } catch(e) {
+      alert('Erreur chargement fichier');
+    }
+  },
+
+
+  filterPro() {
+    const q = this.proSearch.toLowerCase();
+    this.proUsersFiltered = q.length < 1
+      ? this.proUsers
+      : this.proUsers.filter(u =>
+          (u.prenom+' '+u.nom).toLowerCase().includes(q) ||
+          (u.email||'').toLowerCase().includes(q) ||
+          (u.telephone||'').includes(q)
+        );
+  },
+
+  async loadProList() {
+    try {
+      const r = await fetch(this.api + '/admin/abonnements/pro', { headers: { Authorization: 'Bearer ' + this.token } });
+      const data = await r.json();
+      this.proUsers = data.map(u => ({...u, is_pro: u.est_pro, pro_until: u.pro_expire || null, pro_plan: u.plan_pro || 'pro'}));
+      this.proUsersFiltered = this.proUsers;
+    } catch(e) { console.error(e); }
+  },
+
+  async searchProUsers() {
+    if (this.proSearch.length < 2) { this.proUsers = []; return; }
+    const r = await fetch(`/api/admin/users?q=${encodeURIComponent(this.proSearch)}&limit=10`, {
+      headers: { Authorization: 'Bearer ' + this.token }
+    });
+    const d = await r.json();
+    this.proUsers = d.users || d || [];
+  },
+  async activerPro(userId, plan) {
+    const r = await fetch(`/api/admin/users/${userId}/pro?plan=${plan}`, {
+      method: 'PATCH',
+      headers: { Authorization: 'Bearer ' + this.token }
+    });
+    const d = await r.json();
+    this.showToast(d.message || 'OK');
+    this.searchProUsers();
+  },
+    showToast(m) { this.toast = m; setTimeout(()=>this.toast='',3000); }
 }}
 </script>
+
+
+    
+
+  <!-- MODAL LIGHTBOX KYC -->
+  <div x-show="kycImgUrl" x-cloak
+    class="fixed inset-0 z-50 flex items-center justify-center"
+    style="background:rgba(0,0,0,0.85);"
+    @click="kycImgUrl=null; URL.revokeObjectURL(kycImgUrl)">
+    <div class="relative max-w-2xl w-full mx-4" @click.stop>
+      <button @click="kycImgUrl=null"
+        class="absolute -top-10 right-0 text-white text-3xl font-bold leading-none hover:text-red-400 transition">&times;</button>
+      <img :src="kycImgUrl" class="w-full rounded-2xl shadow-2xl object-contain max-h-[80vh]" alt="Document KYC">
+    </div>
+  </div>
+  <!-- FIN MODAL LIGHTBOX KYC -->
+
 </body>
 </html>

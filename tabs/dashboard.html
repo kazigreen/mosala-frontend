@@ -1,12 +1,13 @@
-<div x-show="activeTab==='dashboard'" class="dot-bg min-h-screen">
+        <div x-show="activeTab==='dashboard'" class="min-h-screen pb-24" style="background:#F5F4F2;">
 
     <!-- ── DASHBOARD HEADER PREMIUM ── -->
-    <div class="relative overflow-hidden border-b border-emerald-100/60"
-         style="background: linear-gradient(135deg, #f8fffe 0%, #f0fdf9 45%, #e8faf3 100%);
-                box-shadow: inset 0 -1px 0 rgba(0,184,124,0.08);">
+    <div class="relative overflow-hidden mx-4 mt-4"
+         style="background: linear-gradient(160deg,#0F172A 0%,#134E38 60%,#00B87C 100%);
+                border-radius: 24px;
+                box-shadow: 0 4px 24px rgba(0,0,0,0.18);">
 
       <!-- Noise texture -->
-      <div class="absolute inset-0 pointer-events-none opacity-30"
+      <div class="absolute inset-0 pointer-events-none opacity-10"
            style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix type=%22saturate%22 values=%220%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22 opacity=%220.03%22/%3E%3C/svg%3E');"></div>
 
       <!-- Glow top-right Linear style -->
@@ -22,12 +23,12 @@
         <div class="flex items-start gap-4">
 
           <!-- ── Avatar premium ── -->
-          <div class="relative flex-shrink-0">
+          <div class="relative flex-shrink-0 mt-6">
             <!-- Glow derrière -->
             <div class="absolute inset-0 rounded-full blur-md"
                  style="background: rgba(0,184,124,0.20); transform: scale(1.15)"></div>
             <!-- Ring pulsant si disponible -->
-            <span x-show="user.disponibilite==='disponible'"
+            <span x-show="user.disponibilite && user.disponibilite !== 'temps_partiel'"
                   class="absolute inset-0 rounded-full border-2 border-[#00B87C]/50 animate-pulse pointer-events-none"></span>
             <template x-if="user.photo_url">
               <img :src="user.photo_url"
@@ -41,8 +42,8 @@
             </template>
             <!-- Dot statut animé -->
             <span class="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full border-2 border-white shadow"
-                  :class="user.disponibilite==='disponible' ? 'bg-[#00B87C]' : 'bg-gray-400'">
-              <span x-show="user.disponibilite==='disponible'"
+                  :class="user.disponibilite && user.disponibilite !== 'temps_partiel' ? 'bg-[#00B87C]' : 'bg-gray-400'">
+              <span x-show="user.disponibilite && user.disponibilite !== 'temps_partiel'"
                     class="absolute inset-0 rounded-full bg-[#00B87C] animate-ping opacity-60"></span>
             </span>
           </div>
@@ -51,31 +52,69 @@
           <div class="flex-1 min-w-0 pt-0.5">
             <!-- Salutation dynamique -->
             <p class="text-xs font-medium leading-none mb-1"
-               style="color:#94a3b8"
+               style="color:rgba(255,255,255,0.55)"
                x-text="new Date().getHours() < 12 ? 'Bonjour 🌤️' : new Date().getHours() < 18 ? 'Bon après-midi ☀️' : 'Bonsoir 🌙'"></p>
 
             <!-- Nom dominant -->
-            <h2 class="font-black text-[#0F172A] leading-tight truncate"
+            <h2 class="font-black leading-tight truncate" style="color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.3);"
                 style="font-size: clamp(1.1rem, 4vw, 1.4rem); letter-spacing: -0.02em;"
                 x-text="(user.prenom||'') + ' ' + (user.nom||'')"></h2>
 
+            <!-- Badge Mosala ID -->
+            <div x-show="user.mosala_id" class="flex items-center gap-1 mt-0.5">
+              <span class="text-[8px] font-bold uppercase tracking-widest" style="color:#CBD5E1;">ID</span>
+              <div class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg"
+                   style="background:rgba(0,184,124,0.25); border:1px solid rgba(0,184,124,0.40);">
+                <span class="text-[9px] font-black" style="color:#34D399; letter-spacing:0.05em;"
+                      x-text="user.mosala_id"></span>
+                <button
+                  x-data="{ copied: false }"
+                  @click="navigator.clipboard.writeText(user.mosala_id).then(() => { copied = true; setTimeout(() => copied = false, 1600) })"
+                  class="flex items-center justify-center w-3.5 h-3.5 rounded transition-all duration-200 flex-shrink-0"
+                  :style="copied ? 'background:#00B87C;' : 'background:rgba(0,184,124,0.10);'">
+                  <svg x-show="copied" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" style="width:7px;height:7px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <svg x-show="!copied" viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" style="width:7px;height:7px;">
+                    <rect x="9" y="9" width="13" height="13" rx="2"/>
+                    <path stroke-linecap="round" d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
             <!-- Phrase identité -->
             <p class="text-xs mt-0.5 truncate font-medium"
-               style="color:#475569"
+               style="color:rgba(255,255,255,0.65)"
                x-text="user.titre || (user.disponibilite==='disponible' ? 'Disponible pour missions · Kinshasa' : 'Freelance · Kinshasa')"></p>
 
             <!-- Micro stat identité -->
             <p class="text-[10px] mt-0.5 font-semibold"
-               style="color:#64748b"
+               style="color:rgba(255,255,255,0.5)"
                x-text="dashStats.taux_reussite >= 90 ? '⭐ Taux de réussite ' + dashStats.taux_reussite + '%' : dashStats.projets_termines > 0 ? '🔥 ' + dashStats.projets_termines + ' projets livrés avec succès' : ''"></p>
 
-            <!-- Badges premium -->
+            <!-- Badges conditionnels selon profil réel -->
             <div class="flex items-center gap-1.5 mt-2 flex-wrap">
-              <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border border-amber-200/80 bg-amber-50 text-amber-600 shadow-sm">
+              <!-- Top Freelance : rating >= 4.5 ET >= 5 projets terminés -->
+              <span x-show="user.rating >= 4.5 && dashStats.projets_termines >= 5"
+                    class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border border-amber-200/80 bg-amber-50 text-amber-600 shadow-sm">
                 <i data-lucide="award" style="width:10px;height:10px;stroke-width:2.5"></i> Top Freelance
               </span>
-              <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border border-emerald-200/80 bg-emerald-50 text-emerald-600 shadow-sm">
+              <!-- Bouton Passer Pro -->
+              <button x-show="!user.is_pro" @click="navigateTo('pro')"
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                      style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#0F172A;">
+                🏆 Passer Pro
+              </button>
+              <!-- Vérifié : basé sur kyc_status === valide -->
+              <span x-show="kycStatus === 'valide'"
+                    class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border border-emerald-200/80 bg-emerald-50 text-emerald-600 shadow-sm">
                 <i data-lucide="shield-check" style="width:10px;height:10px;stroke-width:2.5"></i> Vérifié
+              </span>
+              <!-- Nouveau : badge de bienvenue si pas encore de projets -->
+              <span x-show="kycStatus !== 'valide' && dashStats.projets_termines === 0"
+                    class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border border-blue-200/80 bg-blue-50 text-blue-500 shadow-sm">
+                <i data-lucide="sparkles" style="width:10px;height:10px;stroke-width:2.5"></i> Nouveau
               </span>
             </div>
           </div>
@@ -84,64 +123,102 @@
           <div class="flex-shrink-0 flex flex-col items-end gap-2 pt-0.5">
             <!-- Notifs + toggle mobile -->
             <div class="flex items-center gap-2 lg:hidden">
-              <span x-show="dashNotifs > 0"
-                    class="bg-red-500 text-white text-[9px] font-black rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1"
-                    x-text="dashNotifs > 9 ? '9+' : dashNotifs"></span>
+              <button x-show="dashNotifs > 0"
+                      @click="showMobileNotifs = !showMobileNotifs; if(showMobileNotifs) loadNotifDropdown()"
+                      class="relative flex items-center gap-1 text-[10px] font-black text-white px-2 py-0.5 rounded-full"
+                      style="background:#EF4444; box-shadow:0 2px 6px rgba(239,68,68,0.40);">
+                <span class="relative flex w-1.5 h-1.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <span class="relative inline-flex rounded-full w-1.5 h-1.5 bg-white"></span>
+                </span>
+                <span x-text="dashNotifs > 9 ? '9+' : dashNotifs"></span>
+              </button>
               <button @click="toggleDispo()" :class="user.disponibilite==='disponible' ? 'on' : 'off'" class="dispo-toggle">
                 <span class="thumb"></span>
               </button>
             </div>
             <!-- Bouton CTA desktop -->
             <button @click="navigateTo('marketplace')"
-                    style="background: linear-gradient(135deg, #10b981 0%, #00B87C 50%, #059669 100%);
-                           box-shadow: 0 4px 16px rgba(0,184,124,0.35), 0 1px 3px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.15);"
-                    class="hidden lg:flex items-center gap-1.5 text-xs font-black text-white px-4 py-2.5 rounded-xl transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.98] cta-float">
-              <i data-lucide="briefcase" style="width:13px;height:13px;stroke-width:2.5"></i>
+                    class="hidden lg:flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-1.5 rounded-xl transition-all duration-200 active:scale-[0.97] mt-4 self-end"
+                    style="background:linear-gradient(135deg,#00B87C,#00D68F);
+                           box-shadow:0 4px 20px rgba(0,184,124,0.45), inset 0 1px 0 rgba(255,255,255,0.20);"
+                    onmouseover="this.style.boxShadow='0 6px 28px rgba(0,184,124,0.60), inset 0 1px 0 rgba(255,255,255,0.20)'"
+                    onmouseout="this.style.boxShadow='0 4px 20px rgba(0,184,124,0.45), inset 0 1px 0 rgba(255,255,255,0.20)'">
               Trouver des missions
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+              </svg>
             </button>
           </div>
+        </div>
+
+        <!-- Pills actions rapides dans header -->
+        <div class="flex items-center gap-2 mt-3">
+          <button @click="navigateTo('nouveau', false)"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:1px solid rgba(255,255,255,0.20);"
+                  onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                  onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            Publier
+          </button>
+          <button @click="navigateTo('messages')"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:1px solid rgba(255,255,255,0.20);"
+                  onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                  onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Messages
+          </button>
+          <button @click="generateCV()" :disabled="loadingCV"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:1px solid rgba(255,255,255,0.20);"
+                  onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                  onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5z"/><path stroke-linecap="round" d="M13 3v6h6"/></svg>
+            <span x-text="loadingCV ? '...' : 'CV IA'"></span>
+          </button>
+          <div class="flex-1"></div>
         </div>
 
         <!-- ── Barre profil intelligente ── -->
         <div class="mt-4">
           <div class="flex items-center justify-between mb-1.5">
-            <p class="text-[10px] font-bold" style="color:#64748b"
+            <p class="text-[10px] font-bold" style="color:rgba(255,255,255,0.5)"
                x-text="profileScore >= 100 ? '✓ Profil complet' : profileScore >= 75 ? '↑ Encore ' + (100-profileScore) + '% pour décrocher plus de missions' : profileScore >= 50 ? '→ Complète ton profil pour être visible' : '· Commence par remplir ton profil'"></p>
-            <span class="text-xs font-black" style="color:#0F172A" id="profileScoreDisplay">0%</span>
+            <span class="text-xs font-black" style="color:#FFFFFF;" id="profileScoreDisplay">0%</span>
           </div>
           <!-- Barre avec glow + checkpoints -->
-          <div class="relative bg-gray-100 rounded-full overflow-visible" style="height:10px">
+          <div class="relative rounded-full overflow-visible" style="height:10px;background:rgba(255,255,255,0.15);">
             <!-- Barre remplie -->
             <div class="h-full rounded-full transition-all duration-1000 relative overflow-hidden"
-                 style="background: linear-gradient(90deg, #00B87C, #34D399);
-                        box-shadow: 0 0 10px rgba(0,184,124,0.45);"
-                 :style="'width:' + profileScore + '%'">
+                 :style="'width:' + profileScore + '%; background: linear-gradient(90deg, #00B87C, #34D399); box-shadow: 0 0 10px rgba(0,184,124,0.45);'">
               <!-- Shimmer animé -->
-              <div class="absolute inset-0 -translate-x-full animate-[shimmer_2s_ease-in-out_infinite]"
+              <div class="absolute inset-0 -translate-x-full"
                    style="background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
                           animation: shimmer 2.5s ease-in-out infinite;"></div>
               <!-- Glow tête -->
               <div class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full blur-sm"
                    style="background: #34D399; opacity: 0.9"></div>
             </div>
-            <!-- Checkpoints premium — tailles différentes -->
+            <!-- Checkpoints -->
             <div class="absolute inset-0 pointer-events-none" style="overflow:visible">
-              <!-- 25% — petit -->
+              <!-- 25% -->
               <div class="absolute top-1/2 -translate-y-1/2 rounded-full border-2 transition-all duration-500"
                    style="left:calc(25% - 4px); width:8px; height:8px;"
                    :class="profileScore >= 25 ? 'bg-[#00B87C] border-white' : 'bg-white border-gray-300'"></div>
-              <!-- 50% — moyen -->
+              <!-- 50% -->
               <div class="absolute top-1/2 -translate-y-1/2 rounded-full border-2 transition-all duration-500"
                    style="left:calc(50% - 5px); width:10px; height:10px;"
                    :class="profileScore >= 50 ? 'bg-[#00B87C] border-white shadow-sm' : 'bg-white border-gray-300'"></div>
-              <!-- 75% — grand + pulse si atteint -->
+              <!-- 75% -->
               <div class="absolute top-1/2 -translate-y-1/2 rounded-full border-2 transition-all duration-500"
                    style="left:calc(75% - 6px); width:12px; height:12px;"
                    :class="profileScore >= 75 ? 'bg-[#00B87C] border-white cp-active-pulse' : 'bg-white border-gray-300'"></div>
-              <!-- 100% — étoile -->
+              <!-- 100% -->
               <div class="absolute top-1/2 -translate-y-1/2 rounded-full border-2 transition-all duration-500 flex items-center justify-center"
                    style="left:calc(100% - 6px); width:12px; height:12px;"
-                   :class="profileScore >= 100 ? 'bg-amber-400 border-white shadow-amber-300/50 shadow-sm' : 'bg-white border-gray-300'">
+                   :class="profileScore >= 100 ? 'bg-amber-400 border-white shadow-sm' : 'bg-white border-gray-300'">
                 <span x-show="profileScore >= 100" class="text-[6px]">★</span>
               </div>
             </div>
@@ -151,7 +228,7 @@
             <template x-for="cp in [25,50,75,100]" :key="cp">
               <span class="absolute text-[8px] font-bold -translate-x-1/2 transition-colors"
                     :style="'left:' + cp + '%'"
-                    :class="profileScore >= cp ? 'text-[#00B87C]' : 'text-slate-400'"
+                    :class="profileScore >= cp ? 'text-[#34D399]' : 'text-white/30'"
                     x-text="cp + '%'"></span>
             </template>
           </div>
@@ -159,12 +236,12 @@
           <div class="flex justify-between mt-1.5">
             <button @click="navigateTo('profil')"
                     class="text-[10px] font-semibold transition-colors"
-                    style="color:#94a3b8"
-                    onmouseover="this.style.color='#00B87C'"
-                    onmouseout="this.style.color='#94a3b8'">
+                    style="color:rgba(255,255,255,0.45)"
+                    onmouseover="this.style.color='#34D399'"
+                    onmouseout="this.style.color='rgba(255,255,255,0.45)'">
               Compléter le profil →
             </button>
-            <p class="text-[10px]" style="color:#94a3b8"
+            <p class="text-[10px]" style="color:#FFFFFF;font-weight:700;"
                x-text="profileScore >= 75 ? '· Profil presque complet' : '📋 Ajoute tes compétences'"></p>
           </div>
         </div>
@@ -175,49 +252,37 @@
     <!-- ── PARTIE 2 : STATS GRID ── -->
     <div class="p-4 space-y-3">
 
-      <!-- ── PRESENCE BAR ── -->
-      <div class="presence-bar rounded-2xl px-4 py-2 flex items-center gap-3 overflow-x-auto">
 
-        <!-- Freelances online -->
+
+
+      <!-- Stats grid KPIs compacts — 1 ligne revenus + 4 KPIs en grille 4 colonnes -->
+
+      <!-- ── PRESENCE BAR ── -->
+      <div class="rounded-2xl px-4 py-2.5 flex items-center gap-3 overflow-x-auto" style="background:#FFFFFF;box-shadow:0 2px 12px rgba(15,23,42,0.07);">
         <div class="flex items-center gap-2 flex-shrink-0">
           <span class="relative flex h-2.5 w-2.5">
-            <span class="presence-dot absolute inline-flex h-full w-full rounded-full bg-[#00B87C] opacity-75"></span>
+            <span class="absolute inline-flex h-full w-full rounded-full bg-[#00B87C] opacity-75 animate-ping"></span>
             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00B87C]"></span>
           </span>
-          <span class="text-xs font-black text-[#0F172A] presence-count"
-                x-text="presence.freelances_online"></span>
+          <span class="text-xs font-black text-[#0F172A]" x-text="presence.freelances_online"></span>
           <span class="text-xs text-gray-500">freelances en ligne</span>
         </div>
-
         <div class="w-px h-4 bg-gray-200 flex-shrink-0"></div>
-
-        <!-- Missions disponibles -->
         <div class="flex items-center gap-2 flex-shrink-0">
           <div class="w-4 h-4 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" class="w-2.5 h-2.5">
-              <path stroke-linecap="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" class="w-2.5 h-2.5"><path stroke-linecap="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
           </div>
-          <span class="text-xs font-black text-[#0F172A] presence-count"
-                x-text="presence.projets_disponibles"></span>
+          <span class="text-xs font-black text-[#0F172A]" x-text="presence.projets_disponibles"></span>
           <span class="text-xs text-gray-500">missions dispo</span>
         </div>
-
         <div class="w-px h-4 bg-gray-200 flex-shrink-0"></div>
-
-        <!-- Nouveaux projets 24h -->
         <div class="flex items-center gap-2 flex-shrink-0">
           <div class="w-4 h-4 bg-amber-50 rounded-full flex items-center justify-center flex-shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" class="w-2.5 h-2.5">
-              <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" class="w-2.5 h-2.5"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
           </div>
-          <span class="text-xs font-black text-[#0F172A] presence-count"
-                x-text="presence.nouveaux_projets_24h + ' nouveaux'"></span>
+          <span class="text-xs font-black text-[#0F172A]" x-text="presence.nouveaux_projets_24h + ' nouveaux'"></span>
           <span class="text-xs text-gray-500">aujourd'hui</span>
         </div>
-
-        <!-- Spacer + CTA discret -->
         <div class="flex-1 min-w-4"></div>
         <button @click="navigateTo('marketplace')"
                 class="flex-shrink-0 text-[10px] font-black text-[#00B87C] bg-[#F0FBF7] border border-[#00B87C]/20 px-2.5 py-1 rounded-lg hover:bg-[#00B87C] hover:text-white transition-all duration-200 whitespace-nowrap">
@@ -226,439 +291,719 @@
       </div>
       <!-- ── /PRESENCE BAR ── -->
 
-      <!-- ── CTA PRINCIPAL ── -->
-      <div class="dash-block d0 fade-in relative overflow-hidden rounded-2xl p-5 shadow-lg"
-           style="background: linear-gradient(135deg, #0a1628 0%, #0f2040 40%, #0d1a35 70%, #080f20 100%);">
-        <!-- Glow orb 1 — top right animé -->
-        <div class="dark-glow-orb absolute -top-8 -right-8 w-40 h-40 rounded-full pointer-events-none"
-             style="background: radial-gradient(circle, rgba(0,184,124,0.18) 0%, rgba(0,184,124,0.05) 50%, transparent 75%)"></div>
-        <!-- Glow orb 2 — bottom left animé -->
-        <div class="dark-glow-orb-2 absolute -bottom-10 -left-6 w-36 h-36 rounded-full pointer-events-none"
-             style="background: radial-gradient(circle, rgba(52,211,153,0.12) 0%, transparent 65%)"></div>
-        <!-- Noise texture subtile -->
-        <div class="absolute inset-0 pointer-events-none opacity-20"
-             style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22/%3E%3CfeColorMatrix type=%22saturate%22 values=%220%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%220.04%22/%3E%3C/svg%3E');"></div>
-
-        <!-- Contenu -->
-        <div class="relative z-10">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="w-2 h-2 bg-[#00B87C] rounded-full animate-pulse"></span>
-            <span class="text-[10px] text-[#00B87C] font-bold uppercase tracking-widest">8 missions disponibles</span>
-          </div>
-          <h3 class="text-white font-black text-lg leading-tight mb-1">
-            Prêt à décrocher<br>votre prochaine mission ?
-          </h3>
-          <p class="text-gray-400 text-xs mb-4">Clients actifs · Paiement sécurisé · RDC</p>
-
-          <!-- Deux boutons CTA -->
-          <div class="flex gap-2">
-            <button @click="navigateTo('marketplace')"
-                    class="flex-1 bg-[#00B87C] hover:bg-[#009E6A] text-white text-sm font-black py-2.5 px-4 rounded-xl
-                           transition-all duration-200 hover:shadow-xl hover:shadow-[#00B87C]/35 hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-2">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 flex-shrink-0">
-                <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
-              </svg>
-              Trouver des missions
-            </button>
-            <button @click="navigateTo('nouveau', false)"
-                    class="flex-1 bg-white/10 hover:bg-white/20 text-white text-sm font-bold py-2.5 px-4 rounded-xl
-                           border border-white/15 transition-all duration-200 hover:-translate-y-0.5 flex items-center justify-center gap-2">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 flex-shrink-0">
-                <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
-              </svg>
-              Publier un service
-            </button>
-          </div>
-        </div>
-      </div>
-      <!-- ── /CTA PRINCIPAL ── -->
-
-      <!-- Stats grid KPIs compacts — 1 ligne revenus + 4 KPIs en grille 4 colonnes -->
-      <!-- Revenus : carte large horizontale (skeleton via opacity transition) -->
-      <div class="dash-block d1 fade-in-1 card-hover bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 bg-gradient-to-br from-[#00B87C] to-[#009E6A] rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12M6 12h12"/>
-            </svg>
-          </div>
-          <div>
-            <p class="text-[10px] text-gray-400 font-medium leading-none">Revenus ce mois</p>
-            <p class="text-2xl font-black text-[#0F172A] leading-tight"
-               x-text="'$' + (dashStats.revenus_mois||0).toFixed(2)"></p>
-          </div>
-        </div>
-        <div class="text-right">
-          <span class="inline-flex items-center gap-1 text-[10px] font-bold text-[#00B87C] bg-[#F0FBF7] px-2 py-1 rounded-full">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="w-2.5 h-2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15M19.5 4.5H8.25M19.5 4.5v11.25"/>
-            </svg>
-            En hausse
-          </span>
-          <p class="text-[9px] text-gray-400 mt-1">transactions créditées</p>
-        </div>
-      </div>
-
-      <!-- 4 KPIs compacts en grille -->
-      <div class="dash-block d2 grid grid-cols-2 lg:grid-cols-4 gap-2 fade-in-2">
+      <!-- 4 KPIs grille 2x2 grands chiffres -->
+      <div class="dash-block d2 grid grid-cols-4 gap-3 fade-in-2">
 
         <!-- En cours -->
-        <div class="kpi-hover bg-white rounded-xl px-3 py-2.5 shadow-sm border border-gray-100 flex items-center gap-2.5">
-          <div class="icon-wrap icon-glow-blue w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" class="w-4 h-4">
-              <path stroke-linecap="round" d="M3 7h18M3 12h18M3 17h10"/>
-            </svg>
+        <div class="card-lift rounded-2xl p-3" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#EFF6FF;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" d="M3 7h18M3 12h18M3 17h10"/>
+              </svg>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#EFF6FF;color:#3B82F6;">actif</span>
           </div>
-          <div class="min-w-0">
-            <p class="text-[9px] text-gray-400 leading-none">En cours</p>
-            <p class="text-xl font-black text-[#0F172A] leading-tight" x-text="dashStats.projets_actifs||0"></p>
-            <p class="text-[9px] text-blue-500 font-semibold leading-none">projets actifs</p>
-          </div>
+          <div x-show="!dashStatsLoaded" class="h-9 w-12 bg-gray-100 rounded-xl animate-pulse mb-1"></div>
+          <p x-show="dashStatsLoaded" class="text-2xl font-black leading-none mb-1" style="color:#0F172A;" x-text="dashStats.projets_actifs||0"></p>
+          <p class="text-xs font-semibold" style="color:#94A3B8;">Projets en cours</p>
         </div>
 
         <!-- Terminés -->
-        <div class="kpi-hover bg-white rounded-xl px-3 py-2.5 shadow-sm border border-gray-100 flex items-center gap-2.5">
-          <div class="icon-wrap icon-glow-green w-8 h-8 bg-[#F0FBF7] rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
-            </svg>
+        <div class="card-lift rounded-2xl p-3" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#F0FBF7;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+              </svg>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#F0FBF7;color:#00B87C;">livré</span>
           </div>
-          <div class="min-w-0">
-            <p class="text-[9px] text-gray-400 leading-none">Terminés</p>
-            <p class="text-xl font-black text-[#0F172A] leading-tight" x-text="dashStats.projets_termines||0"></p>
-            <p class="text-[9px] text-[#00B87C] font-semibold leading-none">livrés ✓</p>
-          </div>
+          <div x-show="!dashStatsLoaded" class="h-9 w-12 bg-gray-100 rounded-xl animate-pulse mb-1"></div>
+          <p x-show="dashStatsLoaded" class="text-2xl font-black leading-none mb-1" style="color:#0F172A;" x-text="dashStats.projets_termines||0"></p>
+          <p class="text-xs font-semibold" style="color:#94A3B8;">Projets terminés</p>
         </div>
 
         <!-- Taux réussite -->
-        <div class="kpi-hover bg-white rounded-xl px-3 py-2.5 shadow-sm border border-gray-100 flex items-center gap-2.5">
-          <div class="icon-wrap icon-glow-amber w-8 h-8 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" class="w-4 h-4">
-              <circle cx="12" cy="12" r="9"/>
-              <path stroke-linecap="round" d="M12 7v5l3 3"/>
-            </svg>
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-[9px] text-gray-400 leading-none">Taux réussite</p>
-            <p class="text-xl font-black text-[#0F172A] leading-tight"
-               x-text="(dashStats.taux_reussite||0) + '%'"></p>
-            <div class="mt-0.5 bg-gray-100 rounded-full h-1 overflow-hidden">
-              <div class="bg-amber-400 h-1 rounded-full transition-all duration-700"
-                   :style="'width:' + (dashStats.taux_reussite||0) + '%'"></div>
+        <div class="card-lift rounded-2xl p-3" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#FFF7ED;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
             </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#FFF7ED;color:#F59E0B;">score</span>
           </div>
+          <div x-show="!dashStatsLoaded" class="h-9 w-16 bg-gray-100 rounded-xl animate-pulse mb-1"></div>
+          <p x-show="dashStatsLoaded" class="text-2xl font-black leading-none mb-1" style="color:#0F172A;" x-text="(dashStats.taux_reussite||0)+'%'"></p>
+          <div class="h-1.5 rounded-full overflow-hidden mb-1" style="background:#F1F5F9;">
+            <div class="h-full rounded-full" style="background:linear-gradient(90deg,#F59E0B,#FCD34D);transition:width .7s;" :style="'width:'+(dashStats.taux_reussite||0)+'%'"></div>
+          </div>
+          <p class="text-xs font-semibold" style="color:#94A3B8;">Taux de réussite</p>
         </div>
 
-        <!-- Avis 5★ -->
-        <div class="kpi-hover bg-white rounded-xl px-3 py-2.5 shadow-sm border border-gray-100 flex items-center gap-2.5">
-          <div class="icon-wrap icon-glow-yellow w-8 h-8 bg-yellow-50 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5z"/>
-            </svg>
+        <!-- Avis -->
+        <div class="card-lift rounded-2xl p-3" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#FEFCE8;">
+              <svg viewBox="0 0 24 24" fill="#EAB308" stroke="#EAB308" stroke-width="1" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5z"/>
+              </svg>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#FEFCE8;color:#EAB308;">note</span>
           </div>
-          <div class="min-w-0">
-            <p class="text-[9px] text-gray-400 leading-none">Avis 5★</p>
-            <p class="text-xl font-black text-[#0F172A] leading-tight" x-text="dashStats.avis_5_etoiles||0"></p>
-            <p class="text-[9px] text-yellow-500 font-semibold leading-none"
-               x-text="'moy. ' + (dashStats.note_moyenne||'—')"></p>
-          </div>
+          <div x-show="!dashStatsLoaded" class="h-9 w-12 bg-gray-100 rounded-xl animate-pulse mb-1"></div>
+          <p x-show="dashStatsLoaded" class="text-2xl font-black leading-none mb-1" style="color:#0F172A;" x-text="dashStats.avis_5_etoiles||0"></p>
+          <p class="text-xs font-semibold" style="color:#94A3B8;" x-text="'Moy. ' + (dashStats.note_moyenne||'—') + ' ★'"></p>
         </div>
 
       </div>
 
-      <!-- ── Actions rapides ── -->
-      <div class="dash-block d3 fade-in-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="grid grid-cols-3 divide-x divide-gray-100">
-          <button @click="navigateTo('nouveau', false)"
-                  class="flex flex-col items-center gap-1.5 px-3 py-3 hover:bg-[#F0FBF7] transition-all duration-200 group">
-            <div class="w-8 h-8 rounded-xl bg-[#F0FBF7] group-hover:bg-[#00B87C] flex items-center justify-center transition-all duration-200">
-              <i data-lucide="plus" style="width:16px;height:16px;stroke-width:2.5" class="text-[#00B87C] group-hover:text-white transition-colors"></i>
-            </div>
-            <span class="text-[10px] font-bold text-[#475569] group-hover:text-[#00B87C] transition-colors leading-tight">Publier</span>
-          </button>
-          <button @click="navigateTo('messages')"
-                  class="flex flex-col items-center gap-1.5 px-3 py-3 hover:bg-blue-50 transition-all duration-200 group">
-            <div class="w-8 h-8 rounded-xl bg-blue-50 group-hover:bg-blue-500 flex items-center justify-center transition-all duration-200">
-              <i data-lucide="message-square" style="width:16px;height:16px;stroke-width:2.5" class="text-blue-500 group-hover:text-white transition-colors"></i>
-            </div>
-            <span class="text-[10px] font-bold text-[#475569] group-hover:text-blue-500 transition-colors leading-tight">Messages</span>
-          </button>
-          <button @click="generateCV()" :disabled="loadingCV"
-                  class="flex flex-col items-center gap-1.5 px-3 py-3 hover:bg-purple-50 transition-all duration-200 group">
-            <div class="w-8 h-8 rounded-xl bg-purple-50 group-hover:bg-purple-500 flex items-center justify-center transition-all duration-200">
-              <i data-lucide="wand-2" style="width:16px;height:16px;stroke-width:2.5" class="text-purple-500 group-hover:text-white transition-colors"></i>
-            </div>
-            <span class="text-[10px] font-bold text-[#475569] group-hover:text-purple-500 transition-colors leading-tight" x-text="loadingCV ? 'Génération...' : 'CV IA'"></span>
-          </button>
-        </div>
-      </div>
+      <!-- ── Wallet Escrow — Carte Blanche Mosala ── -->
+      <div class="relative overflow-hidden rounded-2xl"
+           style="background:white;border:1px solid rgba(0,184,124,0.20);box-shadow:0 2px 16px rgba(15,23,42,0.07);">
 
-      <!-- ── Wallet Escrow — Stripe/Revolut Level ── -->
-      <div class="dash-block d3 wallet-card p-4 text-white">
-        <!-- Glow bas gauche -->
-        <div class="wallet-glow-bottom"></div>
+        <!-- Glow déco fond -->
+        <div class="absolute -bottom-12 -right-12 w-48 h-48 rounded-full pointer-events-none"
+             style="background: radial-gradient(circle, rgba(0,184,124,0.07) 0%, transparent 65%);"></div>
+        <div class="absolute -top-8 -left-8 w-36 h-36 rounded-full pointer-events-none"
+             style="background: radial-gradient(circle, rgba(0,184,124,0.05) 0%, transparent 65%);"></div>
 
-        <div class="wallet-inner">
+        <div class="relative p-4">
 
           <!-- Header -->
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2.5">
-              <div class="w-9 h-9 wallet-glass-panel flex items-center justify-center">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" class="w-4.5 h-4.5">
+              <!-- Icône wallet fond gris clair -->
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                   style="background:#F1F5F9; border:1px solid #E8ECF4;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4.5 h-4.5">
                   <path stroke-linecap="round" d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/>
                   <path stroke-linecap="round" d="M16 12h5v4h-5a2 2 0 0 1 0-4z"/>
                 </svg>
               </div>
               <div>
-                <p class="text-xs font-black text-white tracking-tight">Escrow Wallet</p>
-                <p class="text-[9px] text-white/40 leading-none">Mosala Pay</p>
+                <p class="text-xs font-black tracking-tight" style="color:#0F172A;">Escrow Wallet</p>
+                <p class="text-[9px] font-medium leading-none" style="color:#94A3B8;">Mosala Pay</p>
               </div>
             </div>
-            <div class="flex items-center gap-1.5 wallet-glass-panel px-2.5 py-1.5">
-              <span class="relative flex h-2 w-2">
-                <span class="absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-40"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-[#34D399]"></span>
-              </span>
-              <span class="text-[9px] font-bold text-[#34D399] uppercase tracking-wider">Sécurisé</span>
+            <!-- Badge sécurisé + lien Gérer côte à côte -->
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl"
+                   style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.20);">
+                <span class="relative flex h-2 w-2">
+                  <span class="absolute inline-flex h-full w-full rounded-full bg-[#00B87C] opacity-40 animate-ping"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00B87C]"></span>
+                </span>
+                <span class="text-[9px] font-bold uppercase tracking-wider" style="color:#00B87C;">Sécurisé</span>
+              </div>
+              <!-- Lien Gérer compact -->
+              <button @click="navigateTo('wallet')"
+                      class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl transition-all duration-200"
+                      style="background:#F8FAFC; border:1.5px solid #E8ECF4; color:#374151; font-size:11px; font-weight:600; cursor:pointer;"
+                      onmouseover="this.style.borderColor='#00B87C';this.style.color='#00B87C';this.style.background='#F0FBF7'"
+                      onmouseout="this.style.borderColor='#E8ECF4';this.style.color='#374151';this.style.background='#F8FAFC'">
+                Gérer
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                </svg>
+              </button>
             </div>
           </div>
 
           <!-- Solde principal -->
-          <div class="mb-1">
-            <p class="text-[9px] text-white/35 uppercase tracking-[0.2em] mb-1">Solde disponible</p>
+          <div class="mb-3">
+            <p class="text-[9px] font-semibold uppercase tracking-[0.2em] mb-1" style="color:#94A3B8;">Solde disponible</p>
             <div class="flex items-end gap-2">
-              <p class="text-4xl font-black tracking-tight leading-none"
+              <p class="font-black tracking-tight leading-none" style="font-size:2.4rem; color:#0F172A;"
                  x-text="'$' + (escrow.disponible||0).toFixed(2)"></p>
-              <span class="text-[10px] text-white/40 mb-1 font-semibold"
+              <span class="text-[10px] font-bold mb-1" style="color:#94A3B8;"
                     x-text="escrow.devise || 'USD'"></span>
             </div>
           </div>
 
-          <!-- Barre de ratio escrow -->
-          <div class="mb-3 mt-2">
-            <div class="flex justify-between text-[9px] text-white/30 mb-1">
-              <span>Disponible</span>
-              <span>Bloqué en escrow</span>
+          <!-- Barre ratio disponible / bloqué -->
+          <div class="mb-4">
+            <div class="flex justify-between mb-1.5" style="font-size:9px; color:#94A3B8;">
+              <span class="font-semibold">Disponible</span>
+              <span class="font-semibold">Bloqué en escrow</span>
             </div>
-            <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div class="h-full bg-gradient-to-r from-[#34D399] to-[#00B87C] rounded-full transition-all duration-700"
+            <div class="rounded-full overflow-hidden" style="height:6px; background:#F1F5F9;">
+              <div class="h-full rounded-full transition-all duration-700"
+                   style="background: linear-gradient(90deg, #00B87C, #059669);"
                    :style="'width:' + (escrow.total > 0 ? Math.round((escrow.disponible/escrow.total)*100) : 0) + '%'"></div>
             </div>
           </div>
 
           <!-- Stats bloqué / total -->
-          <div class="grid grid-cols-2 gap-2.5 mb-3">
-            <div class="wallet-glass-panel p-2.5">
+          <div class="grid grid-cols-2 gap-2.5 mb-4">
+            <!-- Bloqué -->
+            <div class="rounded-xl p-2.5" style="background:#FFFBEB; border:1px solid rgba(245,158,11,0.20);">
               <div class="flex items-center gap-1 mb-1">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" class="w-3 h-3">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" class="w-3 h-3">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25z"/>
                 </svg>
-                <span class="text-[9px] text-white/40 uppercase tracking-wider">Bloqué</span>
+                <span class="text-[9px] font-bold uppercase tracking-wider" style="color:#92400E;">Bloqué</span>
               </div>
-              <p class="text-lg font-black text-yellow-300 leading-none"
+              <p class="text-lg font-black leading-none" style="color:#D97706;"
                  x-text="'$' + (escrow.bloque||0).toFixed(2)"></p>
-              <p class="text-[9px] text-white/25 mt-0.5">En attente validation</p>
+              <p class="text-[9px] mt-0.5 font-medium" style="color:#94A3B8;">En attente validation</p>
             </div>
-            <div class="wallet-glass-panel p-3">
-              <div class="flex items-center gap-1.5 mb-1.5">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" class="w-3 h-3">
+            <!-- Total -->
+            <div class="rounded-xl p-2.5" style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.20);">
+              <div class="flex items-center gap-1 mb-1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-3 h-3">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125z"/>
                 </svg>
-                <span class="text-[9px] text-white/40 uppercase tracking-wider">Total</span>
+                <span class="text-[9px] font-bold uppercase tracking-wider" style="color:#065F46;">Total</span>
               </div>
-              <p class="text-lg font-black text-[#34D399] leading-none"
+              <p class="text-lg font-black leading-none" style="color:#00B87C;"
                  x-text="'$' + (escrow.total||0).toFixed(2)"></p>
-              <p class="text-[9px] text-white/25 mt-0.5">Cumulé</p>
+              <p class="text-[9px] mt-0.5 font-medium" style="color:#94A3B8;">Cumulé</p>
             </div>
           </div>
 
-          <!-- CTA retrait -->
-          <button @click="navigateTo('wallet')"
-                  class="wallet-btn w-full text-white text-xs font-black py-3 flex items-center justify-center gap-2">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5z"/>
-            </svg>
-            Gérer le portefeuille →
-          </button>
-
         </div>
       </div>
+      <!-- ── /Wallet Escrow ── -->
 
       <!-- ── Graphique revenus ── -->
-      <div class="dash-block d4 fade-in-4 card-hover bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
+      <!-- ── Graphique revenus ── -->
+      <div class="dash-block d4 fade-in-4 card-lift rounded-2xl p-4" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
 
-        <!-- Header + toggle période -->
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <h3 class="font-bold text-[#0F172A] text-sm">📈 Aperçu des revenus</h3>
-            <p class="text-[10px] text-gray-400 mt-0.5">Transactions créditées</p>
-          </div>
-          <div class="flex gap-1 bg-gray-100 p-0.5 rounded-lg">
-            <button @click="switchPeriode('7j')"
-                    :class="dashPeriode==='7j' ? 'bg-white text-[#00B87C] shadow-sm' : 'text-gray-400'"
-                    class="text-[10px] font-bold px-3 py-1 rounded-md transition">7j</button>
-            <button @click="switchPeriode('30j')"
-                    :class="dashPeriode==='30j' ? 'bg-white text-[#00B87C] shadow-sm' : 'text-gray-400'"
-                    class="text-[10px] font-bold px-3 py-1 rounded-md transition">30j</button>
-          </div>
-        </div>
-
-        <!-- Mini analytics résumé -->
-        <div class="grid grid-cols-3 gap-2 mb-4">
-          <div class="bg-[#F0FBF7] rounded-xl p-2.5 text-center">
-            <p class="text-base font-black text-[#00B87C]"
-               x-text="'$' + ((dashGraphique[dashPeriode]||[]).reduce((s,d)=>s+d.montant,0)).toFixed(0)"></p>
-            <p class="text-[9px] text-gray-400 mt-0.5">Total</p>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-2.5 text-center">
-            <p class="text-base font-black text-[#0F172A]"
-               x-text="(dashGraphique[dashPeriode]||[]).filter(d=>d.montant>0).length"></p>
-            <p class="text-[9px] text-gray-400 mt-0.5">Jours actifs</p>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-2.5 text-center">
-            <p class="text-base font-black text-[#0F172A]"
-               x-text="'$' + Math.max(...(dashGraphique[dashPeriode]||[{montant:0}]).map(d=>d.montant)).toFixed(0)"></p>
-            <p class="text-[9px] text-gray-400 mt-0.5">Pic</p>
-          </div>
-        </div>
-
-        <!-- Canvas chart — hauteur réduite -->
-        <div class="relative h-28">
-          <canvas id="earningsChart"></canvas>
-          <!-- Overlay si pas de données -->
-          <div x-show="!(dashGraphique[dashPeriode]||[]).some(d=>d.montant>0)"
-               class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 rounded-xl">
-            <p class="text-2xl">📊</p>
-            <p class="text-xs mt-1">Aucune transaction sur cette période</p>
-            <p class="text-[10px] text-gray-300">Les données apparaîtront après vos premiers projets</p>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ── Mes projets récents ── -->
-      <div class="dash-block d5 fade-in-5 card-hover bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-bold text-[#0F172A] text-sm">📁 Mes projets récents</h3>
-          <button @click="navigateTo('marketplace')" class="text-[10px] text-[#00B87C] font-semibold hover:underline">Voir tout →</button>
-        </div>
-        <div x-show="mesProjets.length === 0" class="bg-gray-50 rounded-xl p-4 border border-dashed border-gray-200">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="icon-wrap w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center flex-shrink-0 shadow-sm" style="background: radial-gradient(circle at 35% 35%, #f8fafc 0%, #f1f5f9 100%);">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" class="w-5 h-5">
-                <path stroke-linecap="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v8.25m19.5 0A2.25 2.25 0 0 1 19.5 16.5h-15a2.25 2.25 0 0 1-2.25-2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 16.91a2.25 2.25 0 0 1-1.07-1.916V13.5"/>
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <!-- Icône SVG trending-up -->
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#F0FBF7;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.519l2.74-1.22m0 0-5.94-2.28m5.94 2.28-2.28 5.941"/>
               </svg>
             </div>
             <div>
-              <p class="text-sm font-bold text-[#0F172A]">Pas encore de projets</p>
-              <p class="text-[10px]" style="color:#475569">Lance-toi — les clients attendent des talents comme toi</p>
+              <h3 class="font-bold text-sm" style="color:#0F172A;">Revenus</h3>
+              <p class="text-[10px]" style="color:#94A3B8;">Transactions créditées</p>
             </div>
           </div>
+          <!-- Toggle période -->
+          <div class="flex gap-0.5 p-0.5 rounded-lg" style="background:#F1F5F9;">
+            <button @click="switchPeriode('7j')"
+                    :class="dashPeriode==='7j' ? 'bg-white shadow-sm' : ''"
+                    class="text-[10px] font-bold px-3 py-1 rounded-md transition-all"
+                    :style="dashPeriode==='7j' ? 'color:#00B87C;' : 'color:#94A3B8;'">7j</button>
+            <button @click="switchPeriode('30j')"
+                    :class="dashPeriode==='30j' ? 'bg-white shadow-sm' : ''"
+                    class="text-[10px] font-bold px-3 py-1 rounded-md transition-all"
+                    :style="dashPeriode==='30j' ? 'color:#00B87C;' : 'color:#94A3B8;'">30j</button>
+          </div>
+        </div>
+
+        <!-- Stats ligne compacte -->
+        <div class="flex items-center gap-3 mb-4 px-1">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-black" style="color:#0F172A;"
+                  x-text="'$' + ((dashGraphique[dashPeriode]||[]).reduce((s,d)=>s+d.montant,0)).toFixed(0)"></span>
+            <span class="text-[9px] font-medium" style="color:#94A3B8;">total</span>
+          </div>
+          <div class="w-px h-3" style="background:#E8ECF4;"></div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-black" style="color:#0F172A;"
+                  x-text="(dashGraphique[dashPeriode]||[]).filter(d=>d.montant>0).length"></span>
+            <span class="text-[9px] font-medium" style="color:#94A3B8;">jours actifs</span>
+          </div>
+          <div class="w-px h-3" style="background:#E8ECF4;"></div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-black" style="color:#0F172A;"
+                  x-text="'$' + Math.max(...(dashGraphique[dashPeriode]||[{montant:0}]).map(d=>d.montant)).toFixed(0)"></span>
+            <span class="text-[9px] font-medium" style="color:#94A3B8;">pic</span>
+          </div>
+        </div>
+
+        <!-- Canvas chart -->
+        <div class="relative h-28">
+          <canvas id="earningsChart"></canvas>
+          <!-- État vide propre -->
+          <div x-show="!(dashGraphique[dashPeriode]||[]).some(d=>d.montant>0)"
+               class="absolute inset-0 flex flex-col items-center justify-center rounded-xl"
+               style="background:rgba(255,255,255,0.90);">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center mb-2"
+                 style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125z"/>
+              </svg>
+            </div>
+            <p class="text-xs font-bold" style="color:#0F172A;">Aucune transaction</p>
+            <p class="text-[10px] text-center mt-0.5" style="color:#94A3B8;">Les données apparaîtront après vos premiers projets</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="dash-block d5 fade-in-5 card-lift rounded-2xl p-3" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <!-- Icône SVG briefcase -->
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#EFF6FF;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-sm" style="color:#0F172A;">Mes projets récents</h3>
+          </div>
+          <button @click="navigateTo('marketplace')"
+                  class="text-[10px] font-bold hover:underline" style="color:#00B87C;">Voir tout →</button>
+        </div>
+
+        <!-- État vide -->
+        <div x-show="mesProjets.length === 0"
+             class="rounded-xl p-4 text-center" style="background:#FFFFFF; border:1.5px dashed #E2E0DC; box-shadow:0 2px 12px rgba(15,23,42,0.05);">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
+            </svg>
+          </div>
+          <p class="text-xs font-bold mb-0.5" style="color:#0F172A;">Pas encore de projets</p>
+          <p class="text-[10px] mb-3" style="color:#94A3B8;">Lance-toi — les clients attendent des talents comme toi</p>
           <div class="flex gap-2">
             <button @click="navigateTo('marketplace')"
-                    class="flex-1 bg-[#00B87C] text-white text-xs font-bold py-2 px-3 rounded-xl hover:bg-[#009E6A] transition flex items-center justify-center gap-1">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/></svg>
+                    style="flex:1; padding:10px; border-radius:12px; border:none;
+                           background:linear-gradient(135deg,#00B87C,#059669);
+                           color:white; font-size:12px; font-weight:700; cursor:pointer;
+                           box-shadow:0 4px 12px rgba(0,184,124,0.30);
+                           display:flex; align-items:center; justify-content:center; gap:6px;
+                           transition:all .2s;"
+                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,184,124,0.40)'"
+                    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(0,184,124,0.30)'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;">
+                <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
+              </svg>
               Postuler
             </button>
             <button @click="navigateTo('nouveau', false)"
-                    class="flex-1 bg-white border border-gray-200 text-gray-600 text-xs font-bold py-2 px-3 rounded-xl hover:border-[#00B87C] hover:text-[#00B87C] transition flex items-center justify-center gap-1">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+                    style="flex:1; padding:10px; border-radius:12px;
+                           border:1.5px solid #E8ECF4; background:white;
+                           color:#374151; font-size:12px; font-weight:600; cursor:pointer;
+                           display:flex; align-items:center; justify-content:center; gap:6px;
+                           transition:all .2s;"
+                    onmouseover="this.style.borderColor='#00B87C';this.style.color='#00B87C'"
+                    onmouseout="this.style.borderColor='#E8ECF4';this.style.color='#374151'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;">
+                <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+              </svg>
               Publier
             </button>
           </div>
         </div>
-        <div class="space-y-2">
+
+        <!-- Liste projets — cards modernes -->
+        <div x-show="mesProjets.length > 0" class="space-y-2">
           <template x-for="p in mesProjets.slice(0,4)" :key="p.id">
-            <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+            <div class="group flex items-center gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer"
+                 class="item-lift" style="background:#FFFFFF;box-shadow:0 1px 10px rgba(15,23,42,0.07);border:none;"
+                 onmouseover="this.style.borderColor='rgba(0,184,124,0.25)';this.style.background='#FAFFFE'"
+                 onmouseout="this.style.borderColor='#F1F5F9';this.style.background='white'">
+
+              <!-- Point statut coloré -->
+              <div class="flex-shrink-0 w-2.5 h-2.5 rounded-full"
+                   :class="{
+                     'bg-yellow-400': p.statut==='en_attente',
+                     'bg-blue-400':   p.statut==='en_cours',
+                     'bg-[#00B87C]':  p.statut==='termine',
+                     'bg-red-400':    p.statut==='annule'
+                   }"></div>
+
+              <!-- Infos -->
               <div class="flex-1 min-w-0">
-                <p class="font-semibold text-sm text-[#0F172A] truncate" x-text="p.titre"></p>
-                <p class="text-xs text-gray-400" x-text="formatBudget(p.budget, p.devise)"></p>
+                <p class="text-xs font-bold truncate" style="color:#0F172A;" x-text="p.titre"></p>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span class="text-[9px] font-semibold"
+                        :style="{
+                          'color': p.statut==='en_attente' ? '#D97706' :
+                                   p.statut==='en_cours'   ? '#3B82F6' :
+                                   p.statut==='termine'    ? '#00B87C' : '#EF4444'
+                        }"
+                        x-text="statutLabel(p.statut)"></span>
+                  <span class="text-[9px]" style="color:#CBD5E1;">·</span>
+                  <span class="text-[9px]" style="color:#94A3B8;"
+                        x-text="p.created_at ? timeAgo(p.created_at) : ''"></span>
+                </div>
               </div>
-              <span class="ml-2 flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    :class="{
-                      'bg-yellow-50 text-yellow-600': p.statut==='en_attente',
-                      'bg-blue-50 text-blue-600': p.statut==='en_cours',
-                      'bg-green-50 text-green-600': p.statut==='termine',
-                      'bg-red-50 text-red-500': p.statut==='annule'
-                    }"
-                    x-text="statutLabel(p.statut)"></span>
+
+              <!-- Budget + actions -->
+              <div class="flex-shrink-0 text-right flex flex-col items-end gap-1.5">
+                <p class="text-sm font-black" style="color:#0F172A;"
+                   x-text="formatBudget(p.budget, p.devise)"></p>
+                <!-- Boutons Modifier/Supprimer — seulement si en_attente -->
+                <template x-if="p.statut === 'en_attente'">
+                  <div class="flex items-center gap-1">
+                    <button @click.stop="ouvrirEditProjet(p)"
+                            class="px-2 py-0.5 rounded-lg text-[9px] font-bold transition"
+                            style="background:#EFF6FF;color:#3B82F6;">✏️ Modifier</button>
+                    <button @click.stop="confirmerSupprimerProjet(p)"
+                            class="px-2 py-0.5 rounded-lg text-[9px] font-bold transition"
+                            style="background:#FEF2F2;color:#EF4444;">🗑️</button>
+                  </div>
+                </template>
+                <template x-if="['en_cours','litige'].includes(p.statut)">
+                  <span class="text-[9px] text-amber-500 font-semibold">🔒 Contrat actif</span>
+                </template>
+                <!-- Boost (Pro only) -->
+                <template x-if="user.is_pro">
+                  <div class="flex items-center gap-1 mt-0.5">
+                    <button @click.stop="boosterProjet(p.id)" x-show="!p.is_boosted"
+                            class="px-2 py-0.5 rounded-lg text-[9px] font-bold transition"
+                            style="background:#fef9c3;color:#b45309;">🚀 Booster</button>
+                    <span x-show="p.is_boosted" class="text-[9px] font-bold" style="color:#b45309;">🚀 Boosté</span>
+                    <button x-show="p.freelance_id" @click.stop="telechargerContrat(p.id)"
+                            class="px-2 py-0.5 rounded-lg text-[9px] font-bold transition"
+                            style="background:#f0fdf4;color:#16a34a;">📄 Contrat</button>
+                  </div>
+                </template>
+              </div>
+
             </div>
           </template>
         </div>
       </div>
-
-      <!-- ── Messages récents ── -->
-      <div class="dash-block d6 fade-in-6 card-hover bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="font-bold text-[#0F172A] text-sm">💬 Messages récents</h3>
-          <button @click="navigateTo('messages')" class="text-[10px] text-[#00B87C] font-semibold hover:underline">Voir tout →</button>
+      <!-- ── Missions recommandées ── -->
+      <div class="dash-block fade-in-5 card-lift rounded-2xl p-4" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <!-- Icône SVG target -->
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                 style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-4 h-4">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6"/>
+                <circle cx="12" cy="12" r="2"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-sm" style="color:#0F172A;">Missions pour toi</h3>
+          </div>
+          <button @click="navigateTo('marketplace')"
+                  class="text-[10px] font-bold hover:underline" style="color:#00B87C;">Voir tout →</button>
         </div>
-        <div x-show="dashMessages.length === 0" class="bg-gray-50 rounded-xl p-4 border border-dashed border-gray-200 text-center">
-          <div class="icon-wrap w-10 h-10 rounded-xl border border-gray-100 shadow-sm flex items-center justify-center mx-auto mb-2" style="background: radial-gradient(circle at 35% 35%, #f8fafc 0%, #f1f5f9 100%);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" class="w-5 h-5">
+
+        <!-- État vide -->
+        <div x-show="dashRecommended.length === 0"
+             class="rounded-xl p-4 text-center" style="background:#FFFFFF; border:1.5px dashed #E2E0DC; box-shadow:0 2px 12px rgba(15,23,42,0.05);">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="6"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <p class="text-xs font-bold mb-0.5" style="color:#0F172A;">Aucune mission trouvée</p>
+          <p class="text-[10px] mb-3" style="color:#94A3B8;">Ajoute des compétences pour voir les missions qui te correspondent</p>
+          <button @click="navigateTo('profil')"
+                  style="padding:9px 20px; border-radius:12px; border:none;
+                         background:linear-gradient(135deg,#00B87C,#059669);
+                         color:white; font-size:11px; font-weight:700; cursor:pointer;
+                         box-shadow:0 4px 12px rgba(0,184,124,0.30); transition:all .2s;"
+                  onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,184,124,0.40)'"
+                  onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(0,184,124,0.30)'">
+            + Ajouter des compétences
+          </button>
+        </div>
+
+        <!-- Liste missions recommandées -->
+        <div x-show="dashRecommended.length > 0" class="space-y-2">
+          <template x-for="proj in dashRecommended.slice(0,4)" :key="proj.id">
+            <div class="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer"
+                 class="item-lift" style="background:#FFFFFF;box-shadow:0 1px 10px rgba(15,23,42,0.07);border:none;"
+                 onmouseover="this.style.borderColor='rgba(0,184,124,0.25)';this.style.background='#FAFFFE'"
+                 onmouseout="this.style.borderColor='#F1F5F9';this.style.background='white'"
+                 @click="navigateTo('marketplace')">
+
+              <!-- Avatar client : photo si dispo, sinon initiale colorée -->
+              <div class="flex-shrink-0 relative">
+                <template x-if="proj.client_photo">
+                  <img :src="proj.client_photo"
+                       class="w-9 h-9 rounded-full object-cover"
+                       @error="$el.style.display='none'"/>
+                </template>
+                <template x-if="!proj.client_photo">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm text-white"
+                       :style="'background:' + avatarColor(proj.client_nom)"
+                       x-text="(proj.client_nom||'?')[0].toUpperCase()"></div>
+                </template>
+                <!-- Badge vérifié -->
+                <span x-show="proj.client_verifie"
+                      class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white flex items-center justify-center"
+                      style="background:#00B87C;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" class="w-2 h-2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                  </svg>
+                </span>
+              </div>
+
+              <!-- Contenu -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 mb-0.5">
+                  <p class="text-xs font-bold truncate" style="color:#0F172A;" x-text="proj.titre"></p>
+                  <!-- Badge Nouveau si < 48h -->
+                  <span x-show="proj.created_at && ((new Date() - new Date(proj.created_at)) / 3600000) < 48"
+                        class="flex-shrink-0 text-[8px] font-black px-1.5 py-0.5 rounded-md"
+                        style="background:#FEF3C7; color:#D97706;">Nouveau</span>
+                </div>
+                <!-- Tags uniquement — plus de description -->
+                <div class="flex flex-wrap gap-1" x-show="proj.tags">
+                  <template x-for="tag in (proj.tags||'').split(',').slice(0,3)" :key="tag">
+                    <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded-md"
+                          style="background:#F0FBF7; color:#00B87C; border:1px solid rgba(0,184,124,0.15);"
+                          x-text="tag.trim()"></span>
+                  </template>
+                </div>
+              </div>
+
+              <!-- Budget compact -->
+              <div class="flex-shrink-0 text-right">
+                <p class="text-sm font-black leading-none" style="color:#0F172A;"
+                   x-text="'$' + (proj.budget||0).toFixed(0)"></p>
+                <p class="text-[9px] mt-0.5 font-medium" style="color:#94A3B8;"
+                   x-text="proj.devise || 'USD'"></p>
+              </div>
+
+            </div>
+          </template>
+        </div>
+      </div>
+      <!-- ── /Missions recommandées ── -->
+      <!-- ── Messages récents ── -->
+      <div class="dash-block d6 fade-in-6 rounded-2xl p-4" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <!-- Icône SVG message -->
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                 style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-sm" style="color:#0F172A;">Messages récents</h3>
+          </div>
+          <button @click="navigateTo('messages')"
+                  class="text-[10px] font-bold hover:underline" style="color:#00B87C;">Voir tout →</button>
+        </div>
+
+        <!-- État vide -->
+        <div x-show="dashMessages.length === 0"
+             class="rounded-xl p-4 text-center" style="background:#FFFFFF; border:1.5px dashed #E2E0DC; box-shadow:0 2px 12px rgba(15,23,42,0.05);">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
             </svg>
           </div>
-          <p class="text-xs font-bold text-[#0F172A]">Aucune conversation</p>
-          <p class="text-[10px] text-gray-400 mt-0.5 mb-3">Postule à des missions pour démarrer les échanges</p>
+          <p class="text-xs font-bold mb-0.5" style="color:#0F172A;">Aucune conversation</p>
+          <p class="text-[10px] mb-3" style="color:#94A3B8;">Postule à des missions pour démarrer les échanges</p>
           <button @click="navigateTo('marketplace')"
-                  class="text-[10px] font-black text-[#00B87C] bg-[#F0FBF7] border border-[#00B87C]/20 px-3 py-1.5 rounded-lg hover:bg-[#00B87C] hover:text-white transition-all">
+                  style="padding:9px 20px; border-radius:12px; border:none;
+                         background:linear-gradient(135deg,#00B87C,#059669);
+                         color:white; font-size:11px; font-weight:700; cursor:pointer;
+                         box-shadow:0 4px 12px rgba(0,184,124,0.30); transition:all .2s;"
+                  onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,184,124,0.40)'"
+                  onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(0,184,124,0.30)'">
             Voir les missions →
           </button>
         </div>
-        <div class="space-y-3">
+
+        <!-- Liste messages -->
+        <div x-show="dashMessages.length > 0" class="space-y-2">
           <template x-for="m in dashMessages.slice(0,3)" :key="m.conversation_id">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#00B87C] to-[#009E6A] flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-                   x-text="(m.expediteur||'?')[0].toUpperCase()"></div>
+            <div class="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer"
+                 :style="!m.lu ? 'background:#FAFFFE; border:1px solid rgba(0,184,124,0.18);' : 'background:#F5F4F2; border:none;'"
+                 onmouseover="this.style.borderColor='rgba(0,184,124,0.28)';this.style.background='#FAFFFE'"
+                 onmouseout="this.style.borderColor=(!this.__x || this.__x.$data.m && !this.__x.$data.m.lu) ? 'rgba(0,184,124,0.18)' : '#F1F5F9'; this.style.background=(!this.__x) ? '#FAFFFE' : 'white'"
+                 @click="navigateTo('messages')">
+
+              <!-- Avatar : photo ou initiale colorée -->
+              <div class="flex-shrink-0 relative">
+                <template x-if="m.photo_url">
+                  <img :src="m.photo_url"
+                       class="w-9 h-9 rounded-full object-cover"
+                       @error="$el.style.display='none'"/>
+                </template>
+                <template x-if="!m.photo_url">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm text-white"
+                       :style="'background:' + avatarColor(m.expediteur)"
+                       x-text="(m.expediteur||'?')[0].toUpperCase()"></div>
+                </template>
+                <!-- Dot non-lu -->
+                <span x-show="!m.lu"
+                      class="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white"
+                      style="background:#00B87C;"></span>
+              </div>
+
+              <!-- Infos -->
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-[#0F172A] truncate" x-text="m.expediteur"></p>
-                <p class="text-xs text-gray-400 truncate" x-text="m.message"></p>
+                <p class="text-xs truncate"
+                   :class="!m.lu ? 'font-black' : 'font-semibold'"
+                   style="color:#0F172A;"
+                   x-text="m.expediteur"></p>
+                <p class="text-[10px] truncate mt-0.5"
+                   :class="!m.lu ? 'font-semibold' : 'font-normal'"
+                   style="color:#94A3B8;"
+                   x-text="m.message"></p>
               </div>
-              <div class="flex-shrink-0 text-right">
-                <p class="text-[10px]" style="color:#475569" x-text="timeAgo(m.created_at)"></p>
-                <span x-show="!m.lu" class="inline-block w-2 h-2 bg-[#00B87C] rounded-full mt-0.5"></span>
+
+              <!-- Heure -->
+              <div class="flex-shrink-0 flex flex-col items-end gap-1">
+                <span class="text-[9px]" style="color:#CBD5E1;"
+                      x-text="timeAgo(m.created_at)"></span>
+                <!-- Badge count non-lu si > 1 -->
+                <span x-show="m.nb_non_lus > 1"
+                      class="text-[9px] font-black text-white px-1.5 py-0.5 rounded-full"
+                      style="background:#00B87C; min-width:16px; text-align:center;"
+                      x-text="m.nb_non_lus"></span>
               </div>
+
             </div>
           </template>
         </div>
       </div>
-
       <!-- ── Compétences ── -->
-      <div class="dash-block d7 card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100" x-show="dashCompetences.length > 0">
-        <h3 class="font-bold text-[#0F172A] text-sm mb-3">🛠️ Mes compétences</h3>
-        <div class="flex flex-wrap gap-2">
+      <div class="dash-block d7 rounded-2xl p-4" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#EFF6FF;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l5.653-4.655m5.8-5.8 1.875 1.875M11.42 15.17 5.767 9.517m5.653 5.653-5.653-5.653m8.297-8.297a3.75 3.75 0 1 1 5.304 5.304l-1.875-1.875"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm" style="color:#0F172A;">Mes compétences</h3>
+              <p class="text-[10px]" style="color:#94A3B8;" x-text="dashCompetences.length + ' compétence' + (dashCompetences.length > 1 ? 's' : '')"></p>
+            </div>
+          </div>
+          <button @click="navigateTo('profil')"
+                  class="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all"
+                  style="background:#EFF6FF;color:#3B82F6;"
+                  onmouseover="this.style.background='#3B82F6';this.style.color='#FFFFFF'"
+                  onmouseout="this.style.background='#EFF6FF';this.style.color='#3B82F6'">Gérer →</button>
+        </div>
+
+        <!-- État vide -->
+        <div x-show="dashCompetences.length === 0"
+             class="rounded-xl p-4 text-center" style="background:#FFFFFF; border:1.5px dashed #E2E0DC; box-shadow:0 2px 12px rgba(15,23,42,0.05);">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l5.653-4.655m5.8-5.8 1.875 1.875M11.42 15.17 5.767 9.517m5.653 5.653-5.653-5.653m8.297-8.297a3.75 3.75 0 1 1 5.304 5.304l-1.875-1.875"/>
+            </svg>
+          </div>
+          <p class="text-xs font-bold mb-0.5" style="color:#0F172A;">Aucune compétence ajoutée</p>
+          <p class="text-[10px] mb-3" style="color:#94A3B8;">Les freelances avec des compétences reçoivent 3x plus de missions</p>
+          <button @click="navigateTo('profil')"
+                  style="padding:9px 20px; border-radius:12px; border:none;
+                         background:linear-gradient(135deg,#00B87C,#059669);
+                         color:white; font-size:11px; font-weight:700; cursor:pointer;
+                         box-shadow:0 4px 12px rgba(0,184,124,0.30); transition:all .2s;"
+                  onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,184,124,0.40)'"
+                  onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(0,184,124,0.30)'">
+            + Ajouter mes compétences
+          </button>
+        </div>
+
+        <!-- Liste compétences — pills modernes -->
+        <div x-show="dashCompetences.length > 0" class="flex flex-wrap gap-2">
           <template x-for="c in dashCompetences.slice(0,8)" :key="c.id">
-            <span class="inline-flex items-center gap-1 bg-[#F0FBF7] text-[#00B87C] text-xs font-semibold px-3 py-1 rounded-full border border-[#00B87C]/20"
-                  x-text="tagEmoji(c.nom||'') + ' ' + (c.nom||'')"></span>
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 cursor-default"
+                 :style="(c.niveau||1) >= 4 ? 'background:#F0FBF7;border:1.5px solid rgba(0,184,124,0.25);' : (c.niveau||1) >= 3 ? 'background:#EFF6FF;border:1.5px solid rgba(59,130,246,0.25);' : 'background:#FFF7ED;border:1.5px solid rgba(245,158,11,0.25);'">
+              <span class="text-sm" x-text="tagEmoji(c.nom||'') || '🔧'"></span>
+              <span class="text-xs font-bold"
+                    :style="(c.niveau||1) >= 4 ? 'color:#00B87C;' : (c.niveau||1) >= 3 ? 'color:#3B82F6;' : 'color:#F59E0B;'"
+                    x-text="c.nom||''"></span>
+              <span class="text-[9px] font-black px-1.5 py-0.5 rounded-md"
+                    :style="(c.niveau||1) >= 4 ? 'background:#00B87C;color:white;' : (c.niveau||1) >= 3 ? 'background:#3B82F6;color:white;' : 'background:#F59E0B;color:white;'"
+                    x-text="(c.niveau||1) >= 4 ? 'Expert' : (c.niveau||1) >= 3 ? 'Pro' : 'Junior'"></span>
+            </div>
           </template>
+
+          <!-- Bouton ajouter si < 5 compétences -->
+          <button x-show="dashCompetences.length < 5"
+                  @click="navigateTo('profil')"
+                  class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all duration-200"
+                  style="background:#F0EFED; border:1.5px dashed #D4D0CB; color:#94A3B8; font-size:12px; font-weight:600; cursor:pointer;"
+                  onmouseover="this.style.borderColor='#00B87C';this.style.color='#00B87C';this.style.background='#F0FBF7'"
+                  onmouseout="this.style.borderColor='#E8ECF4';this.style.color='#94A3B8';this.style.background='white'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;">
+              <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+            </svg>
+            Ajouter une compétence
+          </button>
         </div>
       </div>
-
       <!-- ── Activité récente ── -->
-      <div class="card-hover bg-white rounded-2xl p-4 shadow-sm border border-gray-100" x-show="dashActivite.length > 0">
-        <h3 class="font-bold text-[#0F172A] text-sm mb-3">🕐 Activité récente</h3>
-        <div class="space-y-3">
+      <div class="rounded-2xl p-4" style="background:#F5F4F2;box-shadow:0 2px 16px rgba(15,23,42,0.05);border:none;">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-sm" style="color:#0F172A;">Activité récente</h3>
+        </div>
+
+        <!-- État vide -->
+        <div x-show="!dashActivite || dashActivite.length === 0"
+             class="rounded-xl p-4 text-center" style="background:#FFFFFF; border:1.5px dashed #E2E0DC; box-shadow:0 2px 12px rgba(15,23,42,0.05);">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+            </svg>
+          </div>
+          <p class="text-xs font-bold mb-0.5" style="color:#0F172A;">Aucune activité pour l'instant</p>
+          <p class="text-[10px] mb-3" style="color:#94A3B8;">Ton activité apparaîtra ici dès que tu postules ou livres une mission</p>
+          <button @click="navigateTo('marketplace')"
+                  style="padding:9px 20px; border-radius:12px; border:none;
+                         background:linear-gradient(135deg,#00B87C,#059669);
+                         color:white; font-size:11px; font-weight:700; cursor:pointer;
+                         box-shadow:0 4px 12px rgba(0,184,124,0.30); transition:all .2s;"
+                  onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,184,124,0.40)'"
+                  onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(0,184,124,0.30)'">
+            Explorer les missions
+          </button>
+        </div>
+
+        <!-- Liste activité -->
+        <div x-show="dashActivite && dashActivite.length > 0" class="space-y-2">
           <template x-for="(a, i) in dashActivite" :key="i">
-            <div class="flex items-center gap-3">
-              <span class="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-base flex-shrink-0" x-text="a.icon"></span>
+            <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200"
+                 style="background:#F8FAFC; border:1px solid #F1F5F9;"
+                 onmouseover="this.style.background='#F0FBF7';this.style.borderColor='rgba(0,184,124,0.20)'"
+                 onmouseout="this.style.background='#F8FAFC';this.style.borderColor='#F1F5F9'">
+
+              <!-- Icône activité dans rond coloré -->
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm"
+                   style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);"
+                   x-text="a.icon"></div>
+
+              <!-- Label + sous-titre -->
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-[#0F172A]" x-text="a.label"></p>
-                <p class="text-xs text-gray-400 truncate" x-text="a.sub"></p>
+                <p class="text-xs font-semibold truncate" style="color:#0F172A;" x-text="a.label"></p>
+                <p class="text-[10px] truncate" style="color:#94A3B8;" x-text="a.sub"></p>
               </div>
-              <span class="text-[10px] text-gray-400 flex-shrink-0" x-text="a.time"></span>
+
+              <!-- Heure -->
+              <span class="text-[9px] flex-shrink-0 font-medium" style="color:#CBD5E1;"
+                    x-text="a.time"></span>
             </div>
           </template>
         </div>
       </div>
-
       <!-- ── Inviter amis ── -->
       <div class="card-hover bg-gradient-to-r from-[#00B87C] to-[#009E6A] rounded-2xl p-3 text-white">
         <div class="flex items-center gap-3">
           <div class="text-3xl">🎁</div>
           <div class="flex-1">
-            <p class="font-black text-sm">Invitez vos amis !</p>
-            <p class="text-xs text-white/80 mt-0.5">Gagnez des bonus pour chaque freelance parrainé</p>
+            <p class="font-black text-sm text-white">Invitez vos amis ! 🎁</p>
+            <p class="text-xs mt-0.5" style="color:rgba(255,255,255,0.65);">Gagnez des bonus pour chaque freelance parrainé</p>
           </div>
           <button class="bg-white text-[#00B87C] text-xs font-black px-3 py-2 rounded-xl hover:bg-gray-50 transition flex-shrink-0">
             Partager
@@ -671,3 +1016,7 @@
 
     </div><!-- /p-4 space-y-4 -->
     </div><!-- /dashboard -->
+
+    <!-- ─────────────────────────────────────
+         TAB : NOUVEAU PROJET
+    ───────────────────────────────────────── -->

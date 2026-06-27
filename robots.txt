@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /pages/poster-offre
+Disallow: /poster-offre.html
+Disallow: /onboarding.html
+Allow: /

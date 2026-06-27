@@ -1,25 +1,42 @@
-<div x-show="activeTab==='messages'" class="flex overflow-hidden bg-gray-50" style="height:calc(100vh - 56px);">
+  <div x-show="activeTab==='messages'" class="flex overflow-hidden" style="height:calc(100vh - 56px - 65px);background:#F5F4F2;flex:1;">
 
       <!-- ══ COLONNE GAUCHE : Liste conversations ══ -->
-      <div class="w-full lg:w-80 xl:w-96 bg-white border-r border-gray-100 flex flex-col"
+      <div class="w-full lg:w-80 xl:w-96 border-r border-gray-200 flex flex-col" style="background:#F5F4F2;"
            :class="activeConv ? 'hidden lg:flex' : 'flex'">
 
-        <!-- Header -->
-        <div class="px-4 py-4 border-b border-gray-100">
-          <div class="flex items-center justify-between">
+        <!-- Header + onglets -->
+        <div class="border-b border-gray-100" style="background:white;">
+          <div class="px-4 pt-4 pb-0 flex items-center justify-between">
             <h2 class="text-base font-bold text-gray-900">Messages</h2>
-            <span x-show="(conversations||[]).length > 0"
+            <span x-show="unreadMessages > 0"
                   class="text-[11px] font-semibold px-2 py-0.5 bg-[#00B87C]/10 text-[#00B87C] rounded-full"
-                  x-text="(conversations||[]).length"></span>
+                  x-text="unreadMessages + ' non lus'"></span>
           </div>
-          <p class="text-xs text-gray-400 mt-0.5">Vos échanges avec clients &amp; freelances</p>
+          <!-- Onglets Messages | Alertes -->
+          <div class="flex px-4 mt-3">
+            <button @click="messageTab='conversations'"
+                    class="flex-1 pb-2.5 text-xs font-bold transition-all border-b-2"
+                    :class="messageTab==='conversations' ? 'border-[#00B87C] text-[#00B87C]' : 'border-transparent text-gray-400'">
+              💬 Messages
+            </button>
+            <button @click="messageTab='alertes'; loadCandidaturesRecues()"
+                    class="flex-1 pb-2.5 text-xs font-bold transition-all border-b-2 relative"
+                    :class="messageTab==='alertes' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-400'">
+              🔔 Candidatures
+              <span x-show="unreadCandidatures > 0"
+                    class="absolute -top-1 right-3 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-black text-white flex items-center justify-center"
+                    style="background:#EF4444;"
+                    x-text="unreadCandidatures"></span>
+            </button>
+          </div>
         </div>
 
-        <!-- Search -->
+        <!-- Search + liste conversations -->
+        <div x-show="messageTab==='conversations'" class="flex flex-col flex-1 overflow-hidden">
         <div class="px-4 py-3 border-b border-gray-100">
           <div class="relative">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            <input x-model="msgSearch" type="text" placeholder="Rechercher..." class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00B87C]/30 focus:border-[#00B87C]" />
+            <input x-model="msgSearch" type="text" placeholder="Rechercher..." class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00B87C]/30 focus:border-[#00B87C]" style="background:white;" />
           </div>
         </div>
 
@@ -121,9 +138,20 @@
                      :class="activeConv && activeConv.id === conv.id ? 'bg-[#00B87C]/5 border-l-[3px] border-l-[#00B87C]' : 'border-l-[3px] border-l-transparent'">
                   <!-- Avatar -->
                   <div class="relative flex-shrink-0">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#00B87C] to-[#00956a] flex items-center justify-center text-white font-bold text-base"
-                         x-text="(conv.nom_interlocuteur || '?').trim().charAt(0).toUpperCase()"></div>
-                    <span class="absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full bg-gray-300"></span>
+                    <template x-if="conv.photo_interlocuteur">
+                      <img :src="conv.photo_interlocuteur"
+                           class="w-12 h-12 rounded-full object-cover"
+                           :alt="conv.nom_interlocuteur"
+                           @error="conv.photo_interlocuteur=null"/>
+                    </template>
+                    <template x-if="!conv.photo_interlocuteur">
+                      <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                           :style="'background:'+avatarColor(conv.nom_interlocuteur||'')+';color:#1e293b;'"
+                           x-text="(conv.nom_interlocuteur||'?').trim().charAt(0).toUpperCase()"></div>
+                    </template>
+                    <!-- Indicateur présence -->
+                    <span class="absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full"
+                          :style="conv.en_ligne ? 'background:#22c55e;' : 'background:#cbd5e1;'"></span>
                   </div>
                   <!-- Infos -->
                   <div class="flex-1 min-w-0">
@@ -148,6 +176,111 @@
           </template>
 
         </div>
+        </div><!-- /messageTab conversations -->
+
+        <!-- ══ ONGLET ALERTES / CANDIDATURES ══ -->
+        <div x-show="messageTab==='alertes'" class="flex-1 overflow-y-auto">
+
+          <!-- Loading -->
+          <div x-show="loadingCandidaturesRecues" class="flex justify-center items-center py-10">
+            <div class="w-6 h-6 rounded-full border-2 animate-spin" style="border-color:#E8ECF4;border-top-color:#F59E0B;"></div>
+          </div>
+
+          <!-- Vide -->
+          <template x-if="!loadingCandidaturesRecues && candidaturesRecues.length === 0">
+            <div class="flex flex-col items-center justify-center py-12 px-6 text-center">
+              <div class="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center mb-4">
+                <span class="text-3xl">🔔</span>
+              </div>
+              <p class="text-sm font-bold text-gray-700 mb-1">Aucune candidature reçue</p>
+              <p class="text-xs text-gray-400 leading-relaxed">Les candidatures sur vos projets apparaîtront ici avec les boutons Accepter / Refuser.</p>
+            </div>
+          </template>
+
+          <!-- Liste candidatures -->
+          <div x-show="!loadingCandidaturesRecues && candidaturesRecues.length > 0" class="p-4 space-y-3">
+
+            <!-- Compteur -->
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1"
+               x-text="candidaturesRecues.length + ' candidature(s) reçue(s)'"></p>
+
+            <!-- Compteur refusées masquées -->
+            <template x-if="candidaturesRecues.filter(c => c.statut === 'refusee').length > 0">
+              <button @click="showRefusees = !showRefusees"
+                      class="w-full text-center text-[10px] font-bold py-1.5 rounded-lg transition mb-1"
+                      style="color:#9CA3AF; background:#F9FAFB; border:1px dashed #E5E7EB;"
+                      x-text="showRefusees ? '🙈 Masquer les refusées' : '👁 Voir les refusées (' + candidaturesRecues.filter(c => c.statut === 'refusee').length + ')'">
+              </button>
+            </template>
+
+            <template x-for="c in candidaturesRecues.filter(c => c.statut !== 'refusee' || showRefusees)" :key="c.id">
+              <div class="bg-white rounded-2xl shadow-sm overflow-hidden border"
+                   :style="c.statut === 'en_attente' ? 'border-color:#FDE68A;' : c.statut === 'acceptee' ? 'border-color:#A7F3D0;' : 'border-color:#FECACA;'">
+
+                <!-- Header carte -->
+                <div class="px-4 pt-3 pb-2 flex items-center gap-3">
+                  <!-- Avatar -->
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-black text-white text-sm"
+                       style="background:linear-gradient(135deg,#667eea,#764ba2);"
+                       x-text="(c.freelance_prenom || '?').charAt(0).toUpperCase()"></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-black text-gray-900 truncate"
+                       x-text="(c.freelance_prenom || '') + ' ' + (c.freelance_nom || '')"></p>
+                    <p class="text-[10px] text-gray-400 truncate" x-text="'Sur : ' + (c.projet_titre || '—')"></p>
+                  </div>
+                  <!-- Badge statut -->
+                  <span class="text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0"
+                        :class="c.statut==='en_attente' ? 'bg-amber-50 text-amber-600' : c.statut==='acceptee' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'"
+                        x-text="c.statut==='en_attente' ? '⏳ En attente' : c.statut==='acceptee' ? '✅ Acceptée' : '❌ Refusée'"></span>
+                </div>
+
+                <!-- Message candidature -->
+                <div class="px-4 py-2 border-t border-gray-50">
+                  <p class="text-xs text-gray-600 leading-relaxed line-clamp-2" x-text="c.message || '—'"></p>
+                </div>
+
+                <!-- Infos budget / délai -->
+                <div class="px-4 py-2 flex items-center gap-3 border-t border-gray-50">
+                  <template x-if="c.budget_propose">
+                    <span class="text-[10px] font-bold text-gray-700 flex items-center gap-1">
+                      💰 <span x-text="'$' + c.budget_propose"></span>
+                    </span>
+                  </template>
+                  <template x-if="c.delai_jours">
+                    <span class="text-[10px] font-bold text-gray-700 flex items-center gap-1">
+                      ⏱ <span x-text="c.delai_jours + ' jours'"></span>
+                    </span>
+                  </template>
+                  <span class="ml-auto text-[9px] text-gray-400"
+                        x-text="new Date(c.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'short'})"></span>
+                </div>
+
+                <!-- Boutons Accepter / Refuser (seulement si en_attente) -->
+                <template x-if="c.statut === 'en_attente'">
+                  <div class="px-4 pb-3 pt-1 flex gap-2">
+                    <button @click="deciderCandidatureAlerte(c.id, 'acceptee', c)"
+                            :disabled="candidatureLoading === c.id"
+                            class="flex-1 py-2 rounded-xl text-xs font-black text-white transition"
+                            style="background:linear-gradient(135deg,#00B87C,#00D68F);">
+                      <span x-show="candidatureLoading !== c.id">✅ Accepter</span>
+                      <span x-show="candidatureLoading === c.id">...</span>
+                    </button>
+                    <button @click="deciderCandidatureAlerte(c.id, 'refusee', c)"
+                            :disabled="candidatureLoading === c.id"
+                            class="flex-1 py-2 rounded-xl text-xs font-black transition"
+                            style="background:#FEF2F2; color:#EF4444; border:1.5px solid rgba(239,68,68,0.2);">
+                      <span x-show="candidatureLoading !== c.id">❌ Refuser</span>
+                      <span x-show="candidatureLoading === c.id">...</span>
+                    </button>
+                  </div>
+                </template>
+
+              </div>
+            </template>
+          </div>
+
+        </div><!-- /messageTab alertes -->
+
       </div>
 
       <!-- ══ COLONNE DROITE : Conversation active ══ -->
@@ -295,6 +428,84 @@
                 </div>
               </template>
 
+              <!-- ══ CARTE ESCROW ══ -->
+              <template x-if="activeConv && activeConv.projet_id && activeConv.projet_statut === 'en_cours'">
+                <div x-data="{ _esc: null, _convId: null }"
+                     x-effect="
+                       if (activeConv && activeConv.id !== _convId) {
+                         _convId = activeConv.id;
+                         _esc = null;
+                         const tok = token || sessionStorage.getItem('kv_token');
+                         fetch(`${API}/escrow/projet/${activeConv.projet_id}`, {headers:{Authorization:'Bearer '+tok}})
+                           .then(r=>r.ok?r.json():null)
+                           .then(d=>{ _esc = (d && d.escrow) ? d.escrow : false; })
+                           .catch(()=>{ _esc = false; });
+                       }
+                     "
+                     class="mx-1 mb-2">
+
+                  <!-- Pas d escrow → bouton initier (client seulement) -->
+                  <template x-if="_esc === false && String(user.id) === String(activeConv.client_id)">
+                    <div class="rounded-2xl p-4 border-2 border-dashed border-amber-200 bg-amber-50">
+                      <p class="text-xs font-black text-amber-700 mb-1">💳 Paiement sécurisé requis</p>
+                      <p class="text-[10px] text-amber-600 mb-3 leading-relaxed">Déposez le montant en escrow pour que le freelance puisse commencer en toute confiance.</p>
+                      <button @click="initierEscrow(activeConv.projet_id).then(()=>{ _loaded=false; })"
+                              class="w-full py-2 rounded-xl text-xs font-black text-white"
+                              style="background:linear-gradient(135deg,#F59E0B,#D97706);">
+                        💰 Initier le paiement escrow
+                      </button>
+                    </div>
+                  </template>
+
+                  <!-- Chargement -->
+                  <template x-if="_esc === null">
+                    <div class="flex items-center gap-2 p-3 rounded-xl bg-gray-50">
+                      <div class="w-4 h-4 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin flex-shrink-0"></div>
+                      <span class="text-[10px] text-gray-400">Chargement escrow...</span>
+                    </div>
+                  </template>
+
+                  <!-- En attente confirmation -->
+                  <template x-if="_esc && _esc.statut === 'en_attente'">
+                    <div class="rounded-2xl p-4 bg-amber-50 border border-amber-200">
+                      <p class="text-xs font-black text-amber-700 mb-1">⏳ Paiement en attente de confirmation</p>
+                      <p class="text-[10px] text-amber-600">Référence : <strong x-text="_esc.reference_externe"></strong></p>
+                      <p class="text-[10px] text-amber-600 mt-0.5">Montant : <strong x-text="'$' + _esc.montant"></strong></p>
+                      <p class="text-[9px] text-amber-500 mt-2">Envoyez cette référence à l'admin Mosala pour confirmer la réception.</p>
+                    </div>
+                  </template>
+
+                  <!-- Escrow bloqué → en cours -->
+                  <template x-if="_esc && _esc.statut === 'bloque'">
+                    <div class="rounded-2xl p-4 bg-green-50 border border-green-200">
+                      <p class="text-xs font-black text-green-700 mb-1">🔒 <span x-text="'$' + _esc.montant_net"></span> sécurisés en escrow</p>
+                      <template x-if="String(user.id) === String(activeConv.client_id)">
+                        <div>
+                          <p class="text-[10px] text-green-600 mb-2">Le freelance a été notifié. Validez la livraison pour libérer les fonds.</p>
+                          <button @click="libererEscrow(_esc.id)"
+                                  class="w-full py-2 rounded-xl text-xs font-black text-white"
+                                  style="background:linear-gradient(135deg,#00B87C,#00D68F);">
+                            ✅ Valider la livraison &amp; libérer les fonds
+                          </button>
+                        </div>
+                      </template>
+                      <template x-if="String(user.id) !== String(activeConv.client_id)">
+                        <p class="text-[10px] text-green-600">💪 Les fonds sont sécurisés. Livrez votre travail pour recevoir le paiement.</p>
+                      </template>
+                    </div>
+                  </template>
+
+                  <!-- Escrow libéré -->
+                  <template x-if="_esc && _esc.statut === 'libere'">
+                    <div class="rounded-2xl p-3 bg-gray-50 border border-gray-200 flex items-center gap-2">
+                      <span>🎉</span>
+                      <p class="text-[10px] text-gray-500">Mission terminée · <strong x-text="'$' + (_esc.montant_net || _esc.montant)"></strong> libérés au freelance.</p>
+                    </div>
+                  </template>
+
+                </div>
+              </template>
+
               <!-- Messages -->
               <template x-if="!msgLoading">
                 <div class="space-y-1">
@@ -421,6 +632,7 @@
 
       </div>
     </div>
+      <div class="lg:p-6"><!-- re-open lg:p-6 after messages -->
 
 
 
@@ -613,12 +825,44 @@
 
         </form>
 
+          <!-- KYC_START -->
+          <div x-show="editProfilTab === 'info'" class="mt-4 rounded-2xl overflow-hidden" style="background:#fff;box-shadow:0 2px 12px rgba(15,23,42,0.07);">
+            <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid #f1f5f9;">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:#f0fdf4;"><svg fill="none" viewBox="0 0 24 24" stroke="#00B87C" stroke-width="2" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/></svg></div>
+                <div><p class="font-bold text-[13px]" style="color:#0F172A;">Verification identite</p><p class="text-[11px]" style="color:#94a3b8;">Optionnel - badge Verifie</p></div>
+              </div>
+              <span x-show="kycStatus === 'non_soumis'" class="text-[11px] font-semibold px-2 py-1 rounded-lg" style="background:#f1f5f9;color:#64748b;">Non soumis</span>
+              <span x-show="kycStatus === 'en_attente'" class="text-[11px] font-semibold px-2 py-1 rounded-lg" style="background:#fef9c3;color:#ca8a04;">En attente</span>
+              <span x-show="kycStatus === 'valide'" class="text-[11px] font-semibold px-2 py-1 rounded-lg" style="background:#f0fdf4;color:#16a34a;">Verifie</span>
+              <span x-show="kycStatus === 'rejete'" class="text-[11px] font-semibold px-2 py-1 rounded-lg" style="background:#fef2f2;color:#dc2626;">Rejete</span>
+            </div>
+            <div x-show="kycStatus === 'non_soumis' || kycStatus === 'rejete'" class="p-4">
+              <p x-show="kycStatus === 'rejete'" x-text="'Motif: ' + (kycNote || 'Documents non conformes')" class="text-[12px] mb-3 p-2 rounded-lg" style="background:#fef2f2;color:#dc2626;"></p>
+              <p class="text-[12px] mb-3" style="color:#64748b;">Envoyez votre piece identite recto + verso et un selfie.</p>
+              <div class="space-y-3">
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Nom</label><input type="text" x-model="kycNom" placeholder="Votre nom" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Prénom</label><input type="text" x-model="kycPrenom" placeholder="Votre prénom" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Postnom</label><input type="text" x-model="kycPostnom" placeholder="Votre postnom" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Date de naissance</label><input type="date" x-model="kycDateNaissance" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Recto</label><input type="file" accept="image/*" @change="kycFiles.recto = $event.target.files[0]" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Verso</label><input type="file" accept="image/*" @change="kycFiles.verso = $event.target.files[0]" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Selfie</label><input type="file" accept="image/*" @change="kycFiles.selfie = $event.target.files[0]" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+              </div>
+              <p x-show="kycError" x-text="kycError" class="text-[12px] mt-2" style="color:#dc2626;"></p>
+              <button @click="submitKyc()" :disabled="kycLoading" class="w-full mt-3 py-3 rounded-xl font-bold text-[13px]" style="background:#0F172A;color:#fff;border:none;cursor:pointer;"><span x-show="!kycLoading">Envoyer pour verification</span><span x-show="kycLoading">Envoi en cours...</span></button>
+            </div>
+            <div x-show="kycStatus === 'en_attente'" class="p-4 text-center"><p class="font-semibold text-[13px]" style="color:#0F172A;">Documents recus - verification sous 24-48h</p></div>
+            <div x-show="kycStatus === 'valide'" class="p-4 text-center"><p class="font-semibold text-[13px]" style="color:#16a34a;">Identite verifiee</p></div>
+          </div>
+          <!-- KYC_END -->
+
         <!-- ── ONGLET EMAIL ── -->
         <form x-show="editProfilTab==='email'"
               @submit.prevent="
                 editEmailLoading = true; editEmailError = ''; editEmailSuccess = false;
                 fetch(API+'/users/me/change-email', {
-                  method: 'PUT',
+                  method: 'PATCH',
                   headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+token },
                   body: JSON.stringify({ nouvel_email: editEmailForm.nouvel_email })
                 })
@@ -686,7 +930,7 @@
                 if (editPassForm.nouveau.length < 6) { editPassError = 'Minimum 6 caractères'; return; }
                 editPassLoading = true;
                 fetch(API+'/users/me/change-password', {
-                  method: 'PUT',
+                  method: 'PATCH',
                   headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+token },
                   body: JSON.stringify({ ancien_mot_de_passe: editPassForm.ancien, nouveau_mot_de_passe: editPassForm.nouveau })
                 })
@@ -756,3 +1000,2967 @@
       </div>
     </div>
     <!-- FIN MODAL MODIFIER PROFIL -->
+  </div><!-- /app principale -->
+
+
+  <!-- ═══════════════════════════════════════════
+       MODAL : DÉTAIL PROJET
+  ════════════════════════════════════════════ -->
+  <div x-show="selectedProjet" class="fixed inset-0 bg-black/50 z-50 flex items-end"
+       @click.self="selectedProjet=null">
+    <div class="bg-white w-full max-w-lg mx-auto rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto"
+         x-show="selectedProjet" x-transition:enter="transition duration-300"
+         x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0">
+
+      <template x-if="selectedProjet">
+        <div>
+          <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+          <div class="flex justify-between items-start mb-3">
+            <h3 class="font-black text-kv-dark text-xl flex-1 pr-3" x-text="selectedProjet.titre"></h3>
+            <span :class="{
+              'badge-yellow': selectedProjet.statut==='en_attente',
+              'badge-blue':   selectedProjet.statut==='en_cours',
+              'badge-green':  selectedProjet.statut==='termine'
+            }" x-text="statutLabel(selectedProjet.statut)"></span>
+          </div>
+
+          <p class="text-gray-600 text-sm mb-4" x-text="selectedProjet.description || 'Pas de description'"></p>
+
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-kv-bg rounded-xl p-3">
+              <p class="text-xs text-gray-500">Budget</p>
+              <p class="font-black text-kv-green" x-text="selectedProjet.budget ? formatBudget(selectedProjet.budget, selectedProjet.devise) : 'À négocier'"></p>
+            </div>
+            <div class="bg-kv-bg rounded-xl p-3">
+              <p class="text-xs text-gray-500">Publié le</p>
+              <p class="font-semibold text-gray-700 text-sm" x-text="formatDate(selectedProjet.created_at)"></p>
+            </div>
+          </div>
+
+          <!-- Jalons du projet -->
+          <div x-show="jalonsProjet.length > 0" class="mb-4">
+            <h4 class="font-bold text-gray-700 mb-2">🔒 Jalons Escrow</h4>
+            <div class="space-y-2">
+              <template x-for="j in jalonsProjet" :key="j.id">
+                <div class="flex items-center justify-between bg-kv-bg rounded-xl p-3">
+                  <div>
+                    <p class="font-semibold text-sm" x-text="j.titre"></p>
+                    <p class="text-xs text-gray-500" x-text="formatMontant(j.montant)"></p>
+                  </div>
+                  <div class="text-right">
+                    <span :class="j.statut==='complete' ? 'badge-green' : 'badge-yellow'"
+                          x-text="j.statut==='complete' ? '✅ Validé' : '⏳ En attente'"></span>
+                    <div class="flex gap-1 mt-1 justify-end">
+                      <span class="text-xs" :class="j.valide_client ? 'text-kv-green' : 'text-gray-300'">👤</span>
+                      <span class="text-xs" :class="j.valide_freelance ? 'text-kv-green' : 'text-gray-300'">🔧</span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- ── Candidatures reçues (vue client) ── -->
+          <div x-show="selectedProjet.client_id === user.id" class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="font-black text-sm" style="color:#0F172A;">
+                👥 Candidatures reçues
+              </h4>
+              <button @click="loadCandidaturesProjet(selectedProjet.id)"
+                      class="text-[10px] font-bold px-2 py-1 rounded-lg"
+                      style="color:#00B87C; background:#F0FBF7;">
+                ↻ Actualiser
+              </button>
+            </div>
+
+            <!-- Loading -->
+            <div x-show="loadingCandidatures" class="flex justify-center py-4">
+              <div class="w-5 h-5 rounded-full border-2 animate-spin"
+                   style="border-color:#E8ECF4; border-top-color:#00B87C;"></div>
+            </div>
+
+            <!-- Vide -->
+            <div x-show="!loadingCandidatures && candidaturesProjet.length === 0"
+                 class="text-center py-5 rounded-2xl"
+                 style="background:#F8FAFC; border:1.5px dashed #E8ECF4;">
+              <p class="text-2xl mb-1">📭</p>
+              <p class="text-xs font-semibold" style="color:#64748B;">Aucune candidature pour l'instant</p>
+            </div>
+
+            <!-- Liste -->
+            <div x-show="!loadingCandidatures && candidaturesProjet.length > 0" class="space-y-3">
+              <template x-for="c in candidaturesProjet" :key="c.id">
+                <div class="rounded-2xl p-3 transition-all"
+                     class="card-lift" style="background:#FFFFFF; border:none; box-shadow:0 2px 16px rgba(15,23,42,0.08);">
+
+                  <!-- Header freelance -->
+                  <div class="flex items-center gap-2 mb-2">
+                    <template x-if="c.photo_url">
+                      <img :src="c.photo_url" class="w-9 h-9 rounded-xl object-cover flex-shrink-0"/>
+                    </template>
+                    <template x-if="!c.photo_url">
+                      <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-sm font-black"
+                           :style="'background:'+avatarColor((c.prenom||'')+(c.nom||''))">
+                        <span x-text="((c.prenom||'?')[0]+(c.nom||'?')[0]).toUpperCase()"></span>
+                      </div>
+                    </template>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs font-bold" style="color:#0F172A;"
+                         x-text="(c.prenom||'') + ' ' + (c.nom||'')"></p>
+                      <div class="flex items-center gap-1">
+                        <span x-show="c.note_moyenne > 0" class="text-[9px] font-bold" style="color:#F59E0B;"
+                              x-text="'★ ' + Number(c.note_moyenne).toFixed(1)"></span>
+                        <span x-show="!c.note_moyenne" class="text-[9px]" style="color:#CBD5E1;">Nouveau</span>
+                      </div>
+                    </div>
+                    <!-- Badge statut candidature -->
+                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-lg flex-shrink-0"
+                          :style="c.statut==='en_attente'
+                            ? 'background:#FFFBEB;color:#B45309;border:1px solid rgba(245,158,11,0.25);'
+                            : c.statut==='acceptee'
+                              ? 'background:#F0FBF7;color:#00B87C;border:1px solid rgba(0,184,124,0.25);'
+                              : 'background:#FEF2F2;color:#DC2626;border:1px solid rgba(220,38,38,0.20);'"
+                          x-text="c.statut==='en_attente' ? '⏳ En attente' : c.statut==='acceptee' ? '✅ Acceptée' : '❌ Refusée'"></span>
+                  </div>
+
+                  <!-- Message -->
+                  <p class="text-[11px] leading-relaxed mb-2 px-1" style="color:#475569;"
+                     x-text="c.message || 'Aucun message.'"></p>
+
+                  <!-- Budget proposé + délai -->
+                  <div x-show="c.budget_propose || c.delai_jours" class="flex gap-2 mb-3">
+                    <span x-show="c.budget_propose"
+                          class="text-[9px] font-bold px-2 py-0.5 rounded-lg"
+                          style="background:#F0FBF7; color:#00B87C;"
+                          x-text="'💰 ' + new Intl.NumberFormat('fr-FR').format(c.budget_propose)"></span>
+                    <span x-show="c.delai_jours"
+                          class="text-[9px] font-bold px-2 py-0.5 rounded-lg"
+                          style="background:#F8FAFC; color:#64748B;"
+                          x-text="'⏱ ' + c.delai_jours + 'j'"></span>
+                  </div>
+
+                  <!-- Boutons Accepter / Refuser -->
+                  <div x-show="c.statut === 'en_attente'" class="flex gap-2">
+                    <button @click="deciderCandidature(c.id, 'acceptee')"
+                            :disabled="candidatureLoading === c.id"
+                            class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl font-bold text-[11px] text-white transition-all"
+                            style="background:linear-gradient(135deg,#00B87C,#00D68F); border:none; cursor:pointer; box-shadow:0 3px 10px rgba(0,184,124,0.30);">
+                      <template x-if="candidatureLoading === c.id && candidatureDecision === 'acceptee'">
+                        <span>...</span>
+                      </template>
+                      <template x-if="!(candidatureLoading === c.id && candidatureDecision === 'acceptee')">
+                        <span class="flex items-center gap-1.5">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                          Accepter
+                        </span>
+                      </template>
+                    </button>
+                    <button @click="deciderCandidature(c.id, 'refusee')"
+                            :disabled="candidatureLoading === c.id"
+                            class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl font-bold text-[11px] transition-all"
+                            style="background:#FEF2F2; color:#DC2626; border:1.5px solid rgba(220,38,38,0.20); cursor:pointer;">
+                      <template x-if="candidatureLoading === c.id && candidatureDecision === 'refusee'">
+                        <span>...</span>
+                      </template>
+                      <template x-if="!(candidatureLoading === c.id && candidatureDecision === 'refusee')">
+                        <span class="flex items-center gap-1.5">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                          Refuser
+                        </span>
+                      </template>
+                    </button>
+                  </div>
+
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <button
+                  x-show="selectedProjet.statut==='en_attente' && selectedProjet.client_id !== user.id"
+                  @click="mesCandidatures.includes(selectedProjet.id) ? null : (selectedProjet && ouvrirPostuler(selectedProjet))"
+                  :disabled="mesCandidatures.includes(selectedProjet.id)"
+                  :class="mesCandidatures.includes(selectedProjet.id)
+                    ? 'w-full bg-gray-100 text-gray-400 text-sm font-bold py-3 rounded-xl cursor-not-allowed flex items-center justify-center gap-2'
+                    : 'btn-primary flex items-center justify-center gap-2'">
+            <i data-lucide="send" style="width:15px;height:15px;stroke-width:2.5"></i>
+            <span x-text="mesCandidatures.includes(selectedProjet.id) ? '✓ Candidature envoyée' : 'Postuler à ce projet'"></span>
+          </button>
+
+          <!-- BOUTON PAIEMENT ESCROW — visible si projet en_cours + tu es le client -->
+          <button x-show="selectedProjet.statut==='en_cours' && String(selectedProjet.client_id)===String(user.id)"
+                  @click="const _p=selectedProjet; selectedProjet=null; modalEscrow={show:true,projet_id:_p.id,montant:_p.budget?String(_p.budget):'',devise:_p.devise||'USD',operateur:'airtel',telephone:'',loading:false};"
+                  class="w-full mt-2 py-3.5 rounded-2xl text-sm font-black text-white flex items-center justify-center gap-2"
+                  style="background:linear-gradient(135deg,#F59E0B,#D97706);box-shadow:0 4px 14px rgba(245,158,11,0.35);">
+            <span>💰</span> Payer via Mobile Money
+          </button>
+
+          <button class="btn-outline w-full mt-2" @click="selectedProjet=null">Fermer</button>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       JAVASCRIPT ALPINE APP
+  ════════════════════════════════════════════ -->
+  <script>
+    const API = "https://mosala.io";
+
+
+    // ── Jobs helpers ──────────────────────────────────────────
+    function kzTimeAgo(dateStr) {
+      const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+      if (diff < 3600)   return 'Il y a ' + Math.floor(diff/60) + 'min';
+      if (diff < 86400)  return 'Il y a ' + Math.floor(diff/3600) + 'h';
+      if (diff < 604800) return 'Il y a ' + Math.floor(diff/86400) + 'j';
+      return 'Il y a ' + Math.floor(diff/604800) + ' sem.';
+    }
+    function kzJobEmoji(cat) {
+      const m = { 'Tech':'💻','Finance':'🏦','ONG':'🌍','Marketing':'📣','Mines':'⛏️','Santé':'🏥','Consulting':'💼','Remote':'🌐' };
+      return m[cat] || '📋';
+    }
+    function kzJobColor(cat) {
+      const m = { 'Tech':'#7c3aed','Finance':'#2563eb','ONG':'#0284c7','Marketing':'#e11d48','Mines':'#d97706','Santé':'#dc2626','Consulting':'#1e293b','Remote':'#00B87C' };
+      return m[cat] || '#6b7280';
+    }
+    function app() {
+      return {
+
+      // ── JOBS — API réelle ──
+      jobSearch: '',
+      jobTypeFilter: 'all',
+      jobCityFilter: 'all',
+      jobCatFilter: 'all',
+      jobsData: [],
+      jobsLoading: false,
+      jobsError: false,
+      _jobsDebounce: null,
+
+      async fetchJobs() {
+        this.jobsLoading = true;
+        this.jobsError = false;
+        try {
+          const params = new URLSearchParams();
+          if (this.jobSearch)                    params.set('q',        this.jobSearch);
+          if (this.jobTypeFilter !== 'all')      params.set('type',     this.jobTypeFilter);
+          if (this.jobCityFilter !== 'all')      params.set('location', this.jobCityFilter);
+          if (this.jobCatFilter  !== 'all')      params.set('category', this.jobCatFilter);
+          params.set('limit', '50');
+          const res = await fetch('/jobs?' + params.toString());
+          if (!res.ok) throw new Error('API error');
+          const data = await res.json();
+          this.jobsData = data.map(j => ({
+            ...j,
+            type:   j.opportunity_type,
+            source: j.origin,
+            salary: j.salary_range,
+            posted: j.created_at ? kzTimeAgo(j.created_at) : '',
+            emoji:  kzJobEmoji(j.category),
+            color:  kzJobColor(j.category),
+          }));
+        } catch(e) {
+          this.jobsError = true;
+        } finally {
+          this.jobsLoading = false;
+        }
+      },
+
+      jobsDebounceSearch() {
+        clearTimeout(this._jobsDebounce);
+        this._jobsDebounce = setTimeout(() => this.fetchJobs(), 350);
+      },
+
+      get filteredJobs() { return this.jobsData; },
+
+        // ── état global ──
+        page:        sessionStorage.getItem('kv_token') ? 'app' : (new URLSearchParams(window.location.search).get('goto') || 'home'),
+        activeTab:   'marketplace',
+        rememberMe:  false,
+        completeProfil: { telephone: '', ville: '', loading: false, error: '' },
+        token:       sessionStorage.getItem('kv_token') || null,
+        _historySetup: false,
+        user:        JSON.parse(sessionStorage.getItem('kv_user') || '{}'),
+        _inactivityTimer: null,
+        loading:     false,
+        loadingCV:   false,
+        loadingProjets: false,
+        candidaturesProjet: [],
+        loadingCandidatures: false,
+        candidatureLoading: null,
+        candidatureDecision: null,
+        escrowProjet: {},
+        escrowLoading: false,
+        modalEscrow: { show:false, projet_id:null, montant:'', devise:'USD', operateur:'airtel', telephone:'', loading:false },
+
+        
+        // ── profil tab ──
+        profilEdit:         false,
+        profilSaving:       false,
+        profilForm:         { prenom: '', nom: '', bio: '', ville: '', disponibilite: 'disponible' },
+        profilCompetences:  [],
+        profilPortfolio:    [],
+        profilStats:        { projets_termines: 0, taux_reussite: 0, revenus_total: 0, note_moyenne: 0, total_reviews: 0, delai_reponse: '—' },
+        photoUploading:     false,
+        // ── wallet tab ──
+        walletSolde:        '0.00',
+        walletBloque:       '0.00',
+        walletDevise:       'USD',
+        walletTransactions: [],
+
+        // ── toast ──
+        toast: { show: false, msg: '', type: 'success' },
+        modalAlerte: { show: false, titre: '', message: '', type: 'error', btnLabel: 'Compris', btnAction: null, action: null },
+        modalEditProjet: { show: false, id: null, titre: '', description: '', budget: '', titre_original: '', loading: false },
+        modalSupprimerProjet: { show: false, id: null, titre: '', loading: false },
+
+        // ── marketplace ──
+        projets:      [],
+        filtreStatut: '', filtreCat: '',
+        selectedProjet: null,
+        jalonsProjet:   [],
+
+        // ── dashboard ──
+        profileScore: 0,
+        escrow:       { bloque: 0, disponible: 0, total: 0 },
+        mesProjets:   [],
+        dashStats:    { revenus_mois: 0, projets_actifs: 0, projets_termines: 0, taux_reussite: 0, avis_5_etoiles: 0, note_moyenne: 0 },
+        dashMessages: [],
+        dashRecommended: [],
+        dashGraphique: { '7j': [], '30j': [] },
+        dashPeriode:  '7j',
+        dashChart:    null,
+        dashUser:     {},
+        dashNotifs:   0,
+        notifDropdownList: [],
+        loadingNotifDropdown: false,
+        showMobileNotifs: false,
+        dashCompetences: [],
+        presence: { freelances_online: 0, projets_disponibles: 0, nouveaux_projets_24h: 0, nouveaux_membres_7j: 0 },
+        modalPostuler: false,
+        postuleProjet: null,   // projet sélectionné
+        postuleForm: { message: '', budget: '', delai: '' },
+        postuleLoading: false,
+        mesCandidatures: [],   // mes candidatures déjà envoyées (ids projets)
+        dashActivite: [],
+
+        // ── edit profil ──
+        showEditProfil: false,
+        editProfilTab: 'info',
+        champsCooldown: {},   // { nom: 'ISO', prenom: 'ISO', bio: 'ISO', ville: 'ISO' }
+        editProfilForm: { nom: '', prenom: '', bio: '', ville: '', telephone: '' },
+        editProfilLoading: false,
+        editProfilSuccess: false,
+        editEmailForm: { nouvel_email: '' },
+        editEmailLoading: false,
+        editEmailSuccess: false,
+        editEmailError: '',
+        editPassForm: { ancien: '', nouveau: '', confirmer: '' },
+        editPassLoading: false,
+        editPassSuccess: false,
+        editPassError: '',
+        // ── KYC ──
+        kycStatus: "non_soumis",
+        kycNote: "",
+        kycNom: "",
+        kycPrenom: "",
+        kycPostnom: "",
+        kycDateNaissance: "",
+        kycFiles: { recto: null, verso: null, selfie: null },
+        kycError: "",
+        kycLoading: false,
+        // ── Page Pro ──
+        planChoisi: 'mensuel',
+        proDevise: 'USD',
+        proTelephone: '',
+        proErreur: '',
+        proDepositId: '',
+        proPaiementLoading: false,
+        proFeatures: [
+          { label: 'Projets actifs', gratuit: '3', pro: '10' },
+          { label: 'Commission',     gratuit: '10%', pro: '5%' },
+          { label: 'Badge Pro',      gratuit: '❌', pro: '✅' },
+          { label: 'Boost projet',   gratuit: '❌', pro: '🚀 7j' },
+          { label: 'Contrat PDF',    gratuit: '❌', pro: '📄 Auto' },
+        ],
+        proFaq: [
+          { q: "Comment payer ?", r: "Via M-Pesa ou Airtel Money au numéro Mosala. Envoyez ensuite la capture via WhatsApp.", open: false },
+          { q: "Quand mon compte est activé ?", r: "Dans les 24h après vérification de votre paiement par notre équipe.", open: false },
+          { q: "Puis-je annuler ?", r: "Le compte Pro est non remboursable mais reste actif jusqu'à expiration.", open: false },
+          { q: "Que se passe-t-il à l'expiration ?", r: "Votre compte repasse en Standard automatiquement. Vos projets restent actifs.", open: false },
+        ],
+
+        // ── messages ──
+        conversations: [],
+        activeConv: null,
+        convMessages: [],
+        newMessage: '',
+        msgSearch: '',
+        messageTab: 'conversations', // 'conversations' | 'alertes'
+        candidaturesRecues: [],
+        loadingCandidaturesRecues: false,
+        unreadCandidatures: 0,
+        showRefusees: false,
+        convLoading: false,
+        msgLoading: false,
+        msgSending: false,
+        atBottom: true,
+        peerTyping: false,
+        _typingTimer: null,
+        _typingPollTimer: null,
+
+        // ── formulaires ──
+        form: { nom:'', prenom:'', postnom:'', email:'', telephone:'', ville:'', password:'' },
+        loginForm: { telephone:'', password:'' },
+        projetForm: { titre:'', description:'', budget:'', devise:'CDF', jalons:[], tags:[], categorie:'', delai:'' }, projetStep: 1,
+        phoneError: '',
+        emailAlreadyUsed: false,
+        regStep: 1,
+        showRegPwd: false,
+        pwdLen: false, pwdUpper: false, pwdNum: false,
+        forgotEmail: '',
+        forgotSent: false,
+        forgotLoading: false,
+        otpDigits: ['','','','','',''],
+        otpLoading: false,
+        otpError: '',
+        resetToken: new URLSearchParams(window.location.search).get('reset_token') || '',
+        resetPwd: '',
+        resetPwd2: '',
+        resetDone: false,
+        resetLoading: false,
+        checkPwd() {
+          const v = this.form.password || '';
+          this.pwdLen = v.length >= 6;
+          this.pwdUpper = /[A-Z]/.test(v);
+          this.pwdNum = /[0-9]/.test(v);
+        },
+
+        // ── NAVIGATION HISTORIQUE ──
+        navigateTo(tab, load=true) {
+          const valid = ['dashboard','marketplace','messages','wallet','profil','nouveau','pro'];
+          if (!valid.includes(tab)) return;
+          this.activeTab = tab;
+          const hash = '#' + tab;
+          if (window.location.hash !== hash) {
+            window.history.pushState({ tab }, '', hash);
+          }
+          if (!load) return;
+          // ── Recharger kycStatus à chaque changement d'onglet ──
+          if (this.token) {
+            fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${this.token}` } })
+              .then(r => r.ok ? r.json() : null)
+              .then(me => { if (me) { this.kycStatus = me.kyc_status || 'non_soumis'; this.kycNote = me.kyc_note || ''; this.user = me; sessionStorage.setItem('kv_user', JSON.stringify(me)); } });
+          }
+          if (tab === 'dashboard')    this.loadDashboard();
+          else if (tab === 'marketplace') this.loadProjets();
+          else if (tab === 'messages') { this.loadMessages(); this.loadCandidaturesRecues(); }
+          else if (tab === 'wallet')      this.loadWallet();
+          else if (tab === 'profil')      this.loadProfil();
+        },
+
+        // ── INIT ──
+        init() {
+          // Init cooldown par champ depuis sessionStorage
+          const _u = JSON.parse(sessionStorage.getItem('kv_user') || '{}');
+          this.champsCooldown = _u.champs_cooldown || {};
+
+          // Bouton retour navigateur
+          window.addEventListener('popstate', (e) => {
+            const valid = ['dashboard','marketplace','messages','wallet','profil','nouveau'];
+            const tab = e.state?.tab || window.location.hash.replace('#','') || 'marketplace';
+            if (valid.includes(tab)) {
+              this.activeTab = tab;
+              if (tab === 'dashboard') this.loadDashboard();
+              else if (tab === 'marketplace') this.loadProjets();
+              else if (tab === 'messages') this.loadMessages();
+            }
+          });
+
+          if (this.resetToken) {
+            this.page = 'reset';
+          } else if (this.token) {
+            // Vérifier onboarding avant d'entrer dans l'app
+            this._checkOnboardingAndInit();
+                var _kzr=localStorage.getItem('kz_return'); if(_kzr){localStorage.removeItem('kz_return');window.location.href=_kzr;return;}
+          }
+        },
+
+        _startPresencePing() {
+          if (this._pingTimer) clearInterval(this._pingTimer);
+          // Ping toutes les 2 min pour maintenir is_online=true
+          this._pingTimer = setInterval(() => {
+            if (this.token) {
+              fetch(`${API}/auth/ping`, { method:'POST', headers:{ Authorization:`Bearer ${this.token}` } }).catch(()=>{});
+            }
+          }, 2 * 60 * 1000);
+        },
+
+        async _checkOnboardingAndInit() {
+          try {
+            const rMe = await fetch(`${API}/auth/me`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (rMe.ok) {
+              const me = await rMe.json();
+              this.user = me;
+              sessionStorage.setItem('kv_user', JSON.stringify(me));
+              // ── KYC : charger le statut depuis /auth/me ──
+              this.kycStatus = me.kyc_status || 'non_soumis';
+              this.kycNote   = me.kyc_note   || '';
+              if (!me.onboarding_done) {
+                window.location.replace('/onboarding.html');
+                return;
+              }
+            }
+          } catch(e) {}
+          // Onboarding OK — entrer dans l'app
+          this.loadPresence();
+          setInterval(() => this.loadPresence(), 60000);
+          this.loadMesCandidatures();
+          const initHash = window.location.hash.replace('#','');
+          const valid = ['dashboard','marketplace','messages','wallet','profil','nouveau'];
+          if (valid.includes(initHash)) this.activeTab = initHash;
+          this.loadProjets();
+          this.loadDashboard();
+          this._startInactivityTimer();
+        },
+
+        // ── INACTIVITÉ 30 MIN ──
+        _startInactivityTimer() {
+          const TIMEOUT = 30 * 60 * 1000; // 30 minutes
+          const resetTimer = () => {
+            clearTimeout(this._inactivityTimer);
+            this._inactivityTimer = setTimeout(() => {
+              if (this.token) {
+                this.logout();
+                this.showToast('⏱️ Déconnecté pour inactivité (30 min)', 'error');
+              }
+            }, TIMEOUT);
+          };
+          // Écouter toute activité utilisateur
+          ['mousemove','mousedown','keydown','touchstart','scroll','click'].forEach(evt => {
+            document.addEventListener(evt, resetTimer, { passive: true });
+          });
+          resetTimer(); // Démarrer le timer
+        },
+
+        // ── HELPERS ──
+        showToast(msg, type='success') {
+          this.toast = { show:true, msg, type };
+          setTimeout(() => this.toast.show = false, 3500);
+        },
+
+        ouvrirEditProjet(p) {
+          this.modalEditProjet = {
+            show: true, id: p.id,
+            titre: p.titre, description: p.description || '', budget: p.budget || '',
+            titre_original: p.titre, loading: false
+          };
+        },
+
+        async sauvegarderEditProjet() {
+          if (!this.modalEditProjet.titre.trim()) { this.showToast('Le titre est requis', 'error'); return; }
+          this.modalEditProjet.loading = true;
+          try {
+            const r = await fetch(`${API}/projets/${this.modalEditProjet.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.token}` },
+              body: JSON.stringify({
+                titre: this.modalEditProjet.titre,
+                description: this.modalEditProjet.description || null,
+                budget: this.modalEditProjet.budget ? Number(this.modalEditProjet.budget) : null,
+              })
+            });
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.detail || 'Erreur modification');
+            this.modalEditProjet.show = false;
+            this.showToast('✅ Projet modifié avec succès !');
+            await this.loadDashboard();
+          } catch(e) {
+            this.showAlerte('Modification impossible', e.message, { type: 'error' });
+          } finally { this.modalEditProjet.loading = false; }
+        },
+
+        confirmerSupprimerProjet(p) {
+          this.modalSupprimerProjet = { show: true, id: p.id, titre: p.titre, loading: false };
+        },
+
+        async supprimerProjet() {
+          this.modalSupprimerProjet.loading = true;
+          try {
+            const r = await fetch(`${API}/projets/${this.modalSupprimerProjet.id}`, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (!r.ok) {
+              const data = await r.json();
+              throw new Error(data.detail || 'Erreur suppression');
+            }
+            this.modalSupprimerProjet.show = false;
+            this.showToast('🗑️ Projet supprimé');
+            await this.loadDashboard();
+          } catch(e) {
+            this.modalSupprimerProjet.show = false;
+            this.showAlerte('Suppression impossible', e.message, { type: 'error' });
+          } finally { this.modalSupprimerProjet.loading = false; }
+        },
+
+        showAlerte(titre, message, opts={}) {
+          this.modalAlerte = {
+            show: true,
+            titre,
+            message,
+            type: opts.type || 'error',
+            btnLabel: opts.btnLabel || 'Compris',
+            btnAction: opts.btnAction || null,
+            action: opts.action || null,
+          };
+        },
+
+        validatePhone() {
+          const v = this.form.telephone.trim();
+          if (!v) { this.phoneError = ''; return; }
+          // Accepte : +243810000000 OU 0810000000 OU 081000000
+          if (!/^(\+\d{10,15}|0\d{8,12})$/.test(v)) {
+            this.phoneError = 'Format invalide. Ex: +243810000000 ou 0810000000';
+          } else {
+            this.phoneError = '';
+          }
+        },
+
+        badgeStatut(p) {
+          if (p.is_new === true && p.statut === 'en_attente') {
+            return '<span style="display:inline-flex;align-items:center;gap:3px;"><span style="position:relative;display:inline-flex;width:6px;height:6px;"><span style="animation:ping 1s cubic-bezier(0,0,0.2,1) infinite;position:absolute;display:inline-flex;width:100%;height:100%;border-radius:9999px;background:rgba(255,255,255,0.75);"></span><span style="position:relative;display:inline-flex;border-radius:9999px;width:6px;height:6px;background:white;"></span></span>Nouveau</span>';
+          }
+          if (p.statut === 'en_attente') return '🟡 Disponible';
+          if (p.statut === 'en_cours')   return '🔵 En cours';
+          if (p.statut === 'termine')    return '✅ Terminé';
+          return p.statut || '';
+        },
+
+        formatDate(d) {
+          if (!d) return '';
+          return new Date(d).toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' });
+        },
+
+        formatBudget(b, devise) {
+          if (!b) return 'À négocier';
+          return new Intl.NumberFormat('fr-FR').format(b) + ' ' + (devise || 'GNF');
+        },
+
+        formatMontant(m) {
+          return new Intl.NumberFormat('fr-FR').format(m || 0);
+        },
+
+        statutLabel(s) {
+          const m = { en_attente:'⏳ Disponible', en_cours:'🔧 En cours',
+                      termine:'✅ Terminé', annule:'❌ Annulé', litige:'⚖️ Litige' };
+          return m[s] || s;
+        },
+
+        // ── AUTH ──
+        async register() {
+          if (this.phoneError) return;
+          this.loading = true;
+          this.emailAlreadyUsed = false;
+          try {
+            // Nettoyer le form : vider les champs vides → null
+            const payload = {};
+            for (const [k, v] of Object.entries(this.form)) {
+              payload[k] = (v === '' || v === undefined) ? null : v;
+            }
+            const r = await fetch(`${API}/users/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            const rawText = await r.text();
+            let data;
+            try { data = JSON.parse(rawText); }
+            catch(e) { throw new Error('Erreur serveur. Réessaie dans quelques secondes.'); }
+            if (!r.ok) {
+              // Email déjà utilisé → afficher le bloc inline
+              if (r.status === 400 && data.detail && data.detail.toLowerCase().includes('email')) {
+                this.emailAlreadyUsed = true;
+                return;
+              }
+              throw new Error(data.detail || 'Erreur inscription');
+            }
+            // Auto-login après inscription
+            const body = new URLSearchParams({
+              username: this.form.telephone,
+              password: this.form.password
+            });
+            const rLogin = await fetch(`${API}/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body
+            });
+            const loginRaw = await rLogin.text();
+            let loginData;
+            try { loginData = JSON.parse(loginRaw); }
+            catch(e) { throw new Error('Erreur connexion auto. Connecte-toi manuellement.'); }
+            if (!rLogin.ok) {
+              // Login raté → aller sur login manuellement
+              this.showToast('✅ Compte créé ! Connecte-toi.');
+              this.loginForm.telephone = this.form.telephone;
+              this.page = 'login';
+              return;
+            }
+            this.token = loginData.access_token;
+            sessionStorage.setItem('kv_token', this.token); localStorage.setItem('kv_token', this.token);
+            const rMe = await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${this.token}` } });
+            this.user = await rMe.json();
+            sessionStorage.setItem('kv_user', JSON.stringify(this.user));
+            // → onboarding obligatoire après inscription
+            window.location.replace('/onboarding.html');
+          } catch(e) {
+            this.showToast(e.message, 'error');
+          } finally { this.loading = false; }
+        },
+
+        async loginWithGoogle() {
+          if (!window.google) {
+            // Attendre que le script Google soit chargé (max 5s)
+            let waited = 0;
+            while (!window.google && waited < 5000) {
+              await new Promise(r => setTimeout(r, 200));
+              waited += 200;
+            }
+            if (!window.google) {
+              this.showToast('Google non disponible, réessaie dans quelques secondes.', 'error');
+              return;
+            }
+          }
+          this.loading = true;
+          let _gOverlay = null;
+          try {
+            const response = await new Promise((resolve, reject) => {
+              window.google.accounts.id.initialize({
+                client_id: window.GOOGLE_CLIENT_ID,
+                callback: resolve,
+                ux_mode: 'popup',
+                auto_select: false,
+                cancel_on_tap_outside: true,
+              });
+              _gOverlay = document.createElement('div');
+              _gOverlay.id = '_google-overlay';
+              _gOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;';
+              _gOverlay.innerHTML = '<div style="background:#fff;padding:24px;border-radius:16px;text-align:center;min-width:280px;"><p style="font-size:15px;font-weight:700;margin-bottom:16px;">Connexion avec Google</p><div id=\'_gbtn\'></div><button id=\'_gcancel\' style=\'margin-top:12px;width:100%;padding:8px;border:none;background:#f1f5f9;border-radius:8px;font-size:13px;cursor:pointer;color:#666;\'>Annuler</button></div>';
+              document.body.appendChild(_gOverlay);
+              window.google.accounts.id.renderButton(_gOverlay.querySelector('#_gbtn'), { theme:'outline', size:'large', width:240, text:'signin_with' });
+              _gOverlay.querySelector('#_gcancel').onclick = () => {
+                _gOverlay.remove(); _gOverlay = null;
+                reject(new Error('Connexion Google annulée.'));
+              };
+            });
+
+            // Fermer l'overlay dès que Google renvoie le credential
+            if (_gOverlay) { _gOverlay.remove(); _gOverlay = null; }
+
+            const r = await fetch(`${API}/auth/google`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: response.credential })
+            });
+            const rawG = await r.text();
+            let data;
+            try { data = JSON.parse(rawG); }
+            catch(e) { throw new Error('Erreur serveur. Réessaie.'); }
+            if (!r.ok) throw new Error(data.detail || 'Erreur Google');
+
+            this.token = data.access_token;
+            sessionStorage.setItem('kv_token', this.token); localStorage.setItem('kv_token', this.token);
+
+            const rMe = await fetch(`${API}/auth/me`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            this.user = await rMe.json();
+            sessionStorage.setItem('kv_user', JSON.stringify(this.user));
+            this.champsCooldown = this.user.champs_cooldown || {};
+
+            if (!this.user.onboarding_done) {
+              window.location.replace('/onboarding.html');
+            } else if (!this.user.telephone) {
+              this.page = 'complete-profil';
+              this.showToast('👋 Bienvenue ' + this.user.prenom + ' ! Complète ton profil.');
+            } else {
+                var _kzr=localStorage.getItem('kz_return'); if(_kzr){localStorage.removeItem('kz_return');window.location.href=_kzr;return;}
+              this.page = 'app';
+              this.showToast('👋 Bienvenue ' + this.user.prenom + ' !');
+              this.loadProjets();
+              this.loadDashboard();
+              this.startGlobalPolling();
+              this.initNotifications();
+              this._startInactivityTimer();
+              this._startPresencePing();
+            }
+          } catch(e) {
+            if (_gOverlay) { _gOverlay.remove(); _gOverlay = null; }
+            if (e.message !== 'Connexion Google annulée.') {
+              this.showToast(e.message, 'error');
+            }
+          } finally { this.loading = false; }
+        },
+
+                async login() {
+          this.loading = true;
+          try {
+            const body = new URLSearchParams({
+              username: this.loginForm.telephone,
+              password: this.loginForm.password
+            });
+            const r = await fetch(`${API}/auth/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body
+            });
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.detail || 'Identifiants incorrects');
+
+            this.token = data.access_token;
+            sessionStorage.setItem('kv_token', this.token); localStorage.setItem('kv_token', this.token);
+
+            // Charger le profil complet
+            const rMe = await fetch(`${API}/auth/me`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            this.user = await rMe.json();
+            sessionStorage.setItem('kv_user', JSON.stringify(this.user));
+
+            if (!this.user.onboarding_done) {
+              window.location.replace('/onboarding.html');
+            } else {
+                var _kzr=localStorage.getItem('kz_return'); if(_kzr){localStorage.removeItem('kz_return');window.location.href=_kzr;return;}
+              this.page = 'app';
+              this.showToast(`👋 Bienvenue ${this.user.prenom} !`);
+              this.loadProjets();
+              this.loadDashboard();
+              this._startInactivityTimer();
+              this._startPresencePing();
+            }
+
+          } catch(e) {
+            this.showToast(e.message, 'error');
+          } finally { this.loading = false; }
+        },
+
+        logout() {
+          if (this._globalPollTimer) { clearInterval(this._globalPollTimer); this._globalPollTimer = null; }
+          if (this._pollTimer) { clearInterval(this._pollTimer); this._pollTimer = null; }
+          if (this._pingTimer) { clearInterval(this._pingTimer); this._pingTimer = null; }
+          clearTimeout(this._inactivityTimer);
+          // Marquer offline avant de déconnecter
+          if (this.token) {
+            fetch(`${API}/auth/logout`, { method:'POST', headers:{ Authorization:`Bearer ${this.token}` } }).catch(()=>{});
+          }
+          this.token = null;
+          this.user  = {};
+          localStorage.removeItem('kv_token'); localStorage.removeItem('kv_user'); localStorage.removeItem('kv_remember');
+          sessionStorage.removeItem('kv_token'); sessionStorage.removeItem('kv_user');
+          this.page  = 'login';
+          this.showToast('À bientôt 👋');
+        },
+
+        // ── MARKETPLACE ──
+        async loadProjets() {
+          this.loadingProjets = true;
+          try {
+            let url = `${API}/projets/?limit=100`;
+            if (this.filtreStatut) url += `&statut=${this.filtreStatut}`;
+            if (this.rechercheProjet) url += `&q=${encodeURIComponent(this.rechercheProjet)}`;
+            const r = await fetch(url, {
+              headers: this.token ? { Authorization: `Bearer ${this.token}` } : {}
+            });
+            let data = await r.json();
+            if (!Array.isArray(data)) data = [];
+            if (this.filtreCat) {
+              const cat = this.filtreCat.toLowerCase();
+              data = data.filter(p => (String(p.tags||'') + String(p.titre||'') + String(p.description||'')).toLowerCase().includes(cat));
+            }
+            this.projets = data;
+          } catch(e) {
+            this.showToast('Erreur chargement projets', 'error');
+          } finally { this.loadingProjets = false; }
+        },
+
+        async openProjet(p) {
+          this.selectedProjet = p;
+          this.jalonsProjet = [];
+          this.candidaturesProjet = [];
+          try {
+            const r = await fetch(`${API}/projets/${p.id}/jalons`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (r.ok) this.jalonsProjet = await r.json();
+          } catch {}
+          // Charger candidatures si c'est le client
+          if (p.client_id === this.user.id) {
+            await this.loadCandidaturesProjet(p.id);
+          }
+        },
+
+        postuler() {
+          // Redirige vers la vraie modal
+          if (this.selectedProjet) {
+            this.ouvrirPostuler(this.selectedProjet);
+            this.selectedProjet = null;
+          }
+        },
+
+        // ── DASHBOARD ──
+        async loadDashboard() {
+          try {
+            // ── Fetch parallèle : overview + compétences + presence en même temps ──
+            const headers = { Authorization: `Bearer ${this.token}` };
+            const [r, rc, rp] = await Promise.all([
+              fetch(`${API}/dashboard/overview`, { headers }),
+              fetch(`${API}/users/${this.user.id}/competences`, { headers }).catch(() => null),
+              fetch(`${API}/dashboard/presence`).catch(() => null),
+            ]);
+
+            if (!r.ok) throw new Error('Erreur dashboard');
+            const d = await r.json();
+
+            // User infos
+            this.dashUser = d.user || {};
+            if (d.user) {
+              this.user = { ...this.user, ...d.user };
+              sessionStorage.setItem('kv_user', JSON.stringify(this.user));
+            }
+
+            // Score profil
+            this.profileScore = d.user?.profile_completion || 0;
+
+            // Wallet escrow
+            if (d.wallet) {
+              const total = (d.wallet.solde || 0) + (d.wallet.solde_bloque || 0);
+              this.escrow = {
+                disponible: d.wallet.solde || 0,
+                bloque:     d.wallet.solde_bloque || 0,
+                total:      total,
+                devise:     d.wallet.devise || 'USD'
+              };
+            }
+
+            // Stats
+            this.dashStats = d.stats || {};
+
+            // Recent projects
+            this.mesProjets   = d.recent_projects || [];
+
+            // Messages récents
+            this.dashMessages = d.messages_recents || [];
+
+            // Projets recommandés
+            this.dashRecommended = d.projets_recommandes || [];
+
+            // Notifs
+            this.dashNotifs = d.notifs_non_lues || 0;
+
+            // Graphique revenus
+            this.dashGraphique = d.graphique || { '7j': [], '30j': [] };
+            this.$nextTick(() => {
+              this.renderEarningsChart();
+              this.revealDashboard();
+              // Force re-render barre completion après animation reveal
+              setTimeout(() => {
+                const score = this.profileScore;
+                this.profileScore = 0;
+                setTimeout(() => { this.profileScore = score; }, 50);
+              }, 100);
+            });
+
+            // Compétences (parallèle — résolu en même temps)
+            try { if (rc?.ok) this.dashCompetences = await rc.json(); } catch {}
+
+            // Presence (parallèle)
+            try { if (rp?.ok) this.presence = await rp.json(); } catch {}
+
+            // Activité récente (simulée à partir des données dispo)
+            this.dashActivite = [];
+            if (d.stats?.revenus_mois > 0) {
+              this.dashActivite.push({ icon: '✅', label: 'Paiement reçu', sub: '+$' + d.stats.revenus_mois.toFixed(2), time: 'ce mois' });
+            }
+            if (d.recent_projects?.length > 0) {
+              this.dashActivite.push({ icon: '📁', label: 'Projet actif', sub: d.recent_projects[0].titre.substring(0,30) + '...', time: 'récemment' });
+            }
+            if (d.messages_recents?.length > 0) {
+              this.dashActivite.push({ icon: '💬', label: 'Message reçu', sub: d.messages_recents[0].expediteur || 'Nouveau message', time: 'récemment' });
+            }
+
+          } catch(e) {
+            console.error('Dashboard error:', e);
+          }
+        },
+
+        async loadMesCandidatures() {
+          try {
+            const r = await fetch(`${API}/candidatures/mes-candidatures`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (r.ok) {
+              const data = await r.json();
+              this.mesCandidatures = data.map(c => c.projet_id || c.id);
+            }
+          } catch {}
+        },
+
+        ouvrirPostuler(projet) {
+          this.selectedProjet = null;  // fermer la modal détail
+          this.postuleProjet = projet;
+          this.postuleForm = { message: '', budget: projet.budget || '', delai: '' };
+          this.modalPostuler = true;
+          this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+        },
+
+        async envoyerCandidature() {
+          if (!this.postuleForm.message.trim()) {
+            this.showToast('Écris un message pour le client', 'error');
+            return;
+          }
+          this.postuleLoading = true;
+          try {
+            const r = await fetch(`${API}/candidatures/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.token}` },
+              body: JSON.stringify({
+                projet_id: this.postuleProjet.id,
+                message: this.postuleForm.message,
+                budget_propose: this.postuleForm.budget ? parseFloat(this.postuleForm.budget) : null,
+                delai_jours: this.postuleForm.delai ? parseInt(this.postuleForm.delai) : null,
+              })
+            });
+            const data = await r.json();
+            if (r.ok) {
+              this.showToast('✅ Candidature envoyée !', 'success');
+              this.mesCandidatures.push(this.postuleProjet.id);
+              this.modalPostuler = false;
+            } else {
+              this.showToast(data.detail || 'Erreur', 'error');
+            }
+          } catch {
+            this.showToast('Erreur réseau', 'error');
+          } finally {
+            this.postuleLoading = false;
+          }
+        },
+
+        // ── CANDIDATURES ──
+        initierEscrow(projetId) {
+          this.modalEscrow = { show:true, projet_id:projetId, montant:'', devise:'USD', operateur:'airtel', telephone:'', loading:false };
+        },
+
+        async soumettreEscrow() {
+          const m = this.modalEscrow;
+          if (!m.montant || !m.operateur || !m.telephone) return;
+          m.loading = true;
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/escrow/initier`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+              body: JSON.stringify({
+                projet_id: m.projet_id,
+                montant: Number(m.montant),
+                devise: m.devise,
+                telephone: '243' + m.telephone.replace(/^0/, ''),
+                operateur: m.operateur,
+              })
+            });
+            const d = await r.json();
+            if (r.ok) {
+              this.modalEscrow.show = false;
+              this.showAlerte('\U0001f4f2 Vérifiez votre téléphone !', d.message, { type: 'warning', btnLabel: 'OK compris' });
+              // Polling statut escrow (4x, toutes les 5s)
+              const _tok = this.token || sessionStorage.getItem('kv_token');
+              const _pid = m.projet_id;
+              let _polls = 0;
+              const _pt = setInterval(async () => {
+                _polls++;
+                try {
+                  const rp = await fetch(`${API}/escrow/projet/${_pid}`, { headers: { Authorization: `Bearer ${_tok}` } });
+                  const dp = await rp.json();
+                  if (dp.escrow && dp.escrow.statut === 'bloque') {
+                    this.showToast('\U0001f4b0 Fonds securises ! Le freelance peut commencer.', 'success');
+                    this.loadWallet();
+                    fetch(`${API}/escrow/mes-escrows`, { headers: { Authorization: `Bearer ${_tok}` } })
+                      .then(r2=>r2.json()).then(d2=>{ this.$store && (this.mesEscrows=d2.escrows||[]); }).catch(()=>{});
+                    clearInterval(_pt);
+                  }
+                } catch {}
+                if (_polls >= 4) clearInterval(_pt);
+              }, 5000);
+            } else {
+              this.showToast(d.detail || 'Erreur PawaPay', 'error');
+            }
+          } catch { this.showToast('Erreur réseau', 'error'); }
+          finally { m.loading = false; }
+        },
+
+        async libererEscrow(escrowId) {
+          if (!confirm('Confirmer la livraison et libérer les fonds au freelance ?')) return;
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/escrow/liberer`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+              body: JSON.stringify({ escrow_id: escrowId })
+            });
+            const d = await r.json();
+            if (r.ok) {
+              this.showToast('🎉 Fonds libérés ! Mission terminée.', 'success');
+            } else {
+              this.showToast(d.detail || 'Erreur', 'error');
+            }
+          } catch { this.showToast('Erreur réseau', 'error'); }
+        },
+
+        async loadCandidaturesRecues() {
+          this.loadingCandidaturesRecues = true;
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/candidatures/projet/all-received`, {
+              headers: { Authorization: `Bearer ${tok}` }
+            });
+            if (r.ok) {
+              this.candidaturesRecues = await r.json();
+              this.unreadCandidatures = this.candidaturesRecues.filter(c => c.statut === 'en_attente').length;
+            }
+          } catch {}
+          finally { this.loadingCandidaturesRecues = false; }
+        },
+
+        async deciderCandidatureAlerte(candId, decision, c) {
+          await this.deciderCandidature(candId, decision);
+          // Rafraîchir la liste alertes
+          await this.loadCandidaturesRecues();
+        },
+
+        async loadCandidaturesProjet(projetId) {
+          this.loadingCandidatures = true;
+          this.candidaturesProjet = [];
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/candidatures/projet/${projetId}`, {
+              headers: { Authorization: `Bearer ${tok}` }
+            });
+            if (r.ok) {
+              this.candidaturesProjet = await r.json();
+            } else {
+              this.showToast('Erreur chargement candidatures', 'error');
+            }
+          } catch {
+            this.showToast('Erreur réseau', 'error');
+          } finally {
+            this.loadingCandidatures = false;
+          }
+        },
+
+        async deciderCandidature(candId, decision) {
+          this.candidatureLoading = candId;
+          this.candidatureDecision = decision;
+          // Récupérer le token depuis sessionStorage en fallback si this.token est null
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/candidatures/${candId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+              body: JSON.stringify({ statut: decision })
+            });
+            const data = await r.json();
+            if (r.ok) {
+              const label = decision === 'acceptee' ? '✅ Candidature acceptée !' : '❌ Candidature refusée';
+              this.showToast(label, decision === 'acceptee' ? 'success' : 'error');
+              if (this.selectedProjet) await this.loadCandidaturesProjet(this.selectedProjet.id);
+              if (decision === 'acceptee' && data.conv_id) {
+                this.selectedProjet = null;
+                this.showAlerte(
+                  'Freelance accepté ! 🎉',
+                  'Une conversation a été ouverte. Allez dans Messages pour coordonner.',
+                  { type: 'warning', btnLabel: 'Voir les messages', action: () => this.navigateTo('messages'), btnAction: null }
+                );
+              }
+            } else {
+              this.showToast(data.detail || 'Erreur', 'error');
+            }
+          } catch {
+            this.showToast('Erreur réseau', 'error');
+          } finally {
+            this.candidatureLoading = null;
+            this.candidatureDecision = null;
+          }
+        },
+
+        async loadPresence() {
+          try {
+            const r = await fetch(`${API}/dashboard/presence`);
+            if (r.ok) this.presence = await r.json();
+          } catch {}
+        },
+
+        revealDashboard() {
+          const blocks = document.querySelectorAll('.dash-block');
+          blocks.forEach(el => el.classList.remove('revealed'));
+          setTimeout(() => {
+            blocks.forEach(el => el.classList.add('revealed'));
+            if (window.lucide) window.lucide.createIcons();
+            // CountUp animé sur le score profil
+            this._countUpScore();
+          }, 30);
+        },
+
+        _countUpScore() {
+          const el = document.getElementById('profileScoreDisplay');
+          if (!el) return;
+          const target = this.profileScore || 0;
+          const duration = 900; // ms
+          const steps = 40;
+          const stepTime = duration / steps;
+          let current = 0;
+          const increment = target / steps;
+          const timer = setInterval(() => {
+            current = Math.min(current + increment, target);
+            el.textContent = Math.round(current) + '%';
+            if (current >= target) clearInterval(timer);
+          }, stepTime);
+        },
+
+        renderEarningsChart() {
+          const canvas = document.getElementById('earningsChart');
+          if (!canvas) return;
+          const data = this.dashGraphique[this.dashPeriode] || [];
+          const labels = data.map(d => d.date);
+          const values = data.map(d => d.montant);
+          const devise = this.escrow.devise || 'USD';
+
+          // Gradient fill
+          const ctx = canvas.getContext('2d');
+          const gradient = ctx.createLinearGradient(0, 0, 0, canvas.offsetHeight || 112);
+          gradient.addColorStop(0, 'rgba(0,184,124,0.25)');
+          gradient.addColorStop(1, 'rgba(0,184,124,0.00)');
+
+          if (this.dashChart) this.dashChart.destroy();
+          this.dashChart = new Chart(canvas, {
+            type: 'line',
+            data: {
+              labels,
+              datasets: [{
+                label: devise,
+                data: values,
+                borderColor: '#00B87C',
+                backgroundColor: gradient,
+                borderWidth: 2,
+                pointRadius: (ctx) => values[ctx.dataIndex] > 0 ? 3 : 0,
+                pointBackgroundColor: '#00B87C',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 1.5,
+                tension: 0.45,
+                fill: true
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: 'index', intersect: false },
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: '#0F172A',
+                  titleColor: '#94a3b8',
+                  bodyColor: '#fff',
+                  titleFont: { size: 10 },
+                  bodyFont: { size: 12, weight: 'bold' },
+                  padding: 8,
+                  cornerRadius: 8,
+                  callbacks: {
+                    label: (ctx) => ' $' + ctx.parsed.y.toFixed(2)
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                  border: { display: false },
+                  ticks: {
+                    font: { size: 9 },
+                    color: '#94a3b8',
+                    maxTicksLimit: 4,
+                    callback: v => v >= 1000 ? '$'+(v/1000).toFixed(0)+'k' : '$'+v
+                  }
+                },
+                x: {
+                  grid: { display: false },
+                  border: { display: false },
+                  ticks: {
+                    font: { size: 9 },
+                    color: '#94a3b8',
+                    maxTicksLimit: this.dashPeriode === '7j' ? 7 : 10,
+                    maxRotation: 0
+                  }
+                }
+              }
+            }
+          });
+        },
+
+        async toggleDispo() {
+          // Valeurs DB : maintenant | cette_semaine | temps_partiel | temps_plein
+          const isAvailable = !!this.user.disponibilite && this.user.disponibilite !== 'temps_partiel';
+          const newVal = isAvailable ? 'temps_partiel' : 'maintenant';
+          this.user.disponibilite = newVal;
+          sessionStorage.setItem('kv_user', JSON.stringify(this.user));
+          this.showToast(newVal === 'maintenant' ? '✅ Tu es maintenant disponible' : '🔴 Statut : Occupé');
+          // Sauvegarder en base
+          try {
+            await fetch(`${API}/users/moi`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.token}` },
+              body: JSON.stringify({ disponibilite: newVal })
+            });
+          } catch(e) {}
+        },
+
+        async generateCV() {
+          if (!this.user.id) return;
+          this.loadingCV = true;
+          try {
+            const r = await fetch(`${API}/users/${this.user.id}/generate-cv`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (r.ok) this.showToast('📄 CV IA en cours de génération ! Revenez dans quelques secondes.');
+            else throw new Error('Erreur génération CV');
+          } catch(e) {
+            this.showToast(e.message, 'error');
+          } finally { this.loadingCV = false; }
+        },
+
+        // ── HELPERS DASHBOARD ──
+        tagEmoji(tag) {
+          const map = {
+            'React':'⚛️','Node.js':'🟢','Python':'🐍','Design':'🎨','UI/UX':'🖌️',
+            'Vidéo':'🎬','Montage':'✂️','SEO':'🔍','Crypto':'₿','Traduction':'🌍',
+            'Réseau':'🔧','Mobile':'📱','Fullstack':'💻','Community':'📢'
+          };
+          for (const [k,v] of Object.entries(map)) {
+            if (tag.includes(k)) return v;
+          }
+          return '🏷️';
+        },
+
+        // ════════ MESSAGES ════════
+        async loadMessages() {
+          this.convLoading = true;
+          try {
+            const r = await fetch(`${API}/messages/conversations`, { headers: { Authorization: `Bearer ${this.token}` } });
+            if (r.ok) {
+              const convs = await r.json();
+              // enrichir nom interlocuteur
+              this.conversations = convs.map(cv => ({
+                ...cv,
+                nom_interlocuteur: cv.client_id === this.user.id
+                  ? (cv.freelance_prenom || '') + ' ' + (cv.freelance_nom || '')
+                  : (cv.client_prenom || '') + ' ' + (cv.client_nom || ''),
+                photo_interlocuteur: cv.client_id === this.user.id ? cv.freelance_photo : cv.client_photo,
+                titre_projet: cv.projet_titre || ''
+              }));
+              this.unreadMessages = this.conversations.reduce((s, cv) => s + (cv.messages_non_lus || 0), 0);
+            }
+          } catch {}
+          this.convLoading = false;
+        },
+
+        async openConversation(conv) {
+          this.activeConv = conv;
+          this.convMessages = [];
+          this.msgLoading = true;
+          if (this._pollTimer) { clearInterval(this._pollTimer); this._pollTimer = null; }
+          try {
+            const r = await fetch(`${API}/messages/conversations/${conv.id}/messages`, { headers: { Authorization: `Bearer ${this.token}` } });
+            if (r.ok) this.convMessages = await r.json();
+          } catch {}
+          this.msgLoading = false;
+          this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+          this.atBottom = true;
+          this._pollTimer = setInterval(() => this.pollMessages(), 5000);
+          this.startTypingPoll();
+          this.loadConvProjet(conv);
+          // Marquer comme lu
+          conv.messages_non_lus = 0;
+          this.unreadMessages = this.conversations.reduce((s, cv) => s + (cv.messages_non_lus || 0), 0);
+        },
+
+        async sendMessage() {
+          const text = this.newMessage.trim();
+          if (!text || this.msgSending || !this.activeConv) return;
+          this.msgSending = true;
+          this.newMessage = '';
+          try {
+            const r = await fetch(`${API}/messages/conversations/${this.activeConv.id}/messages`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: text, type_message: 'texte' })
+            });
+            if (r.ok) {
+              const msg = await r.json();
+              this.convMessages.push(msg);
+              const conv = this.conversations.find(cv => cv.id === this.activeConv.id);
+              if (conv) { conv.dernier_message = text; conv.last_message_at = msg.created_at; this.conversations = [...this.conversations]; }
+              this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+            }
+          } catch {}
+          this.msgSending = false;
+        },
+
+        async uploadFile(event, convId) {
+          const file = event.target.files[0];
+          if (!file || !convId) return;
+          const formData = new FormData();
+          formData.append('file', file);
+          try {
+            const r = await fetch(`${API}/messages/conversations/${convId}/upload`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${this.token}` },
+              body: formData
+            });
+            if (r.ok) {
+              const msg = await r.json();
+              this.convMessages.push(msg);
+              const conv = this.conversations.find(cv => cv.id === convId);
+              if (conv) { conv.dernier_message = msg.type_message === 'image' ? '📷 Image' : '📎 Fichier'; this.conversations = [...this.conversations]; }
+              this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+            } else {
+              this.showToast('Échec upload — vérifiez le format/taille (max 10MB)', 'error');
+            }
+          } catch { this.showToast('Erreur réseau', 'error'); }
+          event.target.value = '';
+        },
+
+        // Signal "je suis en train d'écrire" (throttle 3s)
+        signalTyping() {
+          if (!this.activeConv || !this.token) return;
+          if (this._typingTimer) return; // throttle
+          this._typingTimer = setTimeout(() => { this._typingTimer = null; }, 3000);
+          fetch(`${API}/messages/conversations/${this.activeConv.id}/typing`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${this.token}` }
+          }).catch(() => {});
+        },
+
+        // Poll "l'autre est en train d'écrire" (toutes les 2s quand conv ouverte)
+        startTypingPoll() {
+          if (this._typingPollTimer) clearInterval(this._typingPollTimer);
+          this._typingPollTimer = setInterval(async () => {
+            if (!this.activeConv || !this.token) return;
+            try {
+              const r = await fetch(`${API}/messages/conversations/${this.activeConv.id}/typing`, {
+                headers: { Authorization: `Bearer ${this.token}` }
+              });
+              if (r.ok) {
+                const data = await r.json();
+                this.peerTyping = data.typing;
+                if (this.peerTyping) {
+                  this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+                }
+              }
+            } catch {}
+          }, 2000);
+        },
+
+        stopTypingPoll() {
+          if (this._typingPollTimer) { clearInterval(this._typingPollTimer); this._typingPollTimer = null; }
+          this.peerTyping = false;
+        },
+
+        async pollMessages() {
+          if (!this.activeConv || !this.token) return;
+          try {
+            const last = this.convMessages[this.convMessages.length - 1];
+            const after = last ? `?after=${encodeURIComponent(last.created_at)}` : '';
+            const r = await fetch(`${API}/messages/conversations/${this.activeConv.id}/messages${after}`, { headers: { Authorization: `Bearer ${this.token}` } });
+            if (r.ok) {
+              const all = await r.json();
+              const existing = new Set(this.convMessages.map(m => m.id));
+              const newMsgs = all.filter(m => !existing.has(m.id));
+              if (newMsgs.length > 0) {
+                const incoming = newMsgs.filter(m => m.sender_id !== this.user.id);
+                if (incoming.length > 0) { this.playSound('message'); this.sendBrowserNotif(this.activeConv.nom_interlocuteur || 'Message', incoming[incoming.length-1].message); }
+                this.convMessages.push(...newMsgs);
+                const lastMsg = newMsgs[newMsgs.length-1];
+                const conv = this.conversations.find(cv => cv.id === this.activeConv.id);
+                if (conv) { conv.dernier_message = lastMsg.message; conv.last_message_at = lastMsg.created_at; this.conversations = [...this.conversations]; }
+                if (this.atBottom) this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+              }
+            }
+          } catch {}
+        },
+
+        startGlobalPolling() {
+          if (this._globalPollTimer) return;
+          this._globalPollTimer = setInterval(async () => {
+            if (!this.token) return;
+            try {
+              const r = await fetch(`${API}/messages/conversations`, { headers: { Authorization: `Bearer ${this.token}` } });
+              if (r.ok) {
+                const convs = await r.json();
+                const total = convs.reduce((s, cv) => s + (cv.messages_non_lus || 0), 0);
+                if (total > this.unreadMessages) {
+                  this.playSound('notif');
+                  this.sendBrowserNotif('Mosala', 'Vous avez de nouveaux messages');
+                  if (this.activeTab === 'messages') this.loadMessages();
+                } else {
+                  convs.forEach(nc => {
+                    const ex = this.conversations.find(cv => cv.id === nc.id);
+                    if (ex && nc.last_message_at !== ex.last_message_at) {
+                      ex.dernier_message = nc.dernier_message; ex.last_message_at = nc.last_message_at; ex.messages_non_lus = nc.messages_non_lus;
+                    }
+                  });
+                  this.conversations = [...this.conversations];
+                }
+                this.unreadMessages = total;
+              }
+            } catch {}
+          }, 5000);
+
+          // ── Polling notifications toutes les 30s ──
+          this._notifPollTimer = setInterval(async () => {
+            if (!this.token) return;
+            try {
+              const r = await fetch(`${API}/notifications/count`, {
+                headers: { Authorization: `Bearer ${this.token}` }
+              });
+              if (r.ok) {
+                const data = await r.json();
+                const prev = this.dashNotifs;
+                this.dashNotifs = data.count || 0;
+                // Son + browser notif si nouvelles notifs
+                if (this.dashNotifs > prev) {
+                  this.playSound('notif');
+                  this.sendBrowserNotif('Mosala 🔔', `Vous avez ${this.dashNotifs} notification${this.dashNotifs > 1 ? 's' : ''} non lue${this.dashNotifs > 1 ? 's' : ''}`);
+                }
+              }
+            } catch {}
+          }, 30000);
+        },
+
+        async loadNotifDropdown() {
+          this.loadingNotifDropdown = true;
+          this.notifDropdownList = [];
+          try {
+            const r = await fetch(`${API}/notifications/?limit=20`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (r.ok) {
+              const data = await r.json();
+              this.notifDropdownList = Array.isArray(data) ? data : (data.items || []);
+            }
+          } catch(e) {}
+          this.loadingNotifDropdown = false;
+        },
+
+        async markNotifRead(id) {
+          try {
+            await fetch(`${API}/notifications/${id}/lu`, {
+              method: 'PATCH',
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+          } catch(e) {}
+        },
+
+        async markAllNotifsRead() {
+          try {
+            await fetch(`${API}/notifications/tout-lire`, {
+              method: 'PATCH',
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            this.notifDropdownList = this.notifDropdownList.map(n => ({...n, lu: true}));
+            this.dashNotifs = 0;
+          } catch(e) {}
+        },
+
+        async initNotifications() {
+          if ('Notification' in window) {
+            if (Notification.permission === 'granted') this.notifPermission = 'granted';
+            else if (Notification.permission !== 'denied') { const p = await Notification.requestPermission(); this.notifPermission = p; }
+            else this.notifPermission = 'denied';
+          }
+          this._msgSound = new Audio('/sounds/message.wav');
+          this._notifSound = new Audio('/sounds/notif.wav');
+          this._msgSound.volume = 0.5; this._notifSound.volume = 0.4;
+        },
+
+        playSound(type = 'message') {
+          if (!this.soundEnabled) return;
+          try { const s = type === 'notif' ? this._notifSound : this._msgSound; if (s) { s.currentTime = 0; s.play().catch(()=>{}); } } catch {}
+        },
+
+        sendBrowserNotif(title, body) {
+          if (this.notifPermission !== 'granted' || document.visibilityState === 'visible') return;
+          try { const n = new Notification(title, { body }); n.onclick = () => { window.focus(); this.navigateTo('messages'); n.close(); }; setTimeout(() => n.close(), 5000); } catch {}
+        },
+
+        onTyping() {
+          if (this._typingTimer) clearTimeout(this._typingTimer);
+          this._typingTimer = setTimeout(() => { this.isTyping = false; }, 2000);
+        },
+
+        checkScrollBottom() {
+          const z = document.getElementById('msgZone');
+          if (z) this.atBottom = z.scrollHeight - z.scrollTop - z.clientHeight < 50;
+        },
+
+        scrollToBottom() { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; this.atBottom = true; },
+
+        getMsgDateLabel(dateStr) {
+          if (!dateStr) return '';
+          const d = new Date(dateStr);
+          const today = new Date(); today.setHours(0,0,0,0);
+          const yesterday = new Date(today); yesterday.setDate(yesterday.getDate()-1);
+          const msgDay = new Date(d); msgDay.setHours(0,0,0,0);
+          if (msgDay.getTime() === today.getTime()) return "Aujourd'hui";
+          if (msgDay.getTime() === yesterday.getTime()) return 'Hier';
+          return d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+        },
+
+        shouldShowDateSep(index) {
+          if (index === 0) return true;
+          const prev = this.convMessages[index-1]; const curr = this.convMessages[index];
+          if (!prev || !curr) return false;
+          const d1 = new Date(prev.created_at); d1.setHours(0,0,0,0);
+          const d2 = new Date(curr.created_at); d2.setHours(0,0,0,0);
+          return d1.getTime() !== d2.getTime();
+        },
+
+        formatMsgTime(dateStr) {
+          if (!dateStr) return '';
+          return new Date(dateStr).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+        },
+
+        async loadConvProjet(conv) {
+          if (!conv.projet_id) return;
+          try {
+            const r = await fetch(`${API}/projets/${conv.projet_id}`, { headers: { Authorization: `Bearer ${this.token}` } });
+            if (r.ok) this.convProjet = await r.json();
+          } catch {}
+        },
+
+        async uploadFile(e) {
+          const file = e.target.files[0]; if (!file || !this.activeConv) return;
+          if (file.size > 10 * 1024 * 1024) { this.showToast('Fichier trop lourd (max 10MB)', 'error'); return; }
+          if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+              try {
+                const r = await fetch(`${API}/messages/conversations/${this.activeConv.id}/messages`, {
+                  method: 'POST', headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ message: ev.target.result, type_message: 'image' })
+                });
+                if (r.ok) { const msg = await r.json(); this.convMessages.push(msg); this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; }); }
+              } catch {}
+            };
+            reader.readAsDataURL(file);
+          } else {
+            const text = `📎 ${file.name}`;
+            try {
+              const r = await fetch(`${API}/messages/conversations/${this.activeConv.id}/messages`, {
+                method: 'POST', headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text, type_message: 'fichier' })
+              });
+              if (r.ok) { const msg = await r.json(); this.convMessages.push(msg); }
+            } catch {}
+          }
+          e.target.value = '';
+        },
+
+        // ════════ FIN MESSAGES ════════
+
+        formatTxDate(dateStr) {
+          if (!dateStr) return '';
+          const d = new Date(dateStr);
+          const now = new Date();
+          const diff = Math.floor((now - d) / 86400000);
+          if (diff === 0) return 'Aujourd\'hui';
+          if (diff === 1) return 'Hier';
+          if (diff < 7) return 'Il y a ' + diff + ' jours';
+          return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+        },
+
+        timeAgo(dateStr) {
+          if (!dateStr) return '';
+          const diff = (Date.now() - new Date(dateStr)) / 1000;
+          if (diff < 3600) return 'il y a ' + Math.round(diff/60) + ' min';
+          if (diff < 86400) return 'il y a ' + Math.round(diff/3600) + 'h';
+          if (diff < 172800) return 'hier';
+          return 'il y a ' + Math.round(diff/86400) + 'j';
+        },
+
+        avatarColor(str) {
+          if (!str) return '#00B87C';
+          let hash = 0;
+          for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+          const colors = [
+            '#CBD5E1','#BAE6FD','#BBF7D0','#E9D5FF','#FBCFE8',
+            '#FED7AA','#A5F3FC','#DDD6FE','#CCFBF1','#E2E8F0'
+          ];
+          return colors[Math.abs(hash) % colors.length];
+        },
+
+        switchPeriode(p) {
+          this.dashPeriode = p;
+          this.$nextTick(() => this.renderEarningsChart());
+        },
+
+        // ── NOUVEAU PROJET ──
+        addJalon() {
+          this.projetForm.jalons.push({ titre: '', montant: '' });
+        },
+
+        async createProjet() {
+          this.loading = true;
+          try {
+            const r = await fetch(`${API}/projets/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${this.token}`
+              },
+              body: JSON.stringify({
+                titre:       this.projetForm.titre,
+                description: this.projetForm.description,
+                budget:      this.projetForm.budget ? Number(this.projetForm.budget) : null,
+                devise:      this.projetForm.devise,
+                tags:        this.projetForm.tags.length ? this.projetForm.tags : null,
+              })
+            });
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.detail || 'Erreur création projet');
+
+            // Créer les jalons si ajoutés
+            for (const j of this.projetForm.jalons) {
+              if (j.titre && j.montant) {
+                await fetch(`${API}/projets/${data.id}/jalons`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${this.token}`
+                  },
+                  body: JSON.stringify({ titre: j.titre, montant: Number(j.montant) })
+                });
+              }
+            }
+
+            this.showToast('🚀 Projet publié avec succès !');
+            this.projetForm = { titre:'', description:'', budget:'', devise:'CDF', jalons:[], tags:[], categorie:'', delai:'' }; this.projetStep = 1;
+            this.activeTab = 'marketplace';
+            await this.loadProjets();
+
+          } catch(e) {
+            // Erreur 403 freelance → modale persistante (pas un toast qui disparaît)
+            if (e.message && e.message.includes('seul projet actif')) {
+              this.showAlerte(
+                'Projet déjà actif',
+                e.message,
+                {
+                  type: 'warning',
+                  btnLabel: 'OK, compris',
+                  btnAction: 'Voir mon projet',
+                  action: () => { this.activeTab = 'marketplace'; }
+                }
+              );
+            } else {
+              this.showToast(e.message, 'error');
+            }
+          } finally { this.loading = false; }
+        },
+
+      
+        // ── WALLET ──────────────────────────────────────────────────────────
+        async loadWallet() {
+          if (!this.token) return;
+          try {
+            const [wRes, tRes] = await Promise.all([
+              fetch(`${API}/wallets/moi`, { headers: { Authorization: `Bearer ${this.token}` } }),
+              fetch(`${API}/wallets/moi/transactions?limit=20`, { headers: { Authorization: `Bearer ${this.token}` } })
+            ]);
+            if (wRes.ok) {
+              const w = await wRes.json();
+              this.walletSolde    = parseFloat(w.solde || 0).toFixed(2);
+              this.walletBloque   = parseFloat(w.solde_bloque || 0).toFixed(2);
+              this.walletDevise   = w.devise || 'USD';
+            }
+            if (tRes.ok) {
+              this.walletTransactions = await tRes.json();
+            }
+          } catch(e) { console.warn('loadWallet', e); }
+        },
+
+        // ── PROFIL ──────────────────────────────────────────────────────────
+        async loadProfil() {
+          if (!this.token || !this.user?.id) return;
+          try {
+            // ── Recharger le statut KYC depuis /auth/me ──
+            const meRes = await fetch(`${API}/auth/me`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (meRes.ok) {
+              const me = await meRes.json();
+              this.user = me;
+              sessionStorage.setItem('kv_user', JSON.stringify(me));
+              this.kycStatus = me.kyc_status || 'non_soumis';
+              this.kycNote   = me.kyc_note   || '';
+            }
+            // Compétences depuis le nouvel endpoint
+            const cRes = await fetch(`${API}/users/${this.user.id}/competences`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (cRes.ok) this.profilCompetences = await cRes.json();
+
+            // Stats réelles depuis dashboard
+            const dRes = await fetch(`${API}/dashboard/overview`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (dRes.ok) {
+              const d = await dRes.json();
+              this.profilStats = {
+                projets_termines: d.projets_termines || 0,
+                taux_reussite:    d.taux_reussite    || 0,
+                revenus_total:    d.revenus_total    || 0,
+                note_moyenne:     d.note_moyenne     || 0,
+                total_reviews:    d.total_reviews    || 0,
+                delai_reponse:    this.user.delai_reponse || '—',
+              };
+            }
+
+            // Portfolio
+            const pRes = await fetch(`${API}/portfolio/${this.user.id}`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (pRes.ok) this.profilPortfolio = await pRes.json();
+
+          } catch(e) { console.warn('loadProfil', e); }
+        },
+
+        editProfil() {
+          this.profilEdit = true;
+          this.profilForm = {
+            prenom:       this.user.prenom       || '',
+            nom:          this.user.nom           || '',
+            bio:          this.user.bio           || '',
+            ville:        this.user.ville         || '',
+            disponibilite: this.user.disponibilite || 'disponible',
+          };
+        },
+
+        cancelEditProfil() {
+          this.profilEdit = false;
+        },
+
+        async saveProfil() {
+          if (this.profilSaving) return;
+          this.profilSaving = true;
+          try {
+            const r = await fetch(`${API}/users/moi`, {
+              method: 'PATCH',
+              headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.profilForm)
+            });
+            const data = await r.json();
+            if (r.ok) {
+              this.user = { ...this.user, ...this.profilForm };
+              sessionStorage.setItem('kv_user', JSON.stringify(this.user));
+              this.profilEdit = false;
+              this.showToast('✅ Profil mis à jour !', 'success');
+            } else {
+              this.showToast(data.detail || 'Erreur sauvegarde', 'error');
+            }
+          } catch(e) { this.showToast('Erreur réseau', 'error'); }
+          this.profilSaving = false;
+        },
+
+        async uploadPhoto(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+          if (file.size > 5 * 1024 * 1024) { this.showToast('Photo trop lourde (max 5MB)', 'error'); return; }
+          this.photoUploading = true;
+          try {
+            const fd = new FormData();
+            fd.append('file', file);
+            const r = await fetch(`${API}/users/moi/photo`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${this.token}` },
+              body: fd
+            });
+            if (r.ok) {
+              const data = await r.json();
+              this.user.photo_url = data.photo_url;
+              sessionStorage.setItem('kv_user', JSON.stringify(this.user));
+              this.showToast('📸 Photo mise à jour !', 'success');
+            } else {
+              this.showToast('Erreur upload photo', 'error');
+            }
+          } catch(e) { this.showToast('Erreur réseau', 'error'); }
+          this.photoUploading = false;
+        },
+
+
+
+        // ── KYC submit ──
+        async submitKyc() {
+          this.kycError = "";
+          if (!this.kycFiles.recto || !this.kycFiles.verso || !this.kycFiles.selfie) {
+            this.kycError = "Veuillez fournir les 3 documents.";
+            return;
+          }
+          this.kycLoading = true;
+          const compressImage = (file) => new Promise((resolve) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+              const MAX = 800;
+              let w = img.width, h = img.height;
+              if (w > MAX || h > MAX) {
+                if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+                else { w = Math.round(w * MAX / h); h = MAX; }
+              }
+              const canvas = document.createElement("canvas");
+              canvas.width = w; canvas.height = h;
+              canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+              URL.revokeObjectURL(url);
+              canvas.toBlob((blob) => resolve(new File([blob], file.name, { type: "image/jpeg" })), "image/jpeg", 0.75);
+            };
+            img.src = url;
+          });
+          try {
+            const [r1, v1, s1] = await Promise.all([
+              compressImage(this.kycFiles.recto),
+              compressImage(this.kycFiles.verso),
+              compressImage(this.kycFiles.selfie),
+            ]);
+            const fd = new FormData();
+            fd.append("recto",  r1);
+            fd.append("verso",  v1);
+            fd.append("selfie", s1);
+            if (this.kycNom)           fd.append("nom",             this.kycNom);
+            if (this.kycPrenom)        fd.append("prenom",          this.kycPrenom);
+            if (this.kycPostnom)       fd.append("postnom",         this.kycPostnom);
+            if (this.kycDateNaissance) fd.append("date_naissance",  this.kycDateNaissance);
+            const r = await fetch(API + "/users/me/kyc", {
+              method: "POST",
+              headers: { Authorization: "Bearer " + this.token },
+              body: fd
+            });
+            const d = await r.json();
+            if (r.ok) {
+              this.kycStatus = "en_attente";
+              this.showToast("Documents envoyes - verification sous 24-48h", "success");
+            } else {
+              this.kycError = d.detail || "Erreur envoi.";
+            }
+          } catch(e) {
+            this.kycError = "Erreur reseau.";
+          }
+          this.kycLoading = false;
+        },
+
+
+        // ── Pro : Boost projet ──
+        async boosterProjet(projetId) {
+          const r = await fetch(`${API}/projets/${projetId}/boost`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${this.token}` }
+          });
+          const d = await r.json();
+          if (r.ok) { this.showToast('🚀 ' + d.message); this.loadDashboard(); }
+          else { this.showToast(d.detail || 'Erreur boost', 'error'); }
+        },
+
+        // ── Pro : Télécharger contrat PDF ──
+        async telechargerContrat(projetId) {
+          const r = await fetch(`${API}/projets/${projetId}/contrat`, {
+            headers: { Authorization: `Bearer ${this.token}` }
+          });
+          if (r.ok) {
+            const blob = await r.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `contrat_mosala_${projetId.slice(0,8)}.pdf`;
+            a.click(); URL.revokeObjectURL(url);
+          } else {
+            const d = await r.json();
+            this.showToast(d.detail || 'Erreur téléchargement', 'error');
+          }
+        },
+
+
+        // ── PawaPay Pro ──
+        async payerPro() {
+          this.proErreur = '';
+          if (!this.proTelephone) { this.proErreur = 'Entrez votre numéro Mobile Money.'; return; }
+          this.proPaiementLoading = true;
+          try {
+            const r = await fetch(`${API}/paiements/pro/initier`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.token}` },
+              body: JSON.stringify({ plan: this.planChoisi, telephone: this.proTelephone, devise: this.proDevise })
+            });
+            const d = await r.json();
+            if (r.ok) {
+              this.proDepositId = d.deposit_id;
+              this.showToast(d.message || 'Confirmez sur votre téléphone !');
+            } else {
+              this.proErreur = d.detail || 'Erreur paiement.';
+            }
+          } catch(e) { this.proErreur = 'Erreur réseau.'; }
+          this.proPaiementLoading = false;
+        },
+
+        async verifierPaiementPro() {
+          if (!this.proDepositId) return;
+          const r = await fetch(`${API}/paiements/pro/statut/${this.proDepositId}`, {
+            headers: { Authorization: `Bearer ${this.token}` }
+          });
+          const d = await r.json();
+          if (d.status === 'COMPLETED') {
+            this.showToast('🏆 Compte Pro activé !');
+            const me = await (await fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${this.token}` } })).json();
+            this.user = me;
+            this.kycStatus = me.kyc_status || 'non_soumis';
+            sessionStorage.setItem('kv_user', JSON.stringify(me));
+          } else {
+            this.showToast(`Statut: ${d.status} — Attendez la confirmation.`);
+          }
+        },
+
+      }; // end return
+    }   // end app()
+  </script>
+
+
+
+  <!-- ── Command Palette ⌘K ── -->
+  <div id="kzCmdOverlay" class="kz-cmd-overlay" onclick="if(event.target===this) kzCmdClose()">
+    <div class="kz-cmd-box" role="dialog" aria-label="Commandes">
+
+      <!-- Search -->
+      <div class="kz-cmd-search">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:18px;height:18px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+        </svg>
+        <input id="kzCmdInput" type="text" placeholder="Rechercher une page, action..." autocomplete="off"
+               oninput="kzCmdFilter(this.value)" onkeydown="kzCmdKey(event)" />
+        <button class="kz-cmd-esc" onclick="kzCmdClose()">Esc</button>
+      </div>
+
+      <!-- Results -->
+      <div class="kz-cmd-list" id="kzCmdList">
+
+        <div class="kz-cmd-group-label" data-group="nav">Navigation</div>
+        <div class="kz-cmd-item" data-label="Trouver un freelance" onclick="kzCmdClose()">
+          <div class="kz-cmd-item-icon">🔍</div>
+          <div class="kz-cmd-item-text">
+            <div class="kz-cmd-item-title">Trouver un freelance</div>
+            <div class="kz-cmd-item-sub">Parcourir les talents disponibles</div>
+          </div>
+          <span class="kz-cmd-item-arrow">→</span>
+        </div>
+        <div class="kz-cmd-item" data-label="Devenir freelance" onclick="kzCmdClose()">
+          <div class="kz-cmd-item-icon">💼</div>
+          <div class="kz-cmd-item-text">
+            <div class="kz-cmd-item-title">Devenir freelance</div>
+            <div class="kz-cmd-item-sub">Créer votre profil et proposer vos services</div>
+          </div>
+          <span class="kz-cmd-item-arrow">→</span>
+        </div>
+        <div class="kz-cmd-item" data-label="Tarifs" onclick="kzCmdClose()">
+          <div class="kz-cmd-item-icon">💰</div>
+          <div class="kz-cmd-item-text">
+            <div class="kz-cmd-item-title">Tarifs</div>
+            <div class="kz-cmd-item-sub">Plans gratuit et premium</div>
+          </div>
+          <span class="kz-cmd-item-arrow">→</span>
+        </div>
+
+        <div class="kz-cmd-group-label" data-group="actions">Actions rapides</div>
+        <div class="kz-cmd-item" data-label="S'inscrire" onclick="kzCmdClose()">
+          <div class="kz-cmd-item-icon">✨</div>
+          <div class="kz-cmd-item-text">
+            <div class="kz-cmd-item-title">S'inscrire gratuitement</div>
+            <div class="kz-cmd-item-sub">Créer votre compte Mosala</div>
+          </div>
+          <span class="kz-cmd-item-arrow">→</span>
+        </div>
+        <div class="kz-cmd-item" data-label="Se connecter" onclick="kzCmdClose()">
+          <div class="kz-cmd-item-icon">🔑</div>
+          <div class="kz-cmd-item-text">
+            <div class="kz-cmd-item-title">Se connecter</div>
+            <div class="kz-cmd-item-sub">Accéder à votre espace</div>
+          </div>
+          <span class="kz-cmd-item-arrow">→</span>
+        </div>
+
+        <div class="kz-cmd-group-label" data-group="resources">Ressources</div>
+        <div class="kz-cmd-item" data-label="Blog" onclick="kzCmdClose()">
+          <div class="kz-cmd-item-icon">📝</div>
+          <div class="kz-cmd-item-text">
+            <div class="kz-cmd-item-title">Blog</div>
+            <div class="kz-cmd-item-sub">Conseils et actualités RDC</div>
+          </div>
+          <span class="kz-cmd-item-arrow">→</span>
+        </div>
+        <div class="kz-cmd-item" data-label="Guides" onclick="kzCmdClose()">
+          <div class="kz-cmd-item-icon">📚</div>
+          <div class="kz-cmd-item-text">
+            <div class="kz-cmd-item-title">Guides</div>
+            <div class="kz-cmd-item-sub">Documentation et tutoriels</div>
+          </div>
+          <span class="kz-cmd-item-arrow">→</span>
+        </div>
+        <div class="kz-cmd-item" data-label="Support" onclick="kzCmdClose()">
+          <div class="kz-cmd-item-icon">💬</div>
+          <div class="kz-cmd-item-text">
+            <div class="kz-cmd-item-title">Support</div>
+            <div class="kz-cmd-item-sub">Contacter notre équipe</div>
+          </div>
+          <span class="kz-cmd-item-arrow">→</span>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="kz-cmd-footer">
+        <div class="kz-cmd-footer-hint">
+          <span><kbd>↑↓</kbd> naviguer</span>
+          <span><kbd>↵</kbd> ouvrir</span>
+          <span><kbd>Esc</kbd> fermer</span>
+        </div>
+        <div class="kz-cmd-footer-brand">Kazi<span>Green</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Navbar scroll state + active link (premium) ── -->
+  <script>
+    (function() {
+      var wrapper = document.getElementById('kzNavWrapper');
+      if (!wrapper) return;
+
+      // Scroll compact state
+      window.addEventListener('scroll', function() {
+        if (window.scrollY > 24) {
+          wrapper.classList.add('scrolled');
+        } else {
+          wrapper.classList.remove('scrolled');
+        }
+      }, { passive: true });
+
+      // Active nav indicator — highlight current link on click
+      var navLinks = document.querySelectorAll('.kz-navlink');
+      navLinks.forEach(function(link) {
+        link.addEventListener('click', function() {
+          navLinks.forEach(function(l) { l.classList.remove('active'); });
+          this.classList.add('active');
+        });
+      });
+    })();
+  </script>
+
+
+  <!-- ── Command Palette JS ── -->
+  <script>
+    var kzCmdFocusIdx = -1;
+
+    function kzCmdOpen() {
+      var overlay = document.getElementById('kzCmdOverlay');
+      overlay.classList.add('open');
+      setTimeout(function() {
+        var input = document.getElementById('kzCmdInput');
+        if (input) { input.value = ''; input.focus(); }
+        kzCmdFilter('');
+        kzCmdFocusIdx = -1;
+      }, 50);
+      document.body.style.overflow = 'hidden';
+    }
+
+    function kzCmdClose() {
+      document.getElementById('kzCmdOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+      kzCmdFocusIdx = -1;
+    }
+
+    function kzCmdFilter(q) {
+      q = q.toLowerCase().trim();
+      var items = document.querySelectorAll('#kzCmdList .kz-cmd-item');
+      var groups = document.querySelectorAll('#kzCmdList .kz-cmd-group-label');
+      var groupVisible = {};
+      items.forEach(function(item) {
+        var label = (item.getAttribute('data-label') || '').toLowerCase();
+        var title = item.querySelector('.kz-cmd-item-title');
+        var sub   = item.querySelector('.kz-cmd-item-sub');
+        var text  = label + ' ' + (title ? title.textContent : '') + ' ' + (sub ? sub.textContent : '');
+        var show  = !q || text.toLowerCase().includes(q);
+        item.style.display = show ? '' : 'none';
+        if (show) {
+          // find group
+          var prev = item.previousElementSibling;
+          while (prev) {
+            if (prev.classList.contains('kz-cmd-group-label')) {
+              groupVisible[prev.getAttribute('data-group')] = true;
+              break;
+            }
+            prev = prev.previousElementSibling;
+          }
+        }
+      });
+      groups.forEach(function(g) {
+        g.style.display = groupVisible[g.getAttribute('data-group')] ? '' : 'none';
+      });
+      kzCmdFocusIdx = -1;
+      kzCmdSetFocus(-1);
+    }
+
+    function kzCmdVisibleItems() {
+      return Array.from(document.querySelectorAll('#kzCmdList .kz-cmd-item')).filter(function(i) {
+        return i.style.display !== 'none';
+      });
+    }
+
+    function kzCmdSetFocus(idx) {
+      var items = kzCmdVisibleItems();
+      items.forEach(function(i) { i.classList.remove('focused'); });
+      if (idx >= 0 && idx < items.length) {
+        items[idx].classList.add('focused');
+        items[idx].scrollIntoView({ block: 'nearest' });
+      }
+    }
+
+    function kzCmdKey(e) {
+      var items = kzCmdVisibleItems();
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        kzCmdFocusIdx = Math.min(kzCmdFocusIdx + 1, items.length - 1);
+        kzCmdSetFocus(kzCmdFocusIdx);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        kzCmdFocusIdx = Math.max(kzCmdFocusIdx - 1, 0);
+        kzCmdSetFocus(kzCmdFocusIdx);
+      } else if (e.key === 'Enter') {
+        if (kzCmdFocusIdx >= 0 && items[kzCmdFocusIdx]) {
+          items[kzCmdFocusIdx].click();
+        }
+      } else if (e.key === 'Escape') {
+        kzCmdClose();
+      }
+    }
+
+    // Global ⌘K / Ctrl+K shortcut
+    document.addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        var overlay = document.getElementById('kzCmdOverlay');
+        if (overlay.classList.contains('open')) {
+          kzCmdClose();
+        } else {
+          kzCmdOpen();
+        }
+      }
+      if (e.key === 'Escape' && document.getElementById('kzCmdOverlay').classList.contains('open')) {
+        kzCmdClose();
+      }
+    });
+  </script>
+
+  <!-- Météo Kinshasa — Open-Meteo (gratuit, sans clé, fiable) -->
+  <script>
+    (function() {
+      const emojiEl = document.getElementById('weatherEmoji');
+      const textEl  = document.getElementById('weatherText');
+
+      // WMO weather code → emoji
+      function wmoEmoji(code) {
+        if (code === 0) return '☀️';
+        if (code <= 2)  return '🌤️';
+        if (code <= 3)  return '☁️';
+        if (code <= 48) return '🌫️';
+        if (code <= 57) return '🌦️';
+        if (code <= 67) return '🌧️';
+        if (code <= 77) return '🌨️';
+        if (code <= 82) return '🌧️';
+        if (code <= 99) return '⛈️';
+        return '⛅';
+      }
+
+      // Kinshasa : lat=-4.32, lon=15.32
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=-4.32&longitude=15.32&current=temperature_2m,weathercode&timezone=Africa%2FKinshasa')
+        .then(r => r.json())
+        .then(d => {
+          const temp = Math.round(d.current.temperature_2m);
+          const code = d.current.weathercode;
+          if (emojiEl) emojiEl.textContent = wmoEmoji(code);
+          if (textEl)  textEl.textContent  = temp + '°C · KIN';
+        })
+        .catch(() => {
+          if (emojiEl) emojiEl.textContent = '🌤️';
+          if (textEl)  textEl.textContent  = '26°C · KIN';
+        });
+    })();
+  </script>
+
+  <!-- ══ MODAL POSTULER ══ -->
+
+<!-- ══ MODAL EDIT PROJET ══ -->
+  <div x-show="modalEditProjet.show"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       class="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4"
+       style="display:none">
+    <div class="absolute inset-0 bg-black/40" @click="modalEditProjet.show=false"></div>
+    <div x-show="modalEditProjet.show"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 translate-y-4"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden z-10">
+      <!-- Header -->
+      <div class="px-5 pt-5 pb-4" style="background:linear-gradient(135deg,#1e3a5f,#2d5a9e);">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-blue-300 font-bold uppercase tracking-widest mb-0.5">Modifier le projet</p>
+            <h3 class="text-white font-black text-sm truncate" x-text="modalEditProjet.titre_original"></h3>
+          </div>
+          <button @click="modalEditProjet.show=false" class="text-white/50 hover:text-white ml-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Body -->
+      <div class="p-5 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1.5">Titre <span class="text-red-500">*</span></label>
+          <input x-model="modalEditProjet.titre" type="text" maxlength="80"
+                 class="w-full px-3.5 py-2.5 rounded-xl border text-sm font-medium outline-none transition"
+                 style="border-color:#E8ECF4;background:white;"
+                 @focus="$el.style.borderColor='#3B82F6'" @blur="$el.style.borderColor='#E8ECF4'">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1.5">Description</label>
+          <textarea x-model="modalEditProjet.description" rows="3" maxlength="600"
+                    class="w-full px-3.5 py-2.5 rounded-xl border text-sm font-medium outline-none transition resize-none"
+                    style="border-color:#E8ECF4;background:white;"
+                    @focus="$el.style.borderColor='#3B82F6'" @blur="$el.style.borderColor='#E8ECF4'"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1.5">Budget</label>
+          <input x-model="modalEditProjet.budget" type="number" min="0"
+                 class="w-full px-3.5 py-2.5 rounded-xl border text-sm font-medium outline-none transition"
+                 style="border-color:#E8ECF4;background:white;"
+                 @focus="$el.style.borderColor='#3B82F6'" @blur="$el.style.borderColor='#E8ECF4'">
+        </div>
+        <div class="flex gap-3 pt-1">
+          <button @click="modalEditProjet.show=false"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold border"
+                  style="color:#64748B;border-color:#E2E8F0;">Annuler</button>
+          <button @click="sauvegarderEditProjet()"
+                  :disabled="modalEditProjet.loading"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition"
+                  style="background:linear-gradient(135deg,#3B82F6,#2563EB);">
+            <span x-show="!modalEditProjet.loading">💾 Sauvegarder</span>
+            <span x-show="modalEditProjet.loading">...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL CONFIRMER SUPPRESSION PROJET ══ -->
+  <div x-show="modalSupprimerProjet.show"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       class="fixed inset-0 z-50 flex items-center justify-center px-4"
+       style="display:none">
+    <div class="absolute inset-0 bg-black/50" @click="modalSupprimerProjet.show=false"></div>
+    <div x-show="modalSupprimerProjet.show"
+         x-transition:enter="transition ease-out duration-250"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden z-10">
+      <div class="px-5 pt-5 pb-4" style="background:linear-gradient(135deg,#991b1b,#dc2626);">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">🗑️</div>
+          <div>
+            <p class="text-[10px] text-red-200 font-bold uppercase tracking-widest">Confirmer la suppression</p>
+            <h3 class="text-white font-black text-sm leading-tight" x-text="modalSupprimerProjet.titre"></h3>
+          </div>
+        </div>
+      </div>
+      <div class="p-5">
+        <p class="text-sm text-gray-600 leading-relaxed mb-5">Cette action est irréversible. Le projet sera <strong>annulé définitivement</strong>. Les candidatures reçues seront perdues.</p>
+        <div class="flex gap-3">
+          <button @click="modalSupprimerProjet.show=false"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold border"
+                  style="color:#64748B;border-color:#E2E8F0;">Annuler</button>
+          <button @click="supprimerProjet()"
+                  :disabled="modalSupprimerProjet.loading"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition"
+                  style="background:#dc2626;">
+            <span x-show="!modalSupprimerProjet.loading">🗑️ Supprimer</span>
+            <span x-show="modalSupprimerProjet.loading">...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- ══ MODAL ESCROW PAWAPAY ══ -->
+  <div x-show="modalEscrow.show"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       class="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4"
+       style="display:none">
+    <div class="absolute inset-0 bg-black/50" @click="modalEscrow.show=false"></div>
+    <div x-show="modalEscrow.show"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 translate-y-4"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden z-10">
+
+      <!-- Header -->
+      <div class="px-5 pt-5 pb-4" style="background:linear-gradient(135deg,#1a472a,#2d6a4f);">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-green-300 font-bold uppercase tracking-widest">Paiement Mobile Money</p>
+            <h3 class="text-white font-black text-sm">💰 Sécuriser le paiement</h3>
+          </div>
+          <button @click="modalEscrow.show=false" class="text-white/50 hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="p-5 space-y-4">
+
+        <!-- Montant -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1.5">Montant <span class="text-red-500">*</span></label>
+          <div class="flex gap-2">
+            <input x-model="modalEscrow.montant" type="number" min="1" placeholder="Ex: 50"
+                   class="flex-1 px-3.5 py-2.5 rounded-xl border text-sm font-medium outline-none transition"
+                   style="border-color:#E8ECF4;"
+                   @focus="$el.style.borderColor='#00B87C'" @blur="$el.style.borderColor='#E8ECF4'">
+            <select x-model="modalEscrow.devise"
+                    class="px-3 py-2.5 rounded-xl border text-sm font-bold outline-none"
+                    style="border-color:#E8ECF4;color:#0F172A;">
+              <option value="USD">USD $</option>
+              <option value="CDF">CDF</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Opérateur -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-2">Opérateur Mobile Money</label>
+          <div class="grid grid-cols-3 gap-2">
+            <template x-for="op in [{id:'airtel',label:'Airtel',color:'#E30613'},{id:'orange',label:'Orange',color:'#FF6600'},{id:'mpesa',label:'M-Pesa',color:'#00A651'}]" :key="op.id">
+              <button @click="modalEscrow.operateur=op.id"
+                      class="py-2.5 rounded-xl text-[11px] font-black border-2 transition"
+                      :style="modalEscrow.operateur===op.id ? `background:${op.color};color:white;border-color:${op.color}` : 'background:white;border-color:#E8ECF4;color:#374151'"
+                      x-text="op.label">
+              </button>
+            </template>
+          </div>
+        </div>
+
+        <!-- Numéro téléphone -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1.5">Numéro de téléphone <span class="text-red-500">*</span></label>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-2.5 rounded-xl text-sm font-bold bg-gray-100 text-gray-500 flex-shrink-0">+243</span>
+            <input x-model="modalEscrow.telephone" type="tel" placeholder="812345678" maxlength="9"
+                   class="flex-1 px-3.5 py-2.5 rounded-xl border text-sm font-medium outline-none transition"
+                   style="border-color:#E8ECF4;"
+                   @focus="$el.style.borderColor='#00B87C'" @blur="$el.style.borderColor='#E8ECF4'">
+          </div>
+          <p class="text-[10px] text-gray-400 mt-1">Vous recevrez une notification PIN pour approuver.</p>
+        </div>
+
+        <!-- Recap frais -->
+        <template x-if="modalEscrow.montant">
+          <div class="rounded-xl p-3 bg-gray-50 text-[10px] text-gray-500 space-y-0.5">
+            <div class="flex justify-between"><span>Montant</span><strong x-text="modalEscrow.montant + ' ' + modalEscrow.devise"></strong></div>
+            <div class="flex justify-between"><span>Frais Mosala (5%)</span><strong x-text="(parseFloat(modalEscrow.montant||0)*0.05).toFixed(2) + ' ' + modalEscrow.devise"></strong></div>
+            <div class="flex justify-between border-t border-gray-200 pt-1 mt-1"><span class="font-bold text-gray-700">Freelance reçoit</span><strong class="text-[#00B87C]" x-text="(parseFloat(modalEscrow.montant||0)*0.95).toFixed(2) + ' ' + modalEscrow.devise"></strong></div>
+          </div>
+        </template>
+
+        <!-- Boutons -->
+        <div class="flex gap-3">
+          <button @click="modalEscrow.show=false"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold border"
+                  style="color:#64748B;border-color:#E2E8F0;">Annuler</button>
+          <button @click="soumettreEscrow()"
+                  :disabled="modalEscrow.loading || !modalEscrow.montant || !modalEscrow.operateur || !modalEscrow.telephone"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-black text-white transition"
+                  style="background:linear-gradient(135deg,#00B87C,#00D68F);">
+            <span x-show="!modalEscrow.loading">📲 Payer</span>
+            <span x-show="modalEscrow.loading">⏳ Envoi...</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+<!-- ══ MODAL ALERTE (erreurs importantes) ══ -->
+  <div x-show="modalAlerte.show"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       class="fixed inset-0 z-50 flex items-center justify-center px-4"
+       style="display:none">
+    <div class="absolute inset-0 bg-black/50" @click="modalAlerte.show=false"></div>
+    <div x-show="modalAlerte.show"
+         x-transition:enter="transition ease-out duration-250"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden z-10">
+      <!-- Header rouge/amber -->
+      <div class="px-5 pt-5 pb-4" :style="'background: linear-gradient(135deg,' + (modalAlerte.type==='warning' ? '#b45309,#d97706' : '#991b1b,#dc2626') + ')'">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+            <span class="text-xl" x-text="modalAlerte.type==='warning' ? '⚠️' : '🚫'"></span>
+          </div>
+          <div>
+            <p class="text-[10px] text-white/70 font-bold uppercase tracking-widest" x-text="modalAlerte.type==='warning' ? 'Attention' : 'Action bloquée'"></p>
+            <h3 class="text-white font-black text-sm leading-tight" x-text="modalAlerte.titre"></h3>
+          </div>
+          <button @click="modalAlerte.show=false" class="ml-auto text-white/60 hover:text-white transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Body -->
+      <div class="p-5">
+        <p class="text-sm text-[#374151] leading-relaxed" x-text="modalAlerte.message"></p>
+        <div class="mt-5 flex gap-3">
+          <button @click="modalAlerte.show=false"
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition"
+                  :style="'background:' + (modalAlerte.type==='warning' ? '#d97706' : '#dc2626')"
+                  x-text="modalAlerte.btnLabel || 'Compris'"></button>
+          <template x-if="modalAlerte.btnAction">
+            <button @click="modalAlerte.action(); modalAlerte.show=false"
+                    class="flex-1 py-2.5 rounded-xl text-sm font-bold bg-[#0F172A] text-white transition">
+              <span x-text="modalAlerte.btnAction"></span>
+            </button>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div x-show="modalPostuler"
+       x-transition:enter="transition ease-out duration-200"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-150"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       class="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4"
+       style="display:none">
+
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-black/40" @click="modalPostuler=false"></div>
+
+    <!-- Card modal -->
+    <div x-show="modalPostuler"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 translate-y-4"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden z-10">
+
+      <!-- Header modal -->
+      <div class="relative overflow-hidden px-5 pt-5 pb-4"
+           style="background: linear-gradient(135deg, #0a1628, #0f2040);">
+        <div class="absolute -top-4 -right-4 w-20 h-20 rounded-full"
+             style="background: radial-gradient(circle, rgba(0,184,124,0.2) 0%, transparent 70%)"></div>
+        <div class="flex items-start justify-between relative z-10">
+          <div>
+            <p class="text-[10px] text-[#34D399] font-bold uppercase tracking-widest mb-1">Postuler</p>
+            <h3 class="text-white font-black text-base leading-tight"
+                x-text="postuleProjet?.titre || ''"></h3>
+            <p class="text-white/40 text-xs mt-0.5"
+               x-text="postuleProjet ? formatBudget(postuleProjet.budget, postuleProjet.devise) + ' · ' + (postuleProjet.categorie || '') : ''"></p>
+          </div>
+          <button @click="modalPostuler=false" class="text-white/40 hover:text-white transition ml-3 flex-shrink-0 mt-0.5">
+            <i data-lucide="x" style="width:18px;height:18px;stroke-width:2.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Body modal -->
+      <div class="p-5 space-y-4">
+
+        <!-- Message -->
+        <div>
+          <label class="block text-xs font-bold text-[#0F172A] mb-1.5">
+            Message au client <span class="text-red-500">*</span>
+          </label>
+          <textarea x-model="postuleForm.message"
+                    rows="4"
+                    placeholder="Présentez-vous et expliquez pourquoi vous êtes le meilleur pour ce projet..."
+                    class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-[#0F172A] placeholder-gray-400
+                           focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/10 transition resize-none"
+                    style="line-height:1.5"></textarea>
+          <p class="text-[10px] text-gray-400 mt-1"
+             x-text="postuleForm.message.length + '/500 caractères'"></p>
+        </div>
+
+        <!-- Budget + Délai côte à côte -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-[#0F172A] mb-1.5">Budget proposé ($)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">$</span>
+              <input x-model="postuleForm.budget"
+                     type="number" min="0"
+                     placeholder="0"
+                     class="w-full border border-gray-200 rounded-xl pl-7 pr-3 py-2.5 text-sm text-[#0F172A]
+                            focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/10 transition"/>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#0F172A] mb-1.5">Délai (jours)</label>
+            <div class="relative">
+              <input x-model="postuleForm.delai"
+                     type="number" min="1"
+                     placeholder="7"
+                     class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-[#0F172A]
+                            focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/10 transition"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info sécurité -->
+        <div class="flex items-center gap-2 bg-[#F0FBF7] rounded-xl px-3 py-2.5 border border-[#00B87C]/15">
+          <i data-lucide="shield-check" style="width:14px;height:14px;stroke-width:2;color:#00B87C;flex-shrink:0"></i>
+          <p class="text-[10px] text-[#475569]">Paiement sécurisé par Mosala Escrow — vous êtes payé à la livraison</p>
+        </div>
+
+        <!-- Boutons -->
+        <div class="flex gap-2 pt-1">
+          <button @click="modalPostuler=false"
+                  class="flex-1 border border-gray-200 text-[#475569] text-sm font-bold py-2.5 rounded-xl hover:bg-gray-50 transition">
+            Annuler
+          </button>
+          <button @click="envoyerCandidature()"
+                  :disabled="postuleLoading || !postuleForm.message.trim()"
+                  :class="(postuleLoading || !postuleForm.message.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#009E6A] hover:shadow-lg hover:shadow-[#00B87C]/25 hover:-translate-y-0.5'"
+                  class="flex-2 flex-1 bg-[#00B87C] text-white text-sm font-black py-2.5 px-5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+            <template x-if="postuleLoading">
+              <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            </template>
+            <template x-if="!postuleLoading">
+              <i data-lucide="send" style="width:14px;height:14px;stroke-width:2.5"></i>
+            </template>
+            <span x-text="postuleLoading ? 'Envoi...' : 'Envoyer ma candidature'"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ══ /MODAL POSTULER ══ -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) window.lucide.createIcons();
+    });
+  </script>
+
+
+
+
+
+  <!-- ── Mobile Drawer ── -->
+  <div id="kzOverlay" class="kz-drawer-overlay" onclick="this.classList.remove('open');document.getElementById('kzDrawer').classList.remove('open');"></div>
+  <div id="kzDrawer" class="kz-drawer">
+    <div class="kz-drawer-header">
+      <div class="flex items-center gap-2">
+        <svg style="width:26px;height:26px;" viewBox="0 0 32 32" fill="none">
+          <path d="M16 4L4 10l12 6 12-6L16 4z" fill="#059669"/>
+          <path d="M4 22l12 6 12-6" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 16l12 6 12-6" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span style="font-weight:900;font-size:1.1rem;color:#0F172A;">Mosala</span>
+      </div>
+      <button class="kz-drawer-close" onclick="document.getElementById('kzDrawer').classList.remove('open');document.getElementById('kzOverlay').classList.remove('open');" aria-label="Fermer">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:18px;height:18px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <a href="#" class="kz-drawer-link" onclick="window.kzNav('marketplace')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg> Trouver un freelance</a>
+    <a href="#" class="kz-drawer-link" onclick="window.kzNav('jobs')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"/></svg> Offres d'emploi <span style="background:#00B87C;color:#fff;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:4px;">NEW</span></a>
+    <a href="#" class="kz-drawer-link" onclick="window.kzNav('register')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#6366f1" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"/></svg> Devenir freelance</a>
+    <a href="#" class="kz-drawer-link" onclick="window.kzNav('tarifs')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f59e0b" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/></svg> Tarifs</a>
+
+    <div class="kz-drawer-divider"></div>
+    <div class="kz-drawer-section-label">Ressources</div>
+    <a href="#" class="kz-drawer-link" onclick="window.kzNav('marketplace')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#00B87C" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg> Blog</a>
+    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#6366f1" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/></svg> Freelances</a>
+    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#f59e0b" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/></svg> Guides</a>
+    <a href="#" class="kz-drawer-link"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#22c55e" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V20.25a.75.75 0 0 0 1.28.53l2.83-2.83A48.648 48.648 0 0 0 11.25 18c2.115 0 4.198-.137 6.24-.402 1.608-.209 2.76-1.613 2.76-3.235V8.511Z"/></svg> Support</a>
+
+    <div class="kz-drawer-footer">
+      <button class="kz-login" style="border:1px solid #e5e7eb;border-radius:10px;width:100%;padding:11px;" onclick="window.kzNav('login')">Se connecter</button>
+      <button class="kz-cta" style="width:100%;padding:12px;text-align:center;" onclick="window.kzNav('register')">S'inscrire gratuitement</button>
+    </div>
+  </div>
+
+
+
+  <script>
+    window.kzNav = function(page) {
+      document.getElementById('kzDrawer').classList.remove('open');
+      document.getElementById('kzOverlay').classList.remove('open');
+      var appEl = document.querySelector('[x-data]');
+      if (appEl && appEl._x_dataStack && appEl._x_dataStack[0]) {
+        appEl._x_dataStack[0].page = page;
+        window.scrollTo(0, 0);
+      }
+    };
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var overlay = document.getElementById('kzOverlay');
+      var drawer  = document.getElementById('kzDrawer');
+      if (overlay && overlay.parentElement !== document.body) {
+        document.body.appendChild(overlay);
+      }
+      if (drawer && drawer.parentElement !== document.body) {
+        document.body.appendChild(drawer);
+      }
+    });
+  </script>
+<!-- ═══════════════════════════════════════════
+     PAGE : JOBS — Agrégateur emplois RDC
+════════════════════════════════════════════ -->
+<div x-show="page==='jobs'" x-init="if(page==='jobs') fetchJobs()" @page-changed.window="if(page==='jobs' && jobsData.length===0) fetchJobs()" class="min-h-screen pb-24" style="background:#F5F4F2;">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#052e16 0%,#065f46 60%,#00B87C 100%);padding:48px 20px 32px;">
+    <div style="max-width:680px;margin:0 auto;text-align:center;">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 16px;margin-bottom:16px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite;display:inline-block;"></span>
+        <span style="color:rgba(255,255,255,.9);font-size:0.75rem;font-weight:600;">LIVE · Mis à jour toutes les 6h</span>
+      </div>
+      <h1 style="color:#fff;font-size:1.9rem;font-weight:900;margin-bottom:8px;line-height:1.2;">Emplois en <span style="color:#4ade80;">RDC</span></h1>
+      <p style="color:rgba(255,255,255,.7);font-size:0.95rem;margin-bottom:20px;">CDI, CDD, Freelance, Stages — toutes les offres au Congo</p>
+
+      <!-- Bouton Poster une offre -->
+      <button onclick="kzGoPostOffre()"
+        style="display:inline-flex;align-items:center;gap:8px;background:#00B87C;color:#fff;font-weight:700;font-size:0.85rem;padding:11px 22px;border-radius:12px;border:none;margin-bottom:24px;box-shadow:0 4px 16px rgba(0,184,124,.35);transition:all .2s;cursor:pointer;"
+        onmouseover="this.style.background='#009E6A';this.style.transform='translateY(-1px)'"
+        onmouseout="this.style.background='#00B87C';this.style.transform=''">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        Poster une offre
+      </button>
+
+      <!-- Barre de recherche -->
+      <div style="position:relative;max-width:480px;margin:0 auto;">
+        <svg style="position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#9ca3af;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+        </svg>
+        <input x-model="jobSearch" @input="jobsDebounceSearch()" type="text" placeholder="Développeur, Marketing, ONG..." 
+          style="width:100%;padding:14px 16px 14px 46px;border-radius:14px;border:none;font-size:0.95rem;background:rgba(255,255,255,.95);box-shadow:0 4px 24px rgba(0,0,0,.15);outline:none;box-sizing:border-box;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div style="max-width:680px;margin:0 auto;padding:16px 16px 0;">
+    <!-- Type d'offre -->
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;">
+      <template x-for="f in [{l:'Tous',v:'all'},{l:'💼 CDI',v:'CDI'},{l:'📋 CDD',v:'CDD'},{l:'🚀 Freelance',v:'freelance'},{l:'🎓 Stage',v:'stage'},{l:'🤝 Consulting',v:'consulting'}]">
+        <button @click="jobTypeFilter=f.v; fetchJobs()"
+          :style="jobTypeFilter===f.v ? 'background:#00B87C;color:#fff;border-color:#00B87C;' : 'background:#fff;color:#374151;border-color:#e5e7eb;'"
+          style="border:1.5px solid;border-radius:999px;padding:7px 16px;font-size:0.8rem;font-weight:600;white-space:nowrap;cursor:pointer;transition:all .2s;flex-shrink:0;"
+          x-text="f.l"></button>
+      </template>
+    </div>
+
+    <!-- Ville + Catégorie -->
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <select x-model="jobCityFilter" @change="fetchJobs()" style="flex:1;padding:10px 12px;border-radius:12px;border:1.5px solid #e5e7eb;background:#fff;font-size:0.85rem;color:#374151;outline:none;">
+        <option value="all">📍 Toutes les villes</option>
+        <option value="Kinshasa">Kinshasa</option>
+        <option value="Lubumbashi">Lubumbashi</option>
+        <option value="Goma">Goma</option>
+        <option value="Bukavu">Bukavu</option>
+        <option value="Remote">Remote</option>
+      </select>
+      <select x-model="jobCatFilter" @change="fetchJobs()" style="flex:1;padding:10px 12px;border-radius:12px;border:1.5px solid #e5e7eb;background:#fff;font-size:0.85rem;color:#374151;outline:none;">
+        <option value="all">🏷️ Catégorie</option>
+        <option value="Tech">Tech</option>
+        <option value="Finance">Finance</option>
+        <option value="ONG">ONG</option>
+        <option value="Marketing">Marketing</option>
+        <option value="Mines">Mines</option>
+        <option value="Santé">Santé</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Compteur résultats -->
+  <div style="max-width:680px;margin:12px auto 0;padding:0 16px;">
+    <p style="font-size:0.82rem;color:#6b7280;">
+      <span style="font-weight:700;color:#111827;" x-text="filteredJobs.length"></span> offres trouvées
+      <span style="margin-left:8px;font-size:0.75rem;color:#9ca3af;">· Sources : Mosala, LinkedIn, MediaCongo, JobRDC</span>
+    </p>
+  </div>
+
+  <!-- Liste des jobs -->
+  <!-- Loading skeleton -->
+  <div x-show="jobsLoading" style="max-width:680px;margin:12px auto 0;padding:0 16px;display:flex;flex-direction:column;gap:12px;">
+    <template x-for="i in [1,2,3]" :key="i">
+      <div style="background:#fff;border-radius:18px;padding:18px;border:1.5px solid #f1f5f9;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:46px;height:46px;border-radius:12px;background:#f1f5f9;animation:pulse 1.5s infinite;flex-shrink:0;"></div>
+          <div style="flex:1;">
+            <div style="height:14px;background:#f1f5f9;border-radius:6px;width:60%;margin-bottom:8px;animation:pulse 1.5s infinite;"></div>
+            <div style="height:11px;background:#f1f5f9;border-radius:6px;width:40%;animation:pulse 1.5s infinite;"></div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Erreur -->
+  <div x-show="jobsError && !jobsLoading" style="max-width:680px;margin:12px auto 0;padding:0 16px;text-align:center;padding:32px 20px;">
+    <div style="font-size:2rem;margin-bottom:8px;">⚠️</div>
+    <p style="color:#ef4444;font-weight:600;font-size:0.9rem;">Erreur de chargement</p>
+    <button @click="fetchJobs()" style="margin-top:12px;background:#00B87C;color:#fff;border:none;border-radius:10px;padding:8px 20px;font-weight:600;cursor:pointer;">Réessayer</button>
+  </div>
+
+  <div x-show="!jobsLoading && !jobsError" style="max-width:680px;margin:12px auto 0;padding:0 16px;display:flex;flex-direction:column;gap:12px;">
+
+    <template x-for="job in filteredJobs" :key="job.id">
+      <div style="background:#fff;border-radius:18px;padding:18px;border:1.5px solid #f1f5f9;box-shadow:0 2px 12px rgba(0,0,0,.04);cursor:pointer;transition:all .2s;"
+           @mouseenter="$el.style.boxShadow='0 8px 32px rgba(0,184,124,.12)';$el.style.borderColor='#00B87C'"
+           @mouseleave="$el.style.boxShadow='0 2px 12px rgba(0,0,0,.04)';$el.style.borderColor='#f1f5f9'">
+
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+          <!-- Logo entreprise -->
+          <div :style="'width:46px;height:46px;border-radius:12px;background:' + job.color + '15;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.3rem;border:1.5px solid ' + job.color + '25;'">
+            <span x-text="job.emoji"></span>
+          </div>
+
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+              <!-- Badge type -->
+              <span :style="'font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:999px;background:' + (job.type==='freelance' ? '#f0fdf4' : job.type==='CDI' ? '#eff6ff' : job.type==='stage' ? '#fefce8' : '#f5f3ff') + ';color:' + (job.type==='freelance' ? '#16a34a' : job.type==='CDI' ? '#2563eb' : job.type==='stage' ? '#ca8a04' : '#7c3aed') + ';'"
+                x-text="job.type.toUpperCase()"></span>
+              <!-- Badge source -->
+              <span x-show="job.origin==='scraped'"
+                :style="'font-size:0.7rem;font-weight:600;padding:3px 10px;border-radius:999px;background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;'"
+                x-text="'via ' + job.source"></span>
+              <span x-show="job.origin==='native'"
+                style="font-size:0.7rem;font-weight:600;padding:3px 10px;border-radius:999px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;">
+                ✓ Mosala
+              </span>
+            </div>
+
+            <h3 style="font-size:0.95rem;font-weight:800;color:#0f172a;margin:0 0 3px;line-height:1.3;" x-text="job.title"></h3>
+            <p style="font-size:0.82rem;color:#64748b;margin:0;" x-text="job.company"></p>
+          </div>
+
+          <!-- Flèche -->
+          <svg style="width:18px;height:18px;color:#cbd5e1;flex-shrink:0;margin-top:4px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/>
+          </svg>
+        </div>
+
+        <!-- Infos bas de carte -->
+        <div style="display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;">
+          <span style="display:flex;align-items:center;gap:4px;font-size:0.78rem;color:#64748b;">
+            <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0z"/></svg>
+            <span x-text="job.location"></span>
+          </span>
+          <span x-show="job.salary" style="display:flex;align-items:center;gap:4px;font-size:0.78rem;color:#16a34a;font-weight:600;">
+            <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33"/></svg>
+            <span x-text="job.salary"></span>
+          </span>
+          <span style="display:flex;align-items:center;gap:4px;font-size:0.78rem;color:#94a3b8;">
+            <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+            <span x-text="job.posted"></span>
+          </span>
+          <span x-show="job.category" :style="'font-size:0.72rem;padding:2px 8px;border-radius:6px;background:#f1f5f9;color:#64748b;font-weight:500;'" x-text="job.category"></span>
+        </div>
+        <!-- Bouton Postuler -->
+        <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+          <button @click.stop="kzPostuler(job)" style="background:#0F172A;color:#fff;border:none;border-radius:10px;padding:9px 22px;font-weight:700;font-size:0.82rem;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0F172A'">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width:14px;height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0-6.75-6.75M19.5 12l-6.75 6.75"/></svg>
+            Postuler
+          </button>
+        </div>
+      </div>
+    </template>
+
+    <!-- Empty state -->
+    <div x-show="filteredJobs.length===0" style="text-align:center;padding:48px 20px;">
+      <div style="font-size:2.5rem;margin-bottom:12px;">🔍</div>
+      <p style="color:#6b7280;font-weight:600;">Aucune offre trouvée</p>
+      <p style="color:#9ca3af;font-size:0.85rem;">Modifie tes filtres</p>
+    </div>
+
+  </div>
+
+  <!-- CTA poster une offre -->
+  <div style="max-width:680px;margin:24px auto;padding:0 16px 24px;">
+    <div x-show="user && (user.account_type === 'client' || user.account_type === 'entreprise')" style="background:linear-gradient(135deg,#052e16,#065f46);border-radius:18px;padding:24px;text-align:center;">
+      <p style="color:#fff;font-weight:800;font-size:1rem;margin-bottom:6px;">Tu recrutes ?</p>
+      <p style="color:rgba(255,255,255,.7);font-size:0.85rem;margin-bottom:16px;">Poste ton offre gratuitement sur Mosala</p>
+      <button onclick="kzGoPostOffre()" style="background:#00B87C;color:#fff;border:none;border-radius:12px;padding:12px 28px;font-weight:700;font-size:0.9rem;cursor:pointer;">
+        Poster une offre →
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function kzPostuler(job) {
+  var t = localStorage.getItem('kv_token') || sessionStorage.getItem('kv_token');
+  if (!t) {
+    localStorage.setItem('kz_return', '/');
+    localStorage.setItem('kz_goto', 'jobs');
+    window.kzNav ? window.kzNav('login') : (document.querySelector('[x-data]').__x.$data.page = 'login', window.scrollTo(0,0));
+    return;
+  }
+  if (job.apply_url) {
+    window.open(job.apply_url, '_blank');
+  } else {
+    alert('Contacte le recruteur directement via Mosala Messages.');
+  }
+}
+function kzGoPostOffre(){
+  var t=localStorage.getItem("kv_token")||sessionStorage.getItem("kv_token");
+  if(t){window.location.href="/poster-offre.html";}
+  else{localStorage.setItem("kz_return","/poster-offre.html");window.kzNav?window.kzNav("login"):(document.querySelector("[x-data]").__x.$data.page="login",window.scrollTo(0,0));}
+}
+</script>

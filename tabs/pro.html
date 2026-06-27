@@ -1,0 +1,154 @@
+<!-- ── tab: pro ── -->
+<div x-show="activeTab==='pro'" class="min-h-screen pb-24" style="background:linear-gradient(135deg,#0F172A 0%,#1e293b 100%);">
+
+  <!-- Header -->
+  <div class="px-4 pt-8 pb-6 text-center">
+    <button @click="navigateTo('dashboard')" class="absolute left-4 top-6 w-9 h-9 flex items-center justify-center rounded-xl" style="background:rgba(255,255,255,0.1);">
+      <svg fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3" style="background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 8px 24px rgba(245,158,11,0.4);">
+      <span class="text-3xl">🏆</span>
+    </div>
+    <h1 class="text-2xl font-black text-white mb-1">Passez Pro</h1>
+    <p class="text-sm" style="color:#94a3b8;">Débloquez tout le potentiel de Mosala.io</p>
+  </div>
+
+  <!-- Déjà Pro -->
+  <div x-show="user.is_pro" class="mx-4 mb-6 p-4 rounded-2xl" style="background:linear-gradient(135deg,#065f46,#047857);">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">🏆</span>
+      <div>
+        <p class="font-black text-white text-sm">Vous êtes Pro !</p>
+        <p class="text-xs" style="color:#6ee7b7;" x-text="user.pro_until ? 'Expire le ' + new Date(user.pro_until).toLocaleDateString('fr-FR') : ''"></p>
+        <p class="text-xs capitalize" style="color:#a7f3d0;" x-text="'Plan : ' + (user.pro_plan || '—')"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparaison -->
+  <div class="mx-4 mb-6 rounded-2xl overflow-hidden" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">
+    <div class="grid grid-cols-3 text-center py-3 px-2" style="border-bottom:1px solid rgba(255,255,255,0.1);">
+      <div class="text-xs font-bold" style="color:#64748b;">Feature</div>
+      <div class="text-xs font-bold" style="color:#64748b;">Gratuit</div>
+      <div class="text-xs font-black" style="color:#f59e0b;">🏆 Pro</div>
+    </div>
+    <template x-for="row in proFeatures" :key="row.label">
+      <div class="grid grid-cols-3 text-center py-3 px-2" style="border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div class="text-[11px] text-left pl-2" style="color:#cbd5e1;" x-text="row.label"></div>
+        <div class="text-[11px]" style="color:#94a3b8;" x-text="row.gratuit"></div>
+        <div class="text-[11px] font-bold" style="color:#f59e0b;" x-text="row.pro"></div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Tarifs -->
+  <div x-show="!user.is_pro" class="mx-4 mb-6">
+    <p class="text-xs font-bold text-center mb-3" style="color:#94a3b8;">Choisissez votre plan</p>
+    <div class="grid grid-cols-2 gap-3">
+      <!-- Mensuel -->
+      <div class="p-4 rounded-2xl text-center cursor-pointer transition-all"
+           :style="planChoisi==='mensuel' ? 'background:rgba(245,158,11,0.2);border:2px solid #f59e0b;' : 'background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.1);'"
+           @click="planChoisi='mensuel'">
+        <p class="text-xs font-bold mb-1" style="color:#94a3b8;">MENSUEL</p>
+        <p class="text-2xl font-black text-white">5$</p>
+        <p class="text-[10px]" style="color:#64748b;">/mois</p>
+        <div x-show="planChoisi==='mensuel'" class="mt-2">
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#f59e0b;color:#0F172A;">✓ Sélectionné</span>
+        </div>
+      </div>
+      <!-- Annuel -->
+      <div class="p-4 rounded-2xl text-center cursor-pointer transition-all relative"
+           :style="planChoisi==='annuel' ? 'background:rgba(245,158,11,0.2);border:2px solid #f59e0b;' : 'background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.1);'"
+           @click="planChoisi='annuel'">
+        <div class="absolute -top-2 left-1/2 -translate-x-1/2">
+          <span class="text-[9px] font-black px-2 py-0.5 rounded-full" style="background:#f59e0b;color:#0F172A;">⭐ -17%</span>
+        </div>
+        <p class="text-xs font-bold mb-1" style="color:#94a3b8;">ANNUEL</p>
+        <p class="text-2xl font-black text-white">50$</p>
+        <p class="text-[10px]" style="color:#64748b;">/an · 4.17$/mois</p>
+        <div x-show="planChoisi==='annuel'" class="mt-2">
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#f59e0b;color:#0F172A;">✓ Sélectionné</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire paiement PawaPay -->
+  <div x-show="!user.is_pro" class="mx-4 mb-6 p-4 rounded-2xl" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);">
+    <p class="text-xs font-black text-white mb-3">💳 Payer par Mobile Money</p>
+
+    <!-- Devise -->
+    <div class="flex gap-2 mb-3">
+      <button @click="proDevise='USD'"
+              :class="proDevise==='USD' ? 'font-black' : 'opacity-50'"
+              class="flex-1 py-2 rounded-xl text-xs text-white transition"
+              style="background:rgba(255,255,255,0.1);">💵 USD</button>
+      <button @click="proDevise='CDF'"
+              :class="proDevise==='CDF' ? 'font-black' : 'opacity-50'"
+              class="flex-1 py-2 rounded-xl text-xs text-white transition"
+              style="background:rgba(255,255,255,0.1);">🏦 CDF</button>
+    </div>
+
+    <!-- Montant affiché -->
+    <div class="text-center mb-3 py-2 rounded-xl" style="background:rgba(245,158,11,0.1);">
+      <p class="text-lg font-black" style="color:#f59e0b;"
+         x-text="proDevise==='USD' ? (planChoisi==='annuel' ? '50 USD' : '5 USD') : (planChoisi==='annuel' ? '140.000 CDF' : '14.000 CDF')"></p>
+      <p class="text-[10px]" style="color:#64748b;" x-text="'Plan ' + planChoisi"></p>
+    </div>
+
+    <!-- Téléphone -->
+    <div class="mb-3">
+      <label class="text-[11px] font-bold mb-1 block" style="color:#94a3b8;">Numéro Mobile Money</label>
+      <input x-model="proTelephone" type="tel" placeholder="+243 8X XXX XXXX"
+             class="w-full px-3 py-2.5 rounded-xl text-sm text-white focus:outline-none"
+             style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);" />
+      <p class="text-[10px] mt-1" style="color:#64748b;">Airtel · Orange · M-Pesa (Vodacom)</p>
+    </div>
+
+    <!-- Erreur -->
+    <p x-show="proErreur" x-text="proErreur" class="text-xs mb-2 p-2 rounded-lg" style="color:#fca5a5;background:rgba(220,38,38,0.1);"></p>
+
+    <!-- Succès -->
+    <div x-show="proDepositId" class="mb-3 p-3 rounded-xl" style="background:rgba(0,184,124,0.1);border:1px solid rgba(0,184,124,0.3);">
+      <p class="text-xs font-black" style="color:#00B87C;">✅ Demande envoyée !</p>
+      <p class="text-[11px] mt-1" style="color:#94a3b8;">Confirmez le paiement sur votre téléphone.</p>
+      <p class="text-[11px] mt-1" style="color:#94a3b8;">Votre compte Pro sera activé automatiquement.</p>
+      <button @click="verifierPaiementPro()" class="mt-2 text-[11px] font-bold px-3 py-1 rounded-lg" style="background:#00B87C;color:white;">🔄 Vérifier statut</button>
+    </div>
+  </div>
+
+  <!-- Témoignage -->
+  <div class="mx-4 mb-6 p-4 rounded-2xl" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);">
+    <p class="text-xs italic mb-2" style="color:#cbd5e1;">"Depuis que je suis Pro, mes projets apparaissent en premier et j'ai décroché 3 missions en 1 semaine !"</p>
+    <p class="text-[10px] font-bold" style="color:#f59e0b;">— Jean-Pierre K., Développeur · Kinshasa</p>
+  </div>
+
+  <!-- FAQ -->
+  <div class="mx-4 mb-6">
+    <p class="text-xs font-black text-white mb-3">❓ Questions fréquentes</p>
+    <div class="space-y-2">
+      <template x-for="faq in proFaq" :key="faq.q">
+        <div class="p-3 rounded-xl cursor-pointer" style="background:rgba(255,255,255,0.05);" @click="faq.open = !faq.open">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-bold text-white" x-text="faq.q"></p>
+            <span class="text-xs" style="color:#64748b;" x-text="faq.open ? '▲' : '▼'"></span>
+          </div>
+          <p x-show="faq.open" class="text-xs mt-2" style="color:#94a3b8;" x-text="faq.r"></p>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- CTA Payer -->
+  <div x-show="!user.is_pro && !proDepositId" class="mx-4 mb-8">
+    <button @click="payerPro()" :disabled="proPaiementLoading"
+            class="w-full py-4 rounded-2xl font-black text-[15px] flex items-center justify-center gap-2 transition-all"
+            style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#0F172A;box-shadow:0 8px 24px rgba(245,158,11,0.4);">
+      <span x-show="!proPaiementLoading">🏆 Payer et devenir Pro</span>
+      <span x-show="proPaiementLoading">⏳ Traitement...</span>
+    </button>
+    <p class="text-[10px] text-center mt-2" style="color:#475569;">Activation automatique après confirmation Mobile Money</p>
+  </div>
+
+</div>
+<!-- ── /pro ── -->
