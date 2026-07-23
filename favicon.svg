@@ -1,6 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" rx="6" fill="#16a34a"/>
-  <text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle"
-        font-family="Arial, sans-serif" font-weight="bold" font-size="18"
-        fill="white">K</text>
+  <rect width="32" height="32" rx="7" fill="#4CAF7D"/>
+  <!-- Couche du bas -->
+  <path d="M6 20.5 L16 25 L26 20.5 L16 16 Z" fill="white" opacity="0.6"/>
+  <!-- Couche du milieu -->
+  <path d="M6 16.5 L16 21 L26 16.5 L16 12 Z" fill="white" opacity="0.8"/>
+  <!-- Couche du haut -->
+  <path d="M6 12.5 L16 17 L26 12.5 L16 8 Z" fill="white"/>
 </svg>

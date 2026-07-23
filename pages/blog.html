@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blog — Mosala | Freelance & Emploi RDC</title>
+  <meta name="description" content="Conseils freelance, guides emploi et actualités tech pour la RDC. Le blog de Mosala, la plateforme freelance congolaise."/>
+  <meta name="keywords" content="freelance RDC, emploi Kinshasa, blog tech Congo, conseils freelance, travail en ligne RDC"/>
+  <link rel="icon" href="/favicon.svg"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #F8FAFC; }
+    .blog-card { transition: transform .2s; }
+    .blog-card:hover { transform: translateY(-4px); }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav style="background:#fff;border-bottom:1px solid #e2e8f0;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;">
+    <a href="/" style="font-size:1.4rem;font-weight:900;color:#00B87C;text-decoration:none;">Mosala 🦺</a>
+    <div style="display:flex;gap:16px;align-items:center;">
+      <a href="/pages/offres-emploi.html" style="color:#64748b;text-decoration:none;font-size:.9rem;">Offres d'emploi</a>
+      <a href="/" style="background:#00B87C;color:#fff;padding:8px 20px;border-radius:10px;text-decoration:none;font-size:.9rem;font-weight:600;">Rejoindre</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section style="background:linear-gradient(135deg,#0F172A,#1e293b);padding:64px 24px;text-align:center;">
+    <span style="background:rgba(0,184,124,.15);color:#00B87C;font-size:.8rem;font-weight:700;padding:6px 16px;border-radius:99px;letter-spacing:.05em;">📝 BLOG MOSALA</span>
+    <h1 style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;color:#fff;margin:16px 0 12px;">Ressources & Conseils</h1>
+    <p style="color:rgba(255,255,255,.7);font-size:1rem;max-width:500px;margin:0 auto;">Guides freelance, conseils emploi et actualités tech pour la RDC 🇨🇩</p>
+  </section>
+
+  <!-- Filtres -->
+  <section style="padding:32px 24px 0;max-width:1100px;margin:0 auto;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button onclick="filterCat(this,'')" class="cat-btn" style="padding:8px 18px;border-radius:99px;border:2px solid #00B87C;background:#00B87C;color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;">Tous</button>
+      <button onclick="filterCat(this,'freelance')" class="cat-btn" style="padding:8px 18px;border-radius:99px;border:2px solid #e2e8f0;background:#fff;color:#64748b;font-weight:600;font-size:.85rem;cursor:pointer;">Freelance</button>
+      <button onclick="filterCat(this,'emploi')" class="cat-btn" style="padding:8px 18px;border-radius:99px;border:2px solid #e2e8f0;background:#fff;color:#64748b;font-weight:600;font-size:.85rem;cursor:pointer;">Emploi</button>
+      <button onclick="filterCat(this,'tech')" class="cat-btn" style="padding:8px 18px;border-radius:99px;border:2px solid #e2e8f0;background:#fff;color:#64748b;font-weight:600;font-size:.85rem;cursor:pointer;">Tech & Digital</button>
+      <button onclick="filterCat(this,'conseils')" class="cat-btn" style="padding:8px 18px;border-radius:99px;border:2px solid #e2e8f0;background:#fff;color:#64748b;font-weight:600;font-size:.85rem;cursor:pointer;">Conseils</button>
+    </div>
+  </section>
+
+  <!-- Articles -->
+  <section style="padding:32px 24px;max-width:1100px;margin:0 auto;">
+    <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;"></div>
+    <div id="loading" style="text-align:center;padding:48px;color:#64748b;">⏳ Chargement des articles...</div>
+    <div id="empty" style="display:none;text-align:center;padding:48px;">
+      <div style="font-size:3rem;margin-bottom:12px;">📝</div>
+      <p style="color:#64748b;">Aucun article pour le moment. Revenez bientôt !</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="background:#0F172A;padding:32px 24px;text-align:center;margin-top:48px;">
+    <a href="/" style="font-size:1.2rem;font-weight:900;color:#00B87C;text-decoration:none;">Mosala 🦺</a>
+    <p style="color:rgba(255,255,255,.5);font-size:.85rem;margin-top:8px;">🇨🇩 Made in Congo — La plateforme freelance & emploi de la RDC</p>
+  </footer>
+
+  <script>
+    var FALLBACK = 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&q=80';
+
+    function makeCard(a) {
+      var date = a.date_publication
+        ? new Date(a.date_publication).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
+        : '';
+      var img = a.image_url || FALLBACK;
+      var cat = a.categorie
+        ? '<span style="background:#f1f5f9;color:#00B87C;font-size:.75rem;font-weight:700;padding:4px 12px;border-radius:99px;">' + a.categorie.toUpperCase() + '</span>'
+        : '';
+      var vues = a.vues || 0;
+
+      var el = document.createElement('a');
+      el.href = '/pages/blog-article.html?slug=' + encodeURIComponent(a.slug);
+      el.style.textDecoration = 'none';
+
+      var div = document.createElement('div');
+      div.className = 'blog-card';
+      div.style.cssText = 'background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.06);border:1px solid #e2e8f0;height:100%;';
+
+      var imgEl = document.createElement('img');
+      imgEl.src = img;
+      imgEl.alt = a.titre;
+      imgEl.style.cssText = 'width:100%;height:200px;object-fit:cover;';
+      imgEl.onerror = function() { this.src = FALLBACK; };
+
+      var body = document.createElement('div');
+      body.style.cssText = 'padding:20px;';
+      body.innerHTML = cat
+        + '<h2 style="font-size:1.1rem;font-weight:800;color:#0F172A;margin:12px 0 8px;line-height:1.4;">' + a.titre + '</h2>'
+        + '<p style="color:#64748b;font-size:.88rem;line-height:1.6;margin-bottom:16px;">' + (a.resume || '') + '</p>'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:#94a3b8;">'
+        + '<span>✍️ ' + (a.auteur || 'Equipe Mosala') + '</span>'
+        + '<span>' + date + '</span>'
+        + '</div>'
+        + '<div style="margin-top:8px;font-size:.8rem;color:#94a3b8;">👁️ ' + vues + ' vue' + (vues > 1 ? 's' : '') + '</div>';
+
+      div.appendChild(imgEl);
+      div.appendChild(body);
+      el.appendChild(div);
+      return el;
+    }
+
+    async function loadArticles(categorie) {
+      var grid = document.getElementById('grid');
+      var loading = document.getElementById('loading');
+      var empty = document.getElementById('empty');
+      grid.innerHTML = '';
+      loading.style.display = 'block';
+      empty.style.display = 'none';
+
+      try {
+        var url = '/public/blog?limit=20';
+        if (categorie) url += '&categorie=' + encodeURIComponent(categorie);
+        var r = await fetch(url);
+        var data = await r.json();
+        loading.style.display = 'none';
+
+        if (!data.articles || data.articles.length === 0) {
+          empty.style.display = 'block';
+          return;
+        }
+
+        data.articles.forEach(function(a) {
+          grid.appendChild(makeCard(a));
+        });
+      } catch(e) {
+        loading.style.display = 'none';
+        empty.style.display = 'block';
+        empty.innerHTML = '<div style="font-size:3rem;margin-bottom:12px;">⚠️</div><p style="color:#e53e3e;">Erreur de chargement. Rechargez la page.</p>';
+        console.error('Erreur blog:', e);
+      }
+    }
+
+    function filterCat(btn, cat) {
+      document.querySelectorAll('.cat-btn').forEach(function(b) {
+        b.style.background = '#fff';
+        b.style.color = '#64748b';
+        b.style.borderColor = '#e2e8f0';
+      });
+      btn.style.background = '#00B87C';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#00B87C';
+      loadArticles(cat);
+    }
+
+    loadArticles('');
+  </script>
+</body>
+</html>

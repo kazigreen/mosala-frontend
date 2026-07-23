@@ -55,6 +55,7 @@
       <div @click="go('pro')" :class="tab==='pro'?'active':''" class="nav-item">⭐ Abonnements Pro</div>
       <div @click="go('kyc')" :class="tab==='kyc'?'active':''" class="nav-item">🪪 KYC</div>
       <div @click="go('notifications')" :class="tab==='notifications'?'active':''" class="nav-item">🔔 Notifications</div>
+      <div @click="go('blog')" :class="tab==='blog'?'active':''" class="nav-item">📝 Blog</div>
     </nav>
     <div class="px-5 mt-6 border-t border-slate-700 pt-4">
       <p class="text-slate-400 text-xs mb-2 truncate" x-text="adminName"></p>
@@ -87,6 +88,7 @@
           <button @click="go('pro')" class="btn-g">⭐ Abonnements Pro</button>
           <button @click="go('pro')" class="btn-g">🏆 Pro</button>
           <button @click="go('notifications')" class="btn-g">🔔 Notifications</button>
+          <button @click="go('blog')" class="btn-g">📝 Blog</button>
         </div>
       </div>
     </div>
@@ -174,6 +176,126 @@
     </div>
 
     <!-- NOTIFICATIONS -->
+
+    <!-- ═══════════════════════════════ BLOG ═══════════════════════════════ -->
+    <div x-show="tab==='blog'">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-black text-slate-800">📝 Blog</h1>
+          <span class="badge" style="background:#f0fdf4;color:#166534;" x-text="articles.length+' articles'"></span>
+        </div>
+        <button @click="showArticleForm=true;editingArticle=null;resetForm()" style="background:#00B87C;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;font-size:.9rem;">
+          ✏️ Nouvel article
+        </button>
+      </div>
+
+      <!-- Liste articles -->
+      <div style="background:#fff;border-radius:16px;border:1px solid #e2e8f0;overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead style="background:#f8fafc;">
+            <tr>
+              <th style="padding:14px 16px;text-align:left;font-size:.8rem;color:#64748b;font-weight:700;">TITRE</th>
+              <th style="padding:14px 16px;text-align:left;font-size:.8rem;color:#64748b;font-weight:700;">CATÉGORIE</th>
+              <th style="padding:14px 16px;text-align:left;font-size:.8rem;color:#64748b;font-weight:700;">STATUT</th>
+              <th style="padding:14px 16px;text-align:left;font-size:.8rem;color:#64748b;font-weight:700;">VUES</th>
+              <th style="padding:14px 16px;text-align:left;font-size:.8rem;color:#64748b;font-weight:700;">DATE</th>
+              <th style="padding:14px 16px;text-align:left;font-size:.8rem;color:#64748b;font-weight:700;">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-if="articles.length===0">
+              <tr><td colspan="6" style="text-align:center;padding:48px;color:#94a3b8;">Aucun article. Créez le premier !</td></tr>
+            </template>
+            <template x-for="a in articles" :key="a.id">
+              <tr style="border-top:1px solid #f1f5f9;" @mouseover="$el.style.background='#f8fafc'" @mouseout="$el.style.background='#fff'">
+                <td style="padding:14px 16px;">
+                  <div style="font-weight:700;color:#0f172a;font-size:.9rem;" x-text="a.titre"></div>
+                  <div style="font-size:.78rem;color:#94a3b8;" x-text="'mosala.io/blog/'+a.slug"></div>
+                </td>
+                <td style="padding:14px 16px;">
+                  <span style="background:#f1f5f9;color:#00B87C;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:99px;" x-text="a.categorie||'—'"></span>
+                </td>
+                <td style="padding:14px 16px;">
+                  <span :style="a.statut==='publie'?'background:#f0fdf4;color:#166534;':'background:#fef9c3;color:#854d0e;'" style="font-size:.78rem;font-weight:700;padding:4px 12px;border-radius:99px;" x-text="a.statut==='publie'?'✅ Publié':'📝 Brouillon'"></span>
+                </td>
+                <td style="padding:14px 16px;color:#64748b;font-size:.88rem;" x-text="a.vues||0"></td>
+                <td style="padding:14px 16px;color:#94a3b8;font-size:.8rem;" x-text="a.created_at?new Date(a.created_at).toLocaleDateString('fr-FR'):''"></td>
+                <td style="padding:14px 16px;">
+                  <div style="display:flex;gap:8px;">
+                    <button @click="editArticle(a)" style="background:#f1f5f9;border:none;padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;color:#0f172a;">✏️ Modifier</button>
+                    <button @click="deleteArticle(a.id)" style="background:#fef2f2;border:none;padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;color:#dc2626;">🗑️ Supprimer</button>
+                    <a :href="'/pages/blog-article.html?slug='+a.slug" target="_blank" style="background:#f0fdf4;border:none;padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;color:#166534;text-decoration:none;">👁️ Voir</a>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal créer/modifier article -->
+      <div x-show="showArticleForm" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;display:flex;align-items:center;justify-content:center;padding:24px;">
+        <div style="background:#fff;border-radius:20px;padding:32px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+            <h2 style="font-size:1.3rem;font-weight:900;color:#0f172a;" x-text="editingArticle?'✏️ Modifier l\'article':'✏️ Nouvel article'"></h2>
+            <button @click="showArticleForm=false" style="background:#f1f5f9;border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1rem;">✕</button>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div>
+              <label style="font-size:.85rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">Titre *</label>
+              <input x-model="articleForm.titre" placeholder="Titre de l'article" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.9rem;box-sizing:border-box;"/>
+            </div>
+            <div>
+              <label style="font-size:.85rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">Résumé</label>
+              <textarea x-model="articleForm.resume" rows="2" placeholder="Résumé court (affiché dans la liste)" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.9rem;box-sizing:border-box;resize:vertical;"></textarea>
+            </div>
+            <div>
+              <label style="font-size:.85rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">Contenu * (HTML accepté)</label>
+              <textarea x-model="articleForm.contenu" rows="10" placeholder="<p>Contenu de l'article...</p>" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.9rem;box-sizing:border-box;resize:vertical;font-family:monospace;"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="font-size:.85rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">Catégorie</label>
+                <select x-model="articleForm.categorie" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.9rem;">
+                  <option value="">Choisir...</option>
+                  <option value="freelance">Freelance</option>
+                  <option value="emploi">Emploi</option>
+                  <option value="tech">Tech & Digital</option>
+                  <option value="conseils">Conseils</option>
+                  <option value="actualites">Actualités</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:.85rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">Statut</label>
+                <select x-model="articleForm.statut" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.9rem;">
+                  <option value="brouillon">📝 Brouillon</option>
+                  <option value="publie">✅ Publier maintenant</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label style="font-size:.85rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">URL image (optionnel)</label>
+              <input x-model="articleForm.image_url" placeholder="https://images.unsplash.com/..." style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.9rem;box-sizing:border-box;"/>
+            </div>
+            <div>
+              <label style="font-size:.85rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">Auteur</label>
+              <input x-model="articleForm.auteur" placeholder="Équipe Mosala" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.9rem;box-sizing:border-box;"/>
+            </div>
+            <div>
+              <label style="font-size:.85rem;font-weight:700;color:#374151;display:block;margin-bottom:6px;">Tags (séparés par virgule)</label>
+              <input x-model="articleForm.tags" placeholder="freelance, rdc, emploi" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:.9rem;box-sizing:border-box;"/>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-top:24px;">
+            <button @click="saveArticle()" style="flex:1;background:#00B87C;color:#fff;border:none;padding:12px;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;" x-text="savingArticle?'Enregistrement...':'💾 Enregistrer'"></button>
+            <button @click="showArticleForm=false" style="background:#f1f5f9;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;color:#374151;">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div x-show="tab==='notifications'">
       <div class="flex items-center justify-between mb-5">
         <h1 class="text-2xl font-black text-slate-800">🔔 Notifications</h1>
@@ -646,6 +768,8 @@ function app() { return {
   publishForm:{title:'',company:'',location:'Kinshasa',opportunity_type:'CDI',category:'',description:'',salary_range:'',apply_url:''},
   publishLoading:false, selectedJob:null, showJobModal:false,
   uq:'', jq:'', jstatus:'', toast:'',
+  articles:[], showArticleForm:false, editingArticle:null, savingArticle:false,
+  articleForm:{titre:'',resume:'',contenu:'',image_url:'',categorie:'',statut:'brouillon',auteur:'Équipe Mosala',tags:''},
   selectedUser: null, showUserModal: false,
   notifications: [],
   notifForm: { titre:'', message:'', type:'info', canal:'inapp', user_id:'' },
@@ -676,9 +800,56 @@ function app() { return {
     if (t==='transactions') this.loadTransactions();
     if (t==='pro') { this.loadPro(); this.loadProStats(); this.loadProList(); }
     if (t==='notifications') { this.loadNotifications(); if (!this.users.length) this.loadUsers(); }
+    if (t==='blog') this.loadArticles();
   },
 
-  async loadStats() {
+  
+        async loadArticles() {
+          try {
+            const r = await fetch('/admin/blog', {headers: {'Authorization': 'Bearer '+this.token}});
+            if (r.ok) this.articles = await r.json();
+          } catch(e) {}
+        },
+        resetForm() {
+          this.articleForm = {titre:'',resume:'',contenu:'',image_url:'',categorie:'',statut:'brouillon',auteur:'Équipe Mosala',tags:''};
+        },
+        editArticle(a) {
+          this.editingArticle = a;
+          this.articleForm = {titre:a.titre,resume:a.resume||'',contenu:'',image_url:a.image_url||'',categorie:a.categorie||'',statut:a.statut,auteur:a.auteur||'Équipe Mosala',tags:a.tags||''};
+          this.showArticleForm = true;
+          // Charger le contenu complet
+          fetch(`/public/blog/${a.slug}`).then(r=>r.json()).then(d=>{ this.articleForm.contenu = d.contenu; });
+        },
+        async saveArticle() {
+          if (!this.articleForm.titre || !this.articleForm.contenu) {
+            alert('Titre et contenu obligatoires !'); return;
+          }
+          this.savingArticle = true;
+          try {
+            const url = this.editingArticle ? `/admin/blog/${this.editingArticle.id}` : '/admin/blog';
+            const method = this.editingArticle ? 'PUT' : 'POST';
+            const r = await fetch(url, {
+              method, headers: {'Content-Type':'application/json','Authorization':'Bearer '+this.token},
+              body: JSON.stringify(this.articleForm)
+            });
+            const d = await r.json();
+            if (d.success) {
+              this.showArticleForm = false;
+              this.loadArticles();
+              alert(this.editingArticle ? '✅ Article mis à jour !' : '✅ Article créé !');
+            } else { alert('Erreur: '+JSON.stringify(d)); }
+          } catch(e) { alert('Erreur réseau'); }
+          this.savingArticle = false;
+        },
+        async deleteArticle(id) {
+          if (!confirm('Supprimer cet article définitivement ?')) return;
+          try {
+            const r = await fetch(`/admin/blog/${id}`, {method:'DELETE',headers:{'Authorization':'Bearer '+this.token}});
+            const d = await r.json();
+            if (d.success) { this.loadArticles(); alert('✅ Article supprimé'); }
+          } catch(e) { alert('Erreur réseau'); }
+        },
+        async loadStats() {
     const r = await fetch(API+'/admin/stats', {headers:{Authorization:'Bearer '+this.tok()}});
     if (r.ok) this.stats = await r.json();
   },

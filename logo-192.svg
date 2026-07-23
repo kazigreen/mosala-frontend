@@ -1,8 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
-  <rect width="192" height="192" rx="36" fill="#16a34a"/>
-  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle"
-        font-family="Arial, sans-serif" font-weight="bold" font-size="72"
-        fill="white">KG</text>
-  <text x="50%" y="80%" dominant-baseline="middle" text-anchor="middle"
-        font-family="Arial, sans-serif" font-size="22" fill="#bbf7d0">KaziGreen</text>
+  <rect width="192" height="192" rx="42" fill="#4CAF7D"/>
+  <!-- Couche du bas -->
+  <path d="M32 128 L96 158 L160 128 L96 98 Z" fill="white" opacity="0.55"/>
+  <!-- Couche du milieu -->
+  <path d="M32 104 L96 134 L160 104 L96 74 Z" fill="white" opacity="0.78"/>
+  <!-- Couche du haut -->
+  <path d="M32 80 L96 110 L160 80 L96 50 Z" fill="white"/>
 </svg>

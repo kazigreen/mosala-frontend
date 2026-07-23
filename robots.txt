@@ -1,5 +1,12 @@
 User-agent: *
-Disallow: /pages/poster-offre
-Disallow: /poster-offre.html
-Disallow: /onboarding.html
 Allow: /
+Allow: /pages/blog.html
+Allow: /pages/blog-article.html
+Disallow: /pages/admin.html
+Disallow: /pages/poster-offre.html
+Disallow: /pages/otp.html
+
+# Sitemap
+Sitemap: https://mosala.io/sitemap.xml
+Disallow: /*.bak
+Disallow: /backups/

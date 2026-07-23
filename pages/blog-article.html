@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title id="page-title">Article — Blog Mosala</title>
+  <meta id="page-desc" name="description" content="Blog Mosala — Freelance et emploi en RDC"/>
+
+  <!-- SEO canonical -->
+  <link id="canonical" rel="canonical" href="https://mosala.io/pages/blog-article.html"/>
+
+  <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
+  <meta id="og-title" property="og:title" content="Article — Blog Mosala"/>
+  <meta id="og-desc" property="og:description" content="Blog Mosala — Freelance et emploi en RDC"/>
+  <meta id="og-image" property="og:image" content="https://mosala.io/og-default.png"/>
+  <meta id="og-url" property="og:url" content="https://mosala.io/pages/blog-article.html"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:site_name" content="Mosala — Freelance & Emploi RDC"/>
+  <meta property="og:locale" content="fr_CD"/>
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta id="tw-title" name="twitter:title" content="Article — Blog Mosala"/>
+  <meta id="tw-desc" name="twitter:description" content="Blog Mosala"/>
+  <meta id="tw-image" name="twitter:image" content="https://mosala.io/og-default.png"/>
+
+  <!-- JSON-LD Article Schema (pour Google et les IA) -->
+  <script id="jsonld-article" type="application/ld+json">{"@context":"https://schema.org","@type":"Article","name":"Article Blog Mosala","publisher":{"@type":"Organization","name":"Mosala","url":"https://mosala.io"}}</script>
+
+  <link rel="icon" href="/favicon.svg"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #F8FAFC; }
+    .article-content p { margin-bottom: 16px; line-height: 1.8; color: #374151; }
+    .article-content h2 { font-size: 1.4rem; font-weight: 800; color: #0F172A; margin: 32px 0 12px; }
+    .article-content h3 { font-size: 1.2rem; font-weight: 700; color: #0F172A; margin: 24px 0 8px; }
+    .article-content ul { list-style: disc; padding-left: 24px; margin-bottom: 16px; }
+    .article-content li { margin-bottom: 8px; color: #374151; line-height: 1.7; }
+    .article-content strong { color: #0F172A; font-weight: 700; }
+    .article-content a { color: #00B87C; }
+  </style>
+</head>
+<body>
+  <nav style="background:#fff;border-bottom:1px solid #e2e8f0;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;">
+    <a href="/" style="font-size:1.4rem;font-weight:900;color:#00B87C;text-decoration:none;">Mosala &#x1F9BA;</a>
+    <div style="display:flex;gap:16px;align-items:center;">
+      <a href="/pages/blog.html" style="color:#64748b;text-decoration:none;font-size:.9rem;">&#8592; Blog</a>
+      <a href="/" style="background:#00B87C;color:#fff;padding:8px 20px;border-radius:10px;text-decoration:none;font-size:.9rem;font-weight:600;">Rejoindre</a>
+    </div>
+  </nav>
+
+  <main id="article-main" style="max-width:800px;margin:48px auto;padding:0 24px;">
+    <div id="loading-msg" style="text-align:center;padding:64px;color:#64748b;">&#9203; Chargement de l'article...</div>
+  </main>
+
+  <section style="background:linear-gradient(135deg,#00B87C,#00D68F);padding:48px 24px;text-align:center;margin-top:48px;">
+    <h2 style="color:#fff;font-size:1.6rem;font-weight:900;margin-bottom:12px;">Pret a rejoindre Mosala ? &#x1F680;</h2>
+    <p style="color:rgba(255,255,255,.85);margin-bottom:24px;">La premiere plateforme freelance &amp; emploi de la RDC &#x1F1E8;&#x1F1E9;</p>
+    <a href="/" style="background:#fff;color:#00B87C;font-weight:700;padding:14px 32px;border-radius:14px;text-decoration:none;font-size:1rem;">Creer mon compte gratuit &#8594;</a>
+  </section>
+
+  <footer style="background:#0F172A;padding:32px 24px;text-align:center;">
+    <a href="/" style="font-size:1.2rem;font-weight:900;color:#00B87C;text-decoration:none;">Mosala &#x1F9BA;</a>
+    <p style="color:rgba(255,255,255,.5);font-size:.85rem;margin-top:8px;">&#x1F1E8;&#x1F1E9; Made in Congo</p>
+  </footer>
+
+  <script>
+    async function loadArticle() {
+      var params = new URLSearchParams(window.location.search);
+      var slug = params.get('slug');
+      if (!slug) {
+        window.location.href = '/pages/blog.html';
+        return;
+      }
+
+      var main = document.getElementById('article-main');
+      var loadingMsg = document.getElementById('loading-msg');
+
+      try {
+        var r = await fetch('/public/blog/' + encodeURIComponent(slug));
+        if (!r.ok) {
+          window.location.href = '/pages/blog.html';
+          return;
+        }
+        var a = await r.json();
+
+        // Mettre à jour le titre de la page
+        // Titre et meta de base
+        document.getElementById('page-title').textContent = a.titre + ' — Blog Mosala';
+        document.getElementById('page-desc').setAttribute('content', a.resume || a.titre);
+
+        // Open Graph
+        var pageUrl = 'https://mosala.io/pages/blog-article.html?slug=' + encodeURIComponent(slug);
+        var imgUrl = a.image_url || 'https://mosala.io/og-default.png';
+        document.getElementById('og-title').setAttribute('content', a.titre + ' — Blog Mosala');
+        document.getElementById('og-desc').setAttribute('content', a.resume || a.titre);
+        document.getElementById('og-image').setAttribute('content', imgUrl);
+        document.getElementById('og-url').setAttribute('content', pageUrl);
+        document.getElementById('tw-title').setAttribute('content', a.titre);
+        document.getElementById('tw-desc').setAttribute('content', a.resume || a.titre);
+        document.getElementById('tw-image').setAttribute('content', imgUrl);
+        document.getElementById('canonical').setAttribute('href', pageUrl);
+
+        // JSON-LD Article Schema pour Google + IA
+        var schema = {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": a.titre,
+          "description": a.resume || '',
+          "image": imgUrl,
+          "url": pageUrl,
+          "datePublished": a.date_publication || '',
+          "author": {"@type": "Person", "name": a.auteur || 'Equipe Mosala'},
+          "publisher": {
+            "@type": "Organization",
+            "name": "Mosala",
+            "url": "https://mosala.io",
+            "logo": {"@type": "ImageObject", "url": "https://mosala.io/favicon.svg"}
+          },
+          "mainEntityOfPage": {"@type": "WebPage", "@id": pageUrl}
+        };
+        document.getElementById('jsonld-article').textContent = JSON.stringify(schema);
+
+        // Date formatée
+        var date = '';
+        if (a.date_publication) {
+          date = new Date(a.date_publication).toLocaleDateString('fr-FR', {
+            day: 'numeric', month: 'long', year: 'numeric'
+          });
+        }
+
+        // Vues
+        var vues = a.vues || 0;
+
+        // Construire le DOM de l'article
+        main.innerHTML = '';
+
+        // Lien retour
+        var retour = document.createElement('a');
+        retour.href = '/pages/blog.html';
+        retour.style.cssText = 'color:#00B87C;text-decoration:none;font-size:.9rem;font-weight:600;';
+        retour.textContent = '← Retour au blog';
+        main.appendChild(retour);
+
+        // Wrapper
+        var wrapper = document.createElement('div');
+        wrapper.style.marginTop = '24px';
+
+        // Catégorie
+        if (a.categorie) {
+          var catSpan = document.createElement('span');
+          catSpan.style.cssText = 'background:#f1f5f9;color:#00B87C;font-size:.8rem;font-weight:700;padding:4px 14px;border-radius:99px;';
+          catSpan.textContent = a.categorie.toUpperCase();
+          wrapper.appendChild(catSpan);
+        }
+
+        // Titre
+        var h1 = document.createElement('h1');
+        h1.style.cssText = 'font-size:clamp(1.6rem,4vw,2.4rem);font-weight:900;color:#0F172A;margin:16px 0 12px;line-height:1.3;';
+        h1.textContent = a.titre;
+        wrapper.appendChild(h1);
+
+        // Meta (auteur, date, vues)
+        var meta = document.createElement('div');
+        meta.style.cssText = 'display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:32px;';
+        meta.innerHTML = '<span style="color:#64748b;font-size:.9rem;">&#9997;&#65039; ' + (a.auteur || 'Equipe Mosala') + '</span>'
+          + '<span style="color:#94a3b8;font-size:.85rem;">&#128197; ' + date + '</span>'
+          + '<span style="color:#94a3b8;font-size:.85rem;">&#128065;&#65039; ' + vues + ' vue' + (vues > 1 ? 's' : '') + '</span>';
+        wrapper.appendChild(meta);
+
+        // Image principale
+        if (a.image_url) {
+          var img = document.createElement('img');
+          img.src = a.image_url;
+          img.alt = a.titre;
+          img.style.cssText = 'width:100%;height:350px;object-fit:cover;border-radius:20px;margin-bottom:32px;';
+          img.onerror = function() { this.style.display = 'none'; };
+          wrapper.appendChild(img);
+        }
+
+        // Contenu HTML de l'article
+        var contenu = document.createElement('div');
+        contenu.className = 'article-content';
+        contenu.style.cssText = 'font-size:1rem;line-height:1.8;';
+        contenu.innerHTML = a.contenu || '';
+        wrapper.appendChild(contenu);
+
+        main.appendChild(wrapper);
+
+      } catch(e) {
+        main.innerHTML = '<div style="text-align:center;padding:64px;">'
+          + '<div style="font-size:3rem;margin-bottom:16px;">&#9888;&#65039;</div>'
+          + '<p style="color:#e53e3e;font-size:1rem;">Erreur de chargement de l\'article.</p>'
+          + '<a href="/pages/blog.html" style="color:#00B87C;font-weight:700;">&#8592; Retour au blog</a>'
+          + '</div>';
+        console.error('Erreur article:', e);
+      }
+    }
+
+    loadArticle();
+  </script>
+</body>
+</html>
