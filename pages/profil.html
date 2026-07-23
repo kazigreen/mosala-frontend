@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profil — Mosala</title>
+  <meta name="robots" content="noindex"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>[x-cloak]{display:none!important} body{font-family:'Segoe UI',system-ui,sans-serif;background:#F5F4F2;}</style>
+</head>
+<body x-data="mosalaPage()" x-init="init()" x-cloak>
+
+  <!-- Toast -->
+  <div x-show="toast.show" x-transition style="position:fixed;top:20px;right:20px;z-index:9999;background:#0F172A;color:#fff;padding:12px 20px;border-radius:12px;font-size:.9rem;" x-text="toast.msg"></div>
+
+  <!-- Header -->
+  <div style="background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="/pages/dashboard.html" style="color:#64748b;text-decoration:none;">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </a>
+      <span style="font-weight:800;font-size:1.1rem;color:#0F172A;">Profil</span>
+    </div>
+    <a href="/pages/dashboard.html" style="font-size:1.1rem;font-weight:900;color:#00B87C;text-decoration:none;">Mosala &#x1F9BA;</a>
+  </div>
+
+  <!-- Contenu -->
+  <div class="min-h-screen pb-24">
+            <!-- État vide -->
+            <template x-if="walletTx.length === 0">
+              <div class="flex flex-col items-center justify-center py-10 rounded-2xl text-center"
+                   style="background:white;border:2px dashed #E2E8F0;">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+                     style="background:#F8FAFC;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" class="w-7 h-7">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-black mb-1" style="color:#0F172A;">Aucune transaction</p>
+                <p class="text-xs" style="color:#94A3B8;">Vos opérations apparaîtront ici</p>
+              </div>
+            </template>
+
+            <!-- Transactions -->
+            <template x-if="walletTx.length > 0">
+              <div class="space-y-2.5">
+                <template x-for="(tx, index) in walletTx" :key="tx.id || index">
+                  <div class="relative flex items-center gap-3 px-4 py-3.5 rounded-2xl overflow-hidden"
+                       style="background:white;border:1px solid #F1F5F9;box-shadow:0 1px 4px rgba(15,23,42,0.04);">
+
+                    <!-- Glow fond selon type -->
+                    <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full pointer-events-none"
+                         :style="tx.type==='credit'
+                           ? 'background:radial-gradient(circle,rgba(0,184,124,0.06) 0%,transparent 70%);'
+                           : 'background:radial-gradient(circle,rgba(239,68,68,0.06) 0%,transparent 70%);'"></div>
+
+                    <!-- Icône -->
+                    <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                         :style="tx.type==='credit'
+                           ? 'background:#F0FBF7;border:1px solid rgba(0,184,124,0.20);'
+                           : 'background:#FEF2F2;border:1px solid rgba(239,68,68,0.20);'">
+                      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" class="w-4 h-4"
+                           :stroke="tx.type==='credit' ? '#00B87C' : '#EF4444'">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              :d="tx.type==='credit' ? 'M12 4v16m-8-8l8-8 8 8' : 'M12 20V4m-8 8l8 8 8-8'"/>
+                      </svg>
+                    </div>
+
+                    <!-- Libellé + date -->
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-black truncate" style="color:#0F172A;"
+                         x-text="tx.libelle||tx.description||'Transaction'"></p>
+                      <p class="text-[10px] font-medium mt-0.5" style="color:#94A3B8;"
+                         x-text="formatTxDate(tx.created_at)"></p>
+                    </div>
+
+                    <!-- Montant badge -->
+                    <div class="flex-shrink-0">
+                      <span class="text-[11px] font-black px-2.5 py-1 rounded-full"
+                            :style="tx.type==='credit'
+                              ? 'background:#F0FBF7;color:#00B87C;border:1px solid rgba(0,184,124,0.20);'
+                              : 'background:#FEF2F2;color:#EF4444;border:1px solid rgba(239,68,68,0.20);'"
+                            x-text="(tx.type==='credit' ? '+ ' : '- ') + Number(tx.montant||0).toLocaleString('fr-FR') + ' ' + (tx.devise||escrow.devise||'USD')"></span>
+                    </div>
+
+                  </div>
+                </template>
+              </div>
+            </template>
+
+          </div>
+        </template>
+      </div>
+      <!-- ── /ACTIVITÉ RÉCENTE ──
+<!-- ── ESCROW DÉTAIL ── -->
+      <div class="px-4 mt-4">
+
+        <!-- Titre -->
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-1 h-4 rounded-full" style="background:linear-gradient(135deg,#00B87C,#00D68F);"></div>
+          <h3 class="text-sm font-black" style="color:#0F172A;">Où est mon argent ?</h3>
+        </div>
+
+        <!-- État vide -->
+        <template x-if="mesProjets.length === 0">
+          <div class="flex flex-col items-center justify-center py-10 rounded-2xl text-center"
+               style="background:white;border:2px dashed #E2E8F0;">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+                 style="background:#F8FAFC;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" class="w-7 h-7">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+              </svg>
+            </div>
+            <p class="text-sm font-black mb-1" style="color:#0F172A;">Aucun projet lié</p>
+            <p class="text-xs" style="color:#94A3B8;">Vos missions et paiements apparaîtront ici</p>
+          </div>
+        </template>
+
+        <!-- Liste projets -->
+        <template x-if="mesProjets.length > 0">
+          <div class="space-y-2.5">
+            <template x-for="(p, i) in mesProjets.slice(0,5)" :key="p.id">
+              <div class="relative flex items-center gap-3 px-4 py-3.5 rounded-2xl overflow-hidden"
+                   style="background:white;border:1px solid #F1F5F9;box-shadow:0 1px 4px rgba(15,23,42,0.04);">
+
+                <!-- Glow selon statut -->
+                <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full pointer-events-none"
+                     :style="p.statut==='termine'
+                       ? 'background:radial-gradient(circle,rgba(0,184,124,0.07) 0%,transparent 70%);'
+                       : p.statut==='en_cours'
+                       ? 'background:radial-gradient(circle,rgba(245,158,11,0.07) 0%,transparent 70%);'
+                       : 'background:radial-gradient(circle,rgba(148,163,184,0.07) 0%,transparent 70%);'"></div>
+
+                <!-- Icône statut -->
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+                     :style="p.statut==='termine'
+                       ? 'background:#F0FBF7;border:1px solid rgba(0,184,124,0.20);'
+                       : p.statut==='en_cours'
+                       ? 'background:#FFFBEB;border:1px solid rgba(245,158,11,0.20);'
+                       : 'background:#F8FAFC;border:1px solid #E2E8F0;'">
+                  <span x-text="p.statut==='termine' ? '✅' : p.statut==='en_cours' ? '🔒' : '⏳'"></span>
+                </div>
+
+                <!-- Titre + statut -->
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-black truncate" style="color:#0F172A;" x-text="p.titre"></p>
+                  <span class="text-[9px] font-bold mt-0.5"
+                        :style="p.statut==='termine' ? 'color:#00B87C;' : p.statut==='en_cours' ? 'color:#D97706;' : 'color:#94A3B8;'"
+                        x-text="p.statut==='termine' ? 'Disponible au retrait' : p.statut==='en_cours' ? 'Bloqué Escrow' : 'En attente validation'"></span>
+                </div>
+
+                <!-- Montant -->
+                <div class="flex-shrink-0 text-right">
+                  <p class="text-sm font-black"
+                     :style="p.statut==='termine' ? 'color:#00B87C;' : 'color:#0F172A;'"
+                     x-text="'$'+(p.budget||0).toLocaleString('fr-FR')"></p>
+                  <p class="text-[9px] font-medium" style="color:#94A3B8;" x-text="p.devise||'USD'"></p>
+                </div>
+
+              </div>
+            </template>
+          </div>
+        </template>
+
+      </div>
+      <!-- ── /ESCROW DÉTAIL ── -->
+
+<!-- ── MISSIONS LIÉES À L'ARGENT ── -->
+      <div class="px-4 mt-5">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-black text-gray-900">Missions &amp; paiements</h3>
+          <button @click="navigateTo('marketplace')" class="text-[10px] text-[#00B87C] font-semibold hover:underline">Voir tout →</button>
+        </div>
+
+        <!-- Skeleton -->
+        <template x-if="convLoading">
+          <div class="space-y-2">
+            <template x-for="i in 3">
+              <div class="flex items-center gap-3 animate-pulse bg-white rounded-2xl p-3.5 border border-gray-100">
+                <div class="w-9 h-9 rounded-xl bg-gray-100 flex-shrink-0"></div>
+                <div class="flex-1 space-y-1.5"><div class="h-3 bg-gray-100 rounded w-1/2"></div><div class="h-2 bg-gray-50 rounded w-1/4"></div></div>
+                <div class="h-5 bg-gray-100 rounded-full w-20"></div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <template x-if="!convLoading">
+          <div>
+            <!-- État vide -->
+            <template x-if="mesProjets.length === 0">
+              <div class="bg-white border border-dashed border-gray-200 rounded-2xl p-6 text-center">
+                <p class="text-sm font-bold text-gray-500">Aucune mission en cours</p>
+                <p class="text-xs text-gray-400 mt-1">Vos projets payés apparaîtront ici</p>
+              </div>
+            </template>
+
+            <!-- Liste projets -->
+            <template x-if="mesProjets.length > 0">
+              <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                <template x-for="(p, index) in mesProjets.slice(0,6)" :key="p.id">
+                  <div class="flex items-center gap-3 px-4 py-3.5"
+                       :class="index < Math.min(mesProjets.length,6) - 1 ? 'border-b border-gray-50' : ''">
+
+                    <!-- Icône statut -->
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                         :class="p.statut==='termine' ? 'bg-[#00B87C]/10' : p.statut==='en_cours' ? 'bg-amber-50' : 'bg-gray-50'">
+                      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" class="w-4 h-4"
+                           :stroke="p.statut==='termine' ? '#00B87C' : p.statut==='en_cours' ? '#D97706' : '#9ca3af'">
+                        <template x-if="p.statut==='termine'">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+                        </template>
+                        <template x-if="p.statut==='en_cours'">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25z"/>
+                        </template>
+                        <template x-if="p.statut==='en_attente'">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+                        </template>
+                      </svg>
+                    </div>
+
+                    <!-- Titre + budget -->
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-gray-900 truncate" x-text="p.titre"></p>
+                      <p class="text-xs font-black mt-0.5"
+                         :class="p.statut==='termine' ? 'text-[#00B87C]' : 'text-gray-400'"
+                         x-text="(p.budget||0).toLocaleString('fr-FR') + ' ' + (p.devise||'USD')"></p>
+                    </div>
+
+                    <!-- Droite : badge + actions -->
+                    <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                      <!-- Badge statut -->
+                      <span class="text-[10px] font-black px-2.5 py-1 rounded-full"
+                            :class="p.statut==='termine' ? 'bg-[#00B87C]/10 text-[#00B87C]' : p.statut==='en_cours' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-500'"
+                            x-text="p.statut==='termine' ? '✅ Terminé' : p.statut==='en_cours' ? '🔒 En cours' : '⏳ En attente'"></span>
+                      <!-- Boutons Modifier / Supprimer — seulement si en_attente -->
+                      <template x-if="p.statut === 'en_attente'">
+                        <div class="flex items-center gap-1">
+                          <button @click="$root.ouvrirEditProjet ? $root.ouvrirEditProjet(p) : $dispatch('edit-projet', p)"
+                                  class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition"
+                                  style="background:#EFF6FF;color:#3B82F6;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Modifier
+                          </button>
+                          <button @click="$root.confirmerSupprimerProjet ? $root.confirmerSupprimerProjet(p) : $dispatch('delete-projet', p)"
+                                  class="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition"
+                                  style="background:#FEF2F2;color:#EF4444;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                            Supprimer
+                          </button>
+                        </div>
+                      </template>
+                      <!-- Verrou si en_cours/litige -->
+                      <template x-if="['en_cours','litige'].includes(p.statut)">
+                        <span class="text-[9px] text-amber-500 font-semibold flex items-center gap-0.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                          Contrat actif
+                        </span>
+                      </template>
+                    </div>
+
+                  </div>
+                </template>
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+      <!-- ── /MISSIONS LIÉES À L'ARGENT ──
+      <!-- ── NIVEAU MOSALA ── -->
+      <div class="px-4 mt-4 mb-8">
+
+        <!-- Titre -->
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-1 h-4 rounded-full" style="background:linear-gradient(135deg,#00B87C,#00D68F);"></div>
+          <h3 class="text-sm font-black" style="color:#0F172A;">Niveau Mosala</h3>
+        </div>
+
+        <!-- Card principale -->
+        <div class="relative overflow-hidden rounded-2xl"
+             style="background:white;border:1px solid rgba(0,184,124,0.15);box-shadow:0 2px 12px rgba(15,23,42,0.06);">
+
+          <!-- Glow déco -->
+          <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full pointer-events-none"
+               style="background:radial-gradient(circle,rgba(0,184,124,0.07) 0%,transparent 70%);"></div>
+
+          <div class="p-5">
+
+            <!-- Niveau actuel + prochain -->
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <!-- Badge niveau -->
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
+                     :style="(escrow.total||0)>=5000
+                       ? 'background:linear-gradient(135deg,#00B87C,#00D68F);box-shadow:0 4px 12px rgba(0,184,124,0.30);'
+                       : (escrow.total||0)>=2000
+                       ? 'background:linear-gradient(135deg,#F59E0B,#FBBF24);box-shadow:0 4px 12px rgba(245,158,11,0.30);'
+                       : (escrow.total||0)>=500
+                       ? 'background:linear-gradient(135deg,#94A3B8,#CBD5E1);box-shadow:0 4px 12px rgba(148,163,184,0.30);'
+                       : 'background:linear-gradient(135deg,#D97706,#F59E0B);box-shadow:0 4px 12px rgba(217,119,6,0.30);'">
+                  <span x-text="(escrow.total||0)>=5000?'🏆':(escrow.total||0)>=2000?'🥇':(escrow.total||0)>=500?'🥈':'🥉'"></span>
+                </div>
+                <div>
+                  <p class="text-base font-black" style="color:#0F172A;"
+                     x-text="(escrow.total||0)>=5000?'Top Freelance':(escrow.total||0)>=2000?'Or':(escrow.total||0)>=500?'Argent':'Bronze'"></p>
+                  <p class="text-[10px] font-medium" style="color:#94A3B8;"
+                     x-text="'$'+(escrow.total||0).toLocaleString('fr-FR')+' gagnés au total'"></p>
+                </div>
+              </div>
+              <!-- Prochain niveau -->
+              <div class="text-right" x-show="(escrow.total||0)<5000">
+                <p class="text-[9px] font-semibold uppercase tracking-wider mb-0.5" style="color:#94A3B8;">Prochain</p>
+                <span class="text-[11px] font-black px-2.5 py-1 rounded-full"
+                      :style="(escrow.total||0)>=2000
+                        ? 'background:#F0FBF7;color:#00B87C;border:1px solid rgba(0,184,124,0.20);'
+                        : (escrow.total||0)>=500
+                        ? 'background:#FFFBEB;color:#D97706;border:1px solid rgba(245,158,11,0.20);'
+                        : 'background:#F8FAFC;color:#94A3B8;border:1px solid #E2E8F0;'"
+                      x-text="(escrow.total||0)>=2000?'🏆 Top':'(escrow.total||0)>=500?'🥇 Or':'🥈 Argent'"></span>
+              </div>
+              <!-- Max atteint -->
+              <div x-show="(escrow.total||0)>=5000">
+                <span class="text-[11px] font-black px-2.5 py-1 rounded-full"
+                      style="background:#F0FBF7;color:#00B87C;border:1px solid rgba(0,184,124,0.20);">🎉 Max atteint</span>
+              </div>
+            </div>
+
+            <!-- Barre de progression -->
+            <div class="mb-4">
+              <div class="flex justify-between mb-1.5">
+                <span class="text-[9px] font-semibold" style="color:#94A3B8;"
+                      x-text="'$'+(escrow.total||0).toLocaleString('fr-FR')"></span>
+                <span class="text-[9px] font-semibold" style="color:#94A3B8;"
+                      x-text="(escrow.total||0)<500?'$500':(escrow.total||0)<2000?'$2 000':(escrow.total||0)<5000?'$5 000':'$5 000 ✓'"></span>
+              </div>
+              <div class="rounded-full overflow-hidden" style="height:8px;background:#F1F5F9;position:relative;">
+                <div class="h-full rounded-full transition-all duration-1000 relative overflow-hidden"
+                     :style="'width:'+Math.min(100,(()=>{const t=escrow.total||0;if(t<500)return(t/500)*100;if(t<2000)return((t-500)/1500)*100;if(t<5000)return((t-2000)/3000)*100;return 100;})())+'%;'
+                       + ((escrow.total||0)>=5000
+                         ? 'background:linear-gradient(90deg,#00B87C,#00D68F);'
+                         : (escrow.total||0)>=2000
+                         ? 'background:linear-gradient(90deg,#F59E0B,#FBBF24);'
+                         : (escrow.total||0)>=500
+                         ? 'background:linear-gradient(90deg,#94A3B8,#CBD5E1);'
+                         : 'background:linear-gradient(90deg,#D97706,#F59E0B);')">
+                  <span style="position:absolute;top:0;left:-60%;width:45%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);animation:walletShimmer 2.2s ease-in-out infinite;"></span>
+                </div>
+              </div>
+              <p class="text-[10px] font-medium mt-1.5" style="color:#94A3B8;" x-show="(escrow.total||0)<5000"
+                 x-text="(()=>{const t=escrow.total||0;if(t<500)return'Encore $'+(500-t).toLocaleString('fr-FR')+' pour Argent 🥈';if(t<2000)return'Encore $'+(2000-t).toLocaleString('fr-FR')+' pour Or 🥇';return'Encore $'+(5000-t).toLocaleString('fr-FR')+' pour Top Freelance 🏆';})()"></p>
+              <p class="text-[10px] font-black mt-1.5" style="color:#00B87C;" x-show="(escrow.total||0)>=5000">🎉 Niveau maximum atteint !</p>
+            </div>
+
+            <!-- 4 paliers -->
+            <div class="grid grid-cols-4 gap-2">
+              <template x-for="(lvl, i) in [{emoji:'🥉',nom:'Bronze',min:0,color:'#D97706'},{emoji:'🥈',nom:'Argent',min:500,color:'#94A3B8'},{emoji:'🥇',nom:'Or',min:2000,color:'#F59E0B'},{emoji:'🏆',nom:'Top',min:5000,color:'#00B87C'}]">
+                <div class="flex flex-col items-center py-3 px-1 rounded-xl transition-all"
+                     :style="(escrow.total||0)>=lvl.min
+                       ? 'background:#F0FBF7;border:1.5px solid rgba(0,184,124,0.20);opacity:1;'
+                       : 'background:#F8FAFC;border:1.5px solid #E2E8F0;opacity:0.45;'">
+                  <span class="text-2xl mb-1" x-text="lvl.emoji"></span>
+                  <p class="text-[9px] font-black" style="color:#0F172A;" x-text="lvl.nom"></p>
+                  <p class="text-[8px] font-medium mt-0.5" style="color:#94A3B8;"
+                     x-text="lvl.min===0?'Départ':'$'+lvl.min.toLocaleString('fr-FR')"></p>
+                </div>
+              </template>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <!-- ── /NIVEAU MOSALA ── --> -->
+
+    </div>
+  <!-- ══ /WALLET ══ -->
+      </div><!-- /lg:p-6 -->
+  </div>
+
+  <!-- Bottom nav -->
+  <nav style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;display:flex;justify-content:space-around;padding:8px 0;z-index:100;">
+    <a href="/pages/dashboard.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Accueil
+    </a>
+    <a href="/index.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Trouver
+    </a>
+    <a href="/pages/messages.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Messages
+    </a>
+    <a href="/pages/wallet.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8L2 7h20z"/></svg>
+      Wallet
+    </a>
+    <a href="/pages/profil.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#00B87C;text-decoration:none;font-size:.7rem;font-weight:700;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Profil
+    </a>
+  </nav>
+
+  <script>
+    const API = '/api';
+    function mosalaPage() {
+      return {
+        token: localStorage.getItem('kz_token') || '',
+        user: JSON.parse(localStorage.getItem('kz_user') || 'null'),
+        toast: { show: false, msg: '' },
+        escrow: { bloque: 0, disponible: 0, total: 0 },
+        transactions: [],
+        walletLoaded: false,
+        profilData: null,
+        profilLoaded: false,
+        editMode: false,
+        kycData: null,
+
+        async init() {
+          if (!this.token || !this.user) {
+            window.location.href = '/pages/login.html';
+            return;
+          }
+          await this.loadProfil();
+          lucide.createIcons();
+        },
+
+        showToast(msg, dur = 3000) {
+          this.toast = { show: true, msg };
+          setTimeout(() => { this.toast.show = false; }, dur);
+        },
+
+        navigateTo(page) {
+          const routes = { dashboard: '/pages/dashboard.html', messages: '/pages/messages.html', wallet: '/pages/wallet.html', profil: '/pages/profil.html' };
+          if (routes[page]) window.location.href = routes[page];
+        },
+
+          this.profilForm = {
+            prenom:       this.user.prenom       || '',
+            nom:          this.user.nom           || '',
+            bio:          this.user.bio           || '',
+            ville:        this.user.ville         || '',
+            disponibilite: this.user.disponibilite || 'disponible',
+          };
+        },
+
+        cancelEditProfil() {
+          this.profilEdit = false;
+        },
+
+        async saveProfil() {
+          if (this.profilSaving) return;
+          this.profilSaving = true;
+          try {
+            const r = await fetch(`${API}/users/moi`, {
+              method: 'PATCH',
+              headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.profilForm)
+            });
+            const data = await r.json();
+            if (r.ok) {
+              this.user = { ...this.user, ...this.profilForm };
+              sessionStorage.setItem('kv_user', JSON.stringify(this.user));
+              this.profilEdit = false;
+              this.showToast('✅ Profil mis à jour !', 'success');
+            } else {
+              this.showToast(data.detail || 'Erreur sauvegarde', 'error');
+            }
+          } catch(e) { this.showToast('Erreur réseau', 'error'); }
+          this.profilSaving = false;
+        },
+
+        async uploadPhoto(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+          if (file.size > 5 * 1024 * 1024) { this.showToast('Photo trop lourde (max 5MB)', 'error'); return; }
+          this.photoUploading = true;
+          try {
+            const fd = new FormData();
+            fd.append('file', file);
+            const r = await fetch(`${API}/users/moi/photo`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${this.token}` },
+              body: fd
+            });
+            if (r.ok) {
+              const data = await r.json();
+              this.user.photo_url = data.photo_url;
+              sessionStorage.setItem('kv_user', JSON.stringify(this.user));
+              this.showToast('📸 Photo mise à jour !', 'success');
+            } else {
+              this.showToast('Erreur upload photo', 'error');
+            }
+          } catch(e) { this.showToast('Erreur réseau', 'error'); }
+          this.photoUploading = false;
+        },
+
+
+
+        // ── KYC submit ──
+        async submitKyc() {
+          this.kycError = "";
+          if (!this.kycFiles.recto || !this.kycFiles.verso || !this.kycFiles.selfie) {
+            this.kycError = "Veuillez fournir les 3 documents.";
+            return;
+          }
+          this.kycLoading = true;
+          const compressImage = (file) => new Promise((resolve) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+              const MAX = 800;
+              let w = img.width, h = img.height;
+              if (w > MAX || h > MAX) {
+                if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+                else { w = Math.round(w * MAX / h); h = MAX; }
+              }
+              const canvas = document.createElement("canvas");
+              canvas.width = w; canvas.height = h;
+              canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+              URL.revokeObjectURL(url);
+              canvas.toBlob((blob) => resolve(new File([blob], file.name, { type: "image/jpeg" })), "image/jpeg", 0.75);
+            };
+            img.src = url;
+          });
+          try {
+            const [r1, v1, s1] = await Promise.all([
+              compressImage(this.kycFiles.recto),
+              compressImage(this.kycFiles.verso),
+              compressImage(this.kycFiles.selfie),
+            ]);
+            const fd = new FormData();
+            fd.append("recto",  r1);
+            fd.append("verso",  v1);
+            fd.append("selfie", s1);
+            if (this.kycNom)           fd.append("nom",             this.kycNom);
+            if (this.kycPrenom)        fd.append("prenom",          this.kycPrenom);
+            if (this.kycPostnom)       fd.append("postnom",         this.kycPostnom);
+            if (this.kycDateNaissance) fd.append("date_naissance",  this.kycDateNaissance);
+            const _kycTok = (typeof token !== "undefined" ? token : null) || sessionStorage.getItem("kv_token") || localStorage.getItem("kv_token");
+            if (!_kycTok) { this.kycError = "Session expirée — reconnectez-vous."; this.kycLoading = false; return; }
+            const r = await fetch(API + "/users/me/kyc", {
+              method: "POST",
+              headers: { Authorization: "Bearer " + _kycTok },
+              body: fd
+            });
+            const d = await r.json();
+            if (r.ok) {
+              this.kycStatus = "en_attente";
+              this.showToast("Documents envoyes - verification sous 24-48h", "success");
+            } else {
+              this.kycError = d.detail || "Erreur envoi.";
+            }
+          } catch(e) {
+            this.kycError = "Erreur reseau.";
+          }
+          this.kycLoading = false;
+        },
+
+
+        // ── Pro : Boost projet ──
+        async boosterProjet(projetId) {
+          const r = await fetch(`${API}/projets/${projetId}/boost`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${this.token}` }
+          });
+          const d = await r.json();
+          if (r.ok) { this.showToast('🚀 ' + d.message); this.loadDashboard(); }
+          else { this.showToast(d.detail || 'Erreur boost', 'error'); }
+        },
+
+        // ── Pro : Télécharger contrat PDF ──
+        async telechargerContrat(projetId) {
+          const r = await fetch(`${API}/projets/${projetId}/contrat`, {
+            headers: { Authorization: `Bearer ${this.token}` }
+          });
+          if (r.ok) {
+            const blob = await r.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `contrat_mosala_${projetId.slice(0,8)}.pdf`;
+            a.click(); URL.revokeObjectURL(url);
+          } else {
+            const d = await r.json();
+            this.showToast(d.detail || 'Erreur téléchargement', 'error');
+          }
+        },
+
+      }; // end return
+    }   // end app()
+  </script>
+
+
+
+  <!-- ── Command Palette ⌘K ── -->
+  <div id="kzCmdOverlay" class="kz-cmd-overlay" onclick="if(event.target===this) kzCmdClose()">
+    <div class="kz-cmd-box" role="dialog" aria-label="Commandes">
+
+      <!-- Search -->
+      <div class="kz-cmd-search">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width:18px;height:18px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+        </svg>
+        <input id="kzCmdInput" type="text" placeholder="Rechercher une page, action..." autocomplete="off"
+               oninput="kzCmdFilter(this.value)" onkeydown="kzCmdKey(event)" />
+        <button class="kz-cmd-esc" onclick="kzCmdClose()">Esc</button>
+      </div>
+
+      <!-- Results -->
+      <div class="kz-cmd-list" id="kzCmdList">
+
+        <div class="kz-cmd-group-label" data-group="nav">Navigation</div>
+        <div class="kz-cmd-item" data-label="Trouver un freelance" onclick="kzCmdClose()">
+          <div class="kz-cmd-item-icon">🔍</div>
+          <div class="kz-cmd-item-text">
+            <div class="kz-cmd-item-title">Trouver un freelance</div>
+            <div class="kz-cmd-item-sub">Parcourir les talents disponibles</div>
+          </div>
+          <span class="kz-cmd-item-arrow">→</span>
+        </div>
+        <div class="kz-cmd-item" data-label="Devenir freelance" onclick="kzCmdClose()">
+          <div class="kz-cmd-item-icon">💼</div>
+          <div class="kz-cmd-item-text">
+            <div class="kz-cmd-item-title">Devenir freelance</div>
+            <div class="kz-cmd-item-sub">Créer votre profil et proposer vos services</div>
+          </div>
+          <span class="kz-cmd-item-arrow">→</span>
+        </div>
+        <div class="kz-cmd-item" data-label="Tarifs" onclick="kzCmdClose()">
+          <div class="kz-cmd-item-icon">💰</div>
+          <div class="kz-cmd-item-text">
+            <div class="kz-cmd-item-title">Tarifs</div>
+            <div class="kz-cmd-item-sub">Plans gratuit et premium</div>
+          </div>
+          <span class="kz-cmd-item-arrow">→</span>
+        </div>
+
+      };
+    }
+  </script>
+</body>
+</html>
