@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Mosala</title>
+  <meta name="robots" content="noindex"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <style>
+    [x-cloak]{display:none!important}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#F5F4F2;}
+        .wallet-card {
+      position: relative;
+      background: linear-gradient(135deg, #0a1628 0%, #0f2744 40%, #0d1f3c 70%, #071220 100%);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow:
+        0 0 0 1px rgba(0,184,124,0.15),
+        0 20px 60px rgba(0,0,0,0.4),
+        0 4px 16px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .wallet-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .wallet-card::after {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,184,124,0.20) 0%, rgba(0,184,124,0.05) 50%, transparent 75%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .wallet-glow-bottom {
+      position: absolute;
+      bottom: -50px;
+      left: -30px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52,211,153,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .wallet-inner {
+      position: relative;
+      z-index: 2;
+    }
+    .wallet-glass-panel {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      transition: background 0.15s ease;
+    }
+    .wallet-glass-panel:hover {
+      background: rgba(255,255,255,0.12);
+    }
+    .wallet-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px;
+      transition: all 0.18s ease;
+    }
+    .wallet-btn:hover {
+      background: rgba(0,184,124,0.20);
+      border-color: rgba(0,184,124,0.35);
+      box-shadow: 0 0 16px rgba(0,184,124,0.15);
+      transform: translateY(-1px);
+    }
+
+    /* ── Presence system ── */
+    .presence-bar {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    @keyframes presencePulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+    .presence-dot {
+      animation: presencePulse 2.5s ease-in-out infinite;
+    }
+    @keyframes countUp {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .presence-count {
+      animation: countUp 0.5s ease both;
+    }
+
+    /* ── Sidebar nav items — Linear/Stripe premium ── */
+    .nav-item {
+      position: relative;
+      transition: all 0.18s ease;
+    }
+    .nav-item:hover .nav-icon {
+      transform: scale(1.08);
+      transition: transform 0.18s ease;
+    }
+    .nav-item .nav-icon {
+      transition: transform 0.18s ease;
+    }
+    /* Glow actif sous le fond */
+    .nav-item.is-active::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: rgba(0,184,124,0.08);
+      box-shadow: inset 0 0 0 1px rgba(0,184,124,0.18),
+                  0 2px 8px rgba(0,184,124,0.10);
+      pointer-events: none;
+    }
+    /* Barre gauche active */
+    .nav-item.is-active::after {
+      content: '';
+      position: absolute;
+      left: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: #00B87C;
+      border-radius: 0 3px 3px 0;
+    }
+
+    /* ── Icon glow — cercle flou derrière ── */
+    .icon-wrap {
+      position: relative;
+    }
+    .icon-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+    .icon-wrap:hover::before { opacity: 1; }
+
+    /* Variantes couleur glow */
+    .icon-glow-green::before  { background: radial-gradient(circle, rgba(0,184,124,0.20) 0%, transparent 70%); }
+    .icon-glow-blue::before   { background: radial-gradient(circle, rgba(59,130,246,0.20) 0%, transparent 70%); }
+    .icon-glow-amber::before  { background: radial-gradient(circle, rgba(245,158,11,0.20) 0%, transparent 70%); }
+    .icon-glow-yellow::before { background: radial-gradient(circle, rgba(234,179,8,0.20) 0%, transparent 70%); }
+    .icon-glow-purple::before { background: radial-gradient(circle, rgba(139,92,246,0.20) 0%, transparent 70%); }
+
+    /* Toujours visible sur les icônes actives */
+    .icon-active-glow {
+      box-shadow: 0 0 0 3px rgba(0,184,124,0.12), 0 2px 8px rgba(0,184,124,0.20);
+    }
+
+    /* ── Dot grid background ── */
+    /* ── Dot grid background ── */
+    /* ── Dot grid background ── */
+    .dot-bg {
+      background-color: #F8FAFC;
+      background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-kv-bg min-h-screen" x-data="app()" x-cloak>
+
+      </div><!-- /lg:p-6 -->
+    </div><!-- /lg:ml-64 content wrapper -->
+
+  <!-- ═══════════════════════════════════════════
+       TOAST NOTIFICATIONS
+  ════════════════════════════════════════════ -->
+  <div x-show="toast.show" x-transition
+       class="fixed top-16 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl text-white text-sm font-semibold" style="z-index:300;box-shadow:0 8px 32px rgba(0,0,0,.18);" style="box-shadow:0 8px 32px rgba(0,0,0,.18);animation:fadeUp .3s cubic-bezier(.22,1,.36,1) both;"
+  </style>
+</head>
+<body x-data="mosalaApp()" x-init="initDashboard()" x-cloak>
+
+  <!-- Navbar partagée -->
+  <script src="/components/mosala-components.js"></script>
+
+  <!-- Toast -->
+  <div x-show="toast.show" x-transition
+    style="position:fixed;top:20px;right:20px;z-index:9999;background:#0F172A;color:#fff;padding:12px 20px;border-radius:12px;font-size:.9rem;box-shadow:0 8px 24px rgba(0,0,0,.2);"
+    x-text="toast.msg"></div>
+
+  <!-- Contenu Dashboard -->
+  <div class="min-h-screen pb-24" style="background:#F5F4F2;">
+      <div  class="min-h-screen pb-24" style="background:#F5F4F2;">
+
+    <!-- ── DASHBOARD HEADER PREMIUM ── -->
+    <div class="relative overflow-hidden mx-4 mt-4"
+         style="background: linear-gradient(160deg,#0F172A 0%,#134E38 60%,#00B87C 100%);
+                border-radius: 24px;
+                box-shadow: 0 4px 24px rgba(0,0,0,0.18);">
+
+      <!-- Noise texture -->
+      <div class="absolute inset-0 pointer-events-none opacity-10"
+           style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3CfeColorMatrix type=%22saturate%22 values=%220%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22 opacity=%220.03%22/%3E%3C/svg%3E');"></div>
+
+      <!-- Glow top-right Linear style -->
+      <div class="absolute -top-12 -right-12 w-48 h-48 rounded-full pointer-events-none"
+           style="background: radial-gradient(circle, rgba(0,184,124,0.14) 0%, rgba(52,211,153,0.06) 40%, transparent 70%);"></div>
+      <!-- Glow bottom-left -->
+      <div class="absolute -bottom-10 -left-10 w-36 h-36 rounded-full pointer-events-none"
+           style="background: radial-gradient(circle, rgba(0,184,124,0.08) 0%, transparent 65%);"></div>
+
+      <div class="relative px-4 pt-4 pb-3">
+
+        <!-- Layout : avatar + infos | CTA -->
+        <div class="flex items-start gap-4">
+
+          <!-- ── Avatar premium ── -->
+          <div class="relative flex-shrink-0 mt-6">
+            <!-- Glow derrière -->
+            <div class="absolute inset-0 rounded-full blur-md"
+                 style="background: rgba(0,184,124,0.20); transform: scale(1.15)"></div>
+            <!-- Ring pulsant si disponible -->
+            <span x-show="user.disponibilite && user.disponibilite !== 'temps_partiel'"
+                  class="absolute inset-0 rounded-full border-2 border-[#00B87C]/50 animate-pulse pointer-events-none"></span>
+            <template x-if="user.photo_url">
+              <img :src="user.photo_url"
+                   class="relative w-16 h-16 rounded-full object-cover avatar-breathe"
+                   style="ring: 4px;"
+                   @error="user.photo_url=null"/>
+            </template>
+            <template x-if="!user.photo_url">
+              <div class="relative w-16 h-16 rounded-full bg-gradient-to-br from-[#00B87C] to-[#009E6A] flex items-center justify-center text-white font-black text-2xl avatar-breathe"
+                   x-text="(user.prenom||'?')[0].toUpperCase()"></div>
+            </template>
+            <!-- Dot statut animé -->
+            <span class="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full border-2 border-white shadow"
+                  :class="user.disponibilite && user.disponibilite !== 'temps_partiel' ? 'bg-[#00B87C]' : 'bg-gray-400'">
+              <span x-show="user.disponibilite && user.disponibilite !== 'temps_partiel'"
+                    class="absolute inset-0 rounded-full bg-[#00B87C] animate-ping opacity-60"></span>
+            </span>
+          </div>
+
+          <!-- ── Infos ── -->
+          <div class="flex-1 min-w-0 pt-0.5">
+            <!-- Salutation dynamique -->
+            <p class="text-xs font-medium leading-none mb-1"
+               style="color:rgba(255,255,255,0.55)"
+               x-text="new Date().getHours() < 12 ? 'Bonjour 🌤️' : new Date().getHours() < 18 ? 'Bon après-midi ☀️' : 'Bonsoir 🌙'"></p>
+
+            <!-- Nom dominant -->
+            <h2 class="font-black leading-tight truncate" style="color:#FFFFFF;text-shadow:0 1px 4px rgba(0,0,0,0.3);"
+                style="font-size: clamp(1.1rem, 4vw, 1.4rem); letter-spacing: -0.02em;"
+                x-text="(user.prenom||'') + ' ' + (user.nom||'')"></h2>
+
+            <!-- Badge Mosala ID -->
+            <div x-show="user.mosala_id" class="flex items-center gap-1 mt-0.5">
+              <span class="text-[8px] font-bold uppercase tracking-widest" style="color:#CBD5E1;">ID</span>
+              <div class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg"
+                   style="background:rgba(0,184,124,0.25); border:1px solid rgba(0,184,124,0.40);">
+                <span class="text-[9px] font-black" style="color:#34D399; letter-spacing:0.05em;"
+                      x-text="user.mosala_id"></span>
+                <button
+                  x-data="{ copied: false }"
+                  @click="navigator.clipboard.writeText(user.mosala_id).then(() => { copied = true; setTimeout(() => copied = false, 1600) })"
+                  class="flex items-center justify-center w-3.5 h-3.5 rounded transition-all duration-200 flex-shrink-0"
+                  :style="copied ? 'background:#00B87C;' : 'background:rgba(0,184,124,0.10);'">
+                  <svg x-show="copied" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" style="width:7px;height:7px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <svg x-show="!copied" viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" style="width:7px;height:7px;">
+                    <rect x="9" y="9" width="13" height="13" rx="2"/>
+                    <path stroke-linecap="round" d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Phrase identité -->
+            <p class="text-xs mt-0.5 truncate font-medium"
+               style="color:rgba(255,255,255,0.65)"
+               x-text="user.titre || (user.disponibilite==='disponible' ? 'Disponible pour missions · Kinshasa' : 'Freelance · Kinshasa')"></p>
+
+            <!-- Micro stat identité -->
+            <p class="text-[10px] mt-0.5 font-semibold"
+               style="color:rgba(255,255,255,0.5)"
+               x-text="dashStats.taux_reussite >= 90 ? '⭐ Taux de réussite ' + dashStats.taux_reussite + '%' : dashStats.projets_termines > 0 ? '🔥 ' + dashStats.projets_termines + ' projets livrés avec succès' : ''"></p>
+
+            <!-- Badges conditionnels selon profil réel -->
+            <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+              <!-- Top Freelance : rating >= 4.5 ET >= 5 projets terminés -->
+              <span x-show="user.rating >= 4.5 && dashStats.projets_termines >= 5"
+                    class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border border-amber-200/80 bg-amber-50 text-amber-600 shadow-sm">
+                <i data-lucide="award" style="width:10px;height:10px;stroke-width:2.5"></i> Top Freelance
+              </span>
+              <!-- Bouton Passer Pro -->
+              <button x-show="!user.is_pro" @click="navigateTo('pro')"
+                      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
+                      style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#0F172A;">
+                🏆 Passer Pro
+              </button>
+              <!-- Vérifié : basé sur kyc_status === valide -->
+              <span x-show="kycStatus === 'valide'"
+                    class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border border-emerald-200/80 bg-emerald-50 text-emerald-600 shadow-sm">
+                <i data-lucide="shield-check" style="width:10px;height:10px;stroke-width:2.5"></i> Vérifié
+              </span>
+              <!-- Nouveau : badge de bienvenue si pas encore de projets -->
+              <span x-show="kycStatus !== 'valide' && dashStats.projets_termines === 0"
+                    class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border border-blue-200/80 bg-blue-50 text-blue-500 shadow-sm">
+                <i data-lucide="sparkles" style="width:10px;height:10px;stroke-width:2.5"></i> Nouveau
+              </span>
+            </div>
+          </div>
+
+          <!-- ── CTA droit ── -->
+          <div class="flex-shrink-0 flex flex-col items-end gap-2 pt-0.5">
+            <!-- Notifs + toggle mobile -->
+            <div class="flex items-center gap-2 lg:hidden">
+              <button x-show="dashNotifs > 0"
+                      @click="showMobileNotifs = !showMobileNotifs; if(showMobileNotifs) loadNotifDropdown()"
+                      class="relative flex items-center gap-1 text-[10px] font-black text-white px-2 py-0.5 rounded-full"
+                      style="background:#EF4444; box-shadow:0 2px 6px rgba(239,68,68,0.40);">
+                <span class="relative flex w-1.5 h-1.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <span class="relative inline-flex rounded-full w-1.5 h-1.5 bg-white"></span>
+                </span>
+                <span x-text="dashNotifs > 9 ? '9+' : dashNotifs"></span>
+              </button>
+              <button @click="toggleDispo()" :class="user.disponibilite==='disponible' ? 'on' : 'off'" class="dispo-toggle">
+                <span class="thumb"></span>
+              </button>
+            </div>
+            <!-- Bouton CTA desktop -->
+            <button @click="navigateTo('marketplace')"
+                    class="hidden lg:flex items-center gap-1.5 text-xs font-bold text-white px-3.5 py-1.5 rounded-xl transition-all duration-200 active:scale-[0.97] mt-4 self-end"
+                    style="background:linear-gradient(135deg,#00B87C,#00D68F);
+                           box-shadow:0 4px 20px rgba(0,184,124,0.45), inset 0 1px 0 rgba(255,255,255,0.20);"
+                    onmouseover="this.style.boxShadow='0 6px 28px rgba(0,184,124,0.60), inset 0 1px 0 rgba(255,255,255,0.20)'"
+                    onmouseout="this.style.boxShadow='0 4px 20px rgba(0,184,124,0.45), inset 0 1px 0 rgba(255,255,255,0.20)'">
+              Trouver des missions
+              <svg class="w-3.5 h-3.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pills actions rapides dans header -->
+        <div class="flex items-center gap-2 mt-3">
+          <button @click="navigateTo('nouveau', false)"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:1px solid rgba(255,255,255,0.20);"
+                  onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                  onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+            Publier
+          </button>
+          <button @click="navigateTo('messages')"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:1px solid rgba(255,255,255,0.20);"
+                  onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                  onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Messages
+          </button>
+          <button @click="generateCV()" :disabled="loadingCV"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style="background:rgba(255,255,255,0.15);color:#FFFFFF;border:1px solid rgba(255,255,255,0.20);"
+                  onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                  onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" d="M15 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-5-5z"/><path stroke-linecap="round" d="M13 3v6h6"/></svg>
+            <span x-text="loadingCV ? '...' : 'CV IA'"></span>
+          </button>
+          <div class="flex-1"></div>
+        </div>
+
+        <!-- ── Barre profil intelligente ── -->
+        <div class="mt-4">
+          <div class="flex items-center justify-between mb-1.5">
+            <p class="text-[10px] font-bold" style="color:rgba(255,255,255,0.5)"
+               x-text="profileScore >= 100 ? '✓ Profil complet' : profileScore >= 75 ? '↑ Encore ' + (100-profileScore) + '% pour décrocher plus de missions' : profileScore >= 50 ? '→ Complète ton profil pour être visible' : '· Commence par remplir ton profil'"></p>
+            <span class="text-xs font-black" style="color:#FFFFFF;" id="profileScoreDisplay">0%</span>
+          </div>
+          <!-- Barre avec glow + checkpoints -->
+          <div class="relative rounded-full overflow-visible" style="height:10px;background:rgba(255,255,255,0.15);">
+            <!-- Barre remplie -->
+            <div class="h-full rounded-full transition-all duration-1000 relative overflow-hidden"
+                 :style="'width:' + profileScore + '%; background: linear-gradient(90deg, #00B87C, #34D399); box-shadow: 0 0 10px rgba(0,184,124,0.45);'">
+              <!-- Shimmer animé -->
+              <div class="absolute inset-0 -translate-x-full"
+                   style="background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+                          animation: shimmer 2.5s ease-in-out infinite;"></div>
+              <!-- Glow tête -->
+              <div class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full blur-sm"
+                   style="background: #34D399; opacity: 0.9"></div>
+            </div>
+            <!-- Checkpoints -->
+            <div class="absolute inset-0 pointer-events-none" style="overflow:visible">
+              <!-- 25% -->
+              <div class="absolute top-1/2 -translate-y-1/2 rounded-full border-2 transition-all duration-500"
+                   style="left:calc(25% - 4px); width:8px; height:8px;"
+                   :class="profileScore >= 25 ? 'bg-[#00B87C] border-white' : 'bg-white border-gray-300'"></div>
+              <!-- 50% -->
+              <div class="absolute top-1/2 -translate-y-1/2 rounded-full border-2 transition-all duration-500"
+                   style="left:calc(50% - 5px); width:10px; height:10px;"
+                   :class="profileScore >= 50 ? 'bg-[#00B87C] border-white shadow-sm' : 'bg-white border-gray-300'"></div>
+              <!-- 75% -->
+              <div class="absolute top-1/2 -translate-y-1/2 rounded-full border-2 transition-all duration-500"
+                   style="left:calc(75% - 6px); width:12px; height:12px;"
+                   :class="profileScore >= 75 ? 'bg-[#00B87C] border-white cp-active-pulse' : 'bg-white border-gray-300'"></div>
+              <!-- 100% -->
+              <div class="absolute top-1/2 -translate-y-1/2 rounded-full border-2 transition-all duration-500 flex items-center justify-center"
+                   style="left:calc(100% - 6px); width:12px; height:12px;"
+                   :class="profileScore >= 100 ? 'bg-amber-400 border-white shadow-sm' : 'bg-white border-gray-300'">
+                <span x-show="profileScore >= 100" class="text-[6px]">★</span>
+              </div>
+            </div>
+          </div>
+          <!-- Labels checkpoints -->
+          <div class="relative flex mt-1" style="height:12px">
+            <template x-for="cp in [25,50,75,100]" :key="cp">
+              <span class="absolute text-[8px] font-bold -translate-x-1/2 transition-colors"
+                    :style="'left:' + cp + '%'"
+                    :class="profileScore >= cp ? 'text-[#34D399]' : 'text-white/30'"
+                    x-text="cp + '%'"></span>
+            </template>
+          </div>
+          <!-- Milestones -->
+          <div class="flex justify-between mt-1.5">
+            <button @click="navigateTo('profil')"
+                    class="text-[10px] font-semibold transition-colors"
+                    style="color:rgba(255,255,255,0.45)"
+                    onmouseover="this.style.color='#34D399'"
+                    onmouseout="this.style.color='rgba(255,255,255,0.45)'">
+              Compléter le profil →
+            </button>
+            <p class="text-[10px]" style="color:#FFFFFF;font-weight:700;"
+               x-text="profileScore >= 75 ? '· Profil presque complet' : '📋 Ajoute tes compétences'"></p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── PARTIE 2 : STATS GRID ── -->
+    <div class="p-4 space-y-3">
+
+
+
+
+      <!-- Stats grid KPIs compacts — 1 ligne revenus + 4 KPIs en grille 4 colonnes -->
+
+      <!-- ── PRESENCE BAR ── -->
+      <div class="rounded-2xl px-4 py-2.5 flex items-center gap-3 overflow-x-auto" style="background:#FFFFFF;box-shadow:0 2px 12px rgba(15,23,42,0.07);">
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="absolute inline-flex h-full w-full rounded-full bg-[#00B87C] opacity-75 animate-ping"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00B87C]"></span>
+          </span>
+          <span class="text-xs font-black text-[#0F172A]" x-text="presence.freelances_online"></span>
+          <span class="text-xs text-gray-500">freelances en ligne</span>
+        </div>
+        <div class="w-px h-4 bg-gray-200 flex-shrink-0"></div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <div class="w-4 h-4 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" class="w-2.5 h-2.5"><path stroke-linecap="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+          </div>
+          <span class="text-xs font-black text-[#0F172A]" x-text="presence.projets_disponibles"></span>
+          <span class="text-xs text-gray-500">missions dispo</span>
+        </div>
+        <div class="w-px h-4 bg-gray-200 flex-shrink-0"></div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <div class="w-4 h-4 bg-amber-50 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" class="w-2.5 h-2.5"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <span class="text-xs font-black text-[#0F172A]" x-text="presence.nouveaux_projets_24h + ' nouveaux'"></span>
+          <span class="text-xs text-gray-500">aujourd'hui</span>
+        </div>
+        <div class="flex-1 min-w-4"></div>
+        <button @click="navigateTo('marketplace')"
+                class="flex-shrink-0 text-[10px] font-black text-[#00B87C] bg-[#F0FBF7] border border-[#00B87C]/20 px-2.5 py-1 rounded-lg hover:bg-[#00B87C] hover:text-white transition-all duration-200 whitespace-nowrap">
+          Voir les missions →
+        </button>
+      </div>
+      <!-- ── /PRESENCE BAR ── -->
+
+      <!-- 4 KPIs grille 2x2 grands chiffres -->
+      <div class="dash-block d2 grid grid-cols-4 gap-3 fade-in-2">
+
+        <!-- En cours -->
+        <div class="card-lift rounded-2xl p-3" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#EFF6FF;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" d="M3 7h18M3 12h18M3 17h10"/>
+              </svg>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#EFF6FF;color:#3B82F6;">actif</span>
+          </div>
+          <div x-show="!dashStatsLoaded" class="h-9 w-12 bg-gray-100 rounded-xl animate-pulse mb-1"></div>
+          <p x-show="dashStatsLoaded" class="text-2xl font-black leading-none mb-1" style="color:#0F172A;" x-text="dashStats.projets_actifs||0"></p>
+          <p class="text-xs font-semibold" style="color:#94A3B8;">Projets en cours</p>
+        </div>
+
+        <!-- Terminés -->
+        <div class="card-lift rounded-2xl p-3" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#F0FBF7;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+              </svg>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#F0FBF7;color:#00B87C;">livré</span>
+          </div>
+          <div x-show="!dashStatsLoaded" class="h-9 w-12 bg-gray-100 rounded-xl animate-pulse mb-1"></div>
+          <p x-show="dashStatsLoaded" class="text-2xl font-black leading-none mb-1" style="color:#0F172A;" x-text="dashStats.projets_termines||0"></p>
+          <p class="text-xs font-semibold" style="color:#94A3B8;">Projets terminés</p>
+        </div>
+
+        <!-- Taux réussite -->
+        <div class="card-lift rounded-2xl p-3" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#FFF7ED;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#FFF7ED;color:#F59E0B;">score</span>
+          </div>
+          <div x-show="!dashStatsLoaded" class="h-9 w-16 bg-gray-100 rounded-xl animate-pulse mb-1"></div>
+          <p x-show="dashStatsLoaded" class="text-2xl font-black leading-none mb-1" style="color:#0F172A;" x-text="(dashStats.taux_reussite||0)+'%'"></p>
+          <div class="h-1.5 rounded-full overflow-hidden mb-1" style="background:#F1F5F9;">
+            <div class="h-full rounded-full" style="background:linear-gradient(90deg,#F59E0B,#FCD34D);transition:width .7s;" :style="'width:'+(dashStats.taux_reussite||0)+'%'"></div>
+          </div>
+          <p class="text-xs font-semibold" style="color:#94A3B8;">Taux de réussite</p>
+        </div>
+
+        <!-- Avis -->
+        <div class="card-lift rounded-2xl p-3" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+          <div class="flex items-center justify-between mb-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#FEFCE8;">
+              <svg viewBox="0 0 24 24" fill="#EAB308" stroke="#EAB308" stroke-width="1" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5z"/>
+              </svg>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#FEFCE8;color:#EAB308;">note</span>
+          </div>
+          <div x-show="!dashStatsLoaded" class="h-9 w-12 bg-gray-100 rounded-xl animate-pulse mb-1"></div>
+          <p x-show="dashStatsLoaded" class="text-2xl font-black leading-none mb-1" style="color:#0F172A;" x-text="dashStats.avis_5_etoiles||0"></p>
+          <p class="text-xs font-semibold" style="color:#94A3B8;" x-text="'Moy. ' + (dashStats.note_moyenne||'—') + ' ★'"></p>
+        </div>
+
+      </div>
+
+      <!-- ── Wallet Escrow — Carte Blanche Mosala ── -->
+      <div class="relative overflow-hidden rounded-2xl"
+           style="background:white;border:1px solid rgba(0,184,124,0.20);box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+
+        <!-- Glow déco fond -->
+        <div class="absolute -bottom-12 -right-12 w-48 h-48 rounded-full pointer-events-none"
+             style="background: radial-gradient(circle, rgba(0,184,124,0.07) 0%, transparent 65%);"></div>
+        <div class="absolute -top-8 -left-8 w-36 h-36 rounded-full pointer-events-none"
+             style="background: radial-gradient(circle, rgba(0,184,124,0.05) 0%, transparent 65%);"></div>
+
+        <div class="relative p-4">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2.5">
+              <!-- Icône wallet fond gris clair -->
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                   style="background:#F1F5F9; border:1px solid #E8ECF4;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4.5 h-4.5">
+                  <path stroke-linecap="round" d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/>
+                  <path stroke-linecap="round" d="M16 12h5v4h-5a2 2 0 0 1 0-4z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-xs font-black tracking-tight" style="color:#0F172A;">Escrow Wallet</p>
+                <p class="text-[9px] font-medium leading-none" style="color:#94A3B8;">Mosala Pay</p>
+              </div>
+            </div>
+            <!-- Badge sécurisé + lien Gérer côte à côte -->
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl"
+                   style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.20);">
+                <span class="relative flex h-2 w-2">
+                  <span class="absolute inline-flex h-full w-full rounded-full bg-[#00B87C] opacity-40 animate-ping"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00B87C]"></span>
+                </span>
+                <span class="text-[9px] font-bold uppercase tracking-wider" style="color:#00B87C;">Sécurisé</span>
+              </div>
+              <!-- Lien Gérer compact -->
+              <button @click="navigateTo('wallet')"
+                      class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl transition-all duration-200"
+                      style="background:#F8FAFC; border:1.5px solid #E8ECF4; color:#374151; font-size:11px; font-weight:600; cursor:pointer;"
+                      onmouseover="this.style.borderColor='#00B87C';this.style.color='#00B87C';this.style.background='#F0FBF7'"
+                      onmouseout="this.style.borderColor='#E8ECF4';this.style.color='#374151';this.style.background='#F8FAFC'">
+                Gérer
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Solde principal -->
+          <div class="mb-3">
+            <p class="text-[9px] font-semibold uppercase tracking-[0.2em] mb-1" style="color:#94A3B8;">Solde disponible</p>
+            <div class="flex items-end gap-2">
+              <p class="font-black tracking-tight leading-none" style="font-size:2.4rem; color:#0F172A;"
+                 x-text="'$' + (escrow.disponible||0).toFixed(2)"></p>
+              <span class="text-[10px] font-bold mb-1" style="color:#94A3B8;"
+                    x-text="escrow.devise || 'USD'"></span>
+            </div>
+          </div>
+
+          <!-- Barre ratio disponible / bloqué -->
+          <div class="mb-4">
+            <div class="flex justify-between mb-1.5" style="font-size:9px; color:#94A3B8;">
+              <span class="font-semibold">Disponible</span>
+              <span class="font-semibold">Bloqué en escrow</span>
+            </div>
+            <div class="rounded-full overflow-hidden" style="height:6px; background:#F1F5F9;">
+              <div class="h-full rounded-full transition-all duration-700"
+                   style="background: linear-gradient(90deg, #00B87C, #059669);"
+                   :style="'width:' + (escrow.total > 0 ? Math.round((escrow.disponible/escrow.total)*100) : 0) + '%'"></div>
+            </div>
+          </div>
+
+          <!-- Stats bloqué / total -->
+          <div class="grid grid-cols-2 gap-2.5 mb-4">
+            <!-- Bloqué -->
+            <div class="rounded-xl p-2.5" style="background:#FFFBEB; border:1px solid rgba(245,158,11,0.20);">
+              <div class="flex items-center gap-1 mb-1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" class="w-3 h-3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25z"/>
+                </svg>
+                <span class="text-[9px] font-bold uppercase tracking-wider" style="color:#92400E;">Bloqué</span>
+              </div>
+              <p class="text-lg font-black leading-none" style="color:#D97706;"
+                 x-text="'$' + (escrow.bloque||0).toFixed(2)"></p>
+              <p class="text-[9px] mt-0.5 font-medium" style="color:#94A3B8;">En attente validation</p>
+            </div>
+            <!-- Total -->
+            <div class="rounded-xl p-2.5" style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.20);">
+              <div class="flex items-center gap-1 mb-1">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-3 h-3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125z"/>
+                </svg>
+                <span class="text-[9px] font-bold uppercase tracking-wider" style="color:#065F46;">Total</span>
+              </div>
+              <p class="text-lg font-black leading-none" style="color:#00B87C;"
+                 x-text="'$' + (escrow.total||0).toFixed(2)"></p>
+              <p class="text-[9px] mt-0.5 font-medium" style="color:#94A3B8;">Cumulé</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <!-- ── /Wallet Escrow ── -->
+
+      <!-- ── Graphique revenus ── -->
+      <!-- ── Graphique revenus ── -->
+      <div class="dash-block d4 fade-in-4 card-lift rounded-2xl p-4" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <!-- Icône SVG trending-up -->
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#F0FBF7;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.307a11.95 11.95 0 0 1 5.814-5.519l2.74-1.22m0 0-5.94-2.28m5.94 2.28-2.28 5.941"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm" style="color:#0F172A;">Revenus</h3>
+              <p class="text-[10px]" style="color:#94A3B8;">Transactions créditées</p>
+            </div>
+          </div>
+          <!-- Toggle période -->
+          <div class="flex gap-0.5 p-0.5 rounded-lg" style="background:#F1F5F9;">
+            <button @click="switchPeriode('7j')"
+                    :class="dashPeriode==='7j' ? 'bg-white shadow-sm' : ''"
+                    class="text-[10px] font-bold px-3 py-1 rounded-md transition-all"
+                    :style="dashPeriode==='7j' ? 'color:#00B87C;' : 'color:#94A3B8;'">7j</button>
+            <button @click="switchPeriode('30j')"
+                    :class="dashPeriode==='30j' ? 'bg-white shadow-sm' : ''"
+                    class="text-[10px] font-bold px-3 py-1 rounded-md transition-all"
+                    :style="dashPeriode==='30j' ? 'color:#00B87C;' : 'color:#94A3B8;'">30j</button>
+          </div>
+        </div>
+
+        <!-- Stats ligne compacte -->
+        <div class="flex items-center gap-3 mb-4 px-1">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-black" style="color:#0F172A;"
+                  x-text="'$' + ((dashGraphique[dashPeriode]||[]).reduce((s,d)=>s+d.montant,0)).toFixed(0)"></span>
+            <span class="text-[9px] font-medium" style="color:#94A3B8;">total</span>
+          </div>
+          <div class="w-px h-3" style="background:#E8ECF4;"></div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-black" style="color:#0F172A;"
+                  x-text="(dashGraphique[dashPeriode]||[]).filter(d=>d.montant>0).length"></span>
+            <span class="text-[9px] font-medium" style="color:#94A3B8;">jours actifs</span>
+          </div>
+          <div class="w-px h-3" style="background:#E8ECF4;"></div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-black" style="color:#0F172A;"
+                  x-text="'$' + Math.max(...(dashGraphique[dashPeriode]||[{montant:0}]).map(d=>d.montant)).toFixed(0)"></span>
+            <span class="text-[9px] font-medium" style="color:#94A3B8;">pic</span>
+          </div>
+        </div>
+
+        <!-- Canvas chart -->
+        <div class="relative h-28">
+          <canvas id="earningsChart"></canvas>
+          <!-- État vide propre -->
+          <div x-show="!(dashGraphique[dashPeriode]||[]).some(d=>d.montant>0)"
+               class="absolute inset-0 flex flex-col items-center justify-center rounded-xl"
+               style="background:rgba(255,255,255,0.90);">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center mb-2"
+                 style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125z"/>
+              </svg>
+            </div>
+            <p class="text-xs font-bold" style="color:#0F172A;">Aucune transaction</p>
+            <p class="text-[10px] text-center mt-0.5" style="color:#94A3B8;">Les données apparaîtront après vos premiers projets</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="dash-block d5 fade-in-5 card-lift rounded-2xl p-3" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <!-- Icône SVG briefcase -->
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#EFF6FF;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-sm" style="color:#0F172A;">Mes projets récents</h3>
+          </div>
+          <button @click="navigateTo('marketplace')"
+                  class="text-[10px] font-bold hover:underline" style="color:#00B87C;">Voir tout →</button>
+        </div>
+
+        <!-- État vide -->
+        <div x-show="mesProjets.length === 0"
+             class="rounded-xl p-4 text-center" style="background:#FFFFFF; border:1.5px dashed #E2E0DC; box-shadow:0 2px 12px rgba(15,23,42,0.05);">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
+            </svg>
+          </div>
+          <p class="text-xs font-bold mb-0.5" style="color:#0F172A;">Pas encore de projets</p>
+          <p class="text-[10px] mb-3" style="color:#94A3B8;">Lance-toi — les clients attendent des talents comme toi</p>
+          <div class="flex gap-2">
+            <button @click="navigateTo('marketplace')"
+                    style="flex:1; padding:10px; border-radius:12px; border:none;
+                           background:linear-gradient(135deg,#00B87C,#059669);
+                           color:white; font-size:12px; font-weight:700; cursor:pointer;
+                           box-shadow:0 4px 12px rgba(0,184,124,0.30);
+                           display:flex; align-items:center; justify-content:center; gap:6px;
+                           transition:all .2s;"
+                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,184,124,0.40)'"
+                    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(0,184,124,0.30)'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;">
+                <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
+              </svg>
+              Postuler
+            </button>
+            <button @click="navigateTo('nouveau', false)"
+                    style="flex:1; padding:10px; border-radius:12px;
+                           border:1.5px solid #E8ECF4; background:white;
+                           color:#374151; font-size:12px; font-weight:600; cursor:pointer;
+                           display:flex; align-items:center; justify-content:center; gap:6px;
+                           transition:all .2s;"
+                    onmouseover="this.style.borderColor='#00B87C';this.style.color='#00B87C'"
+                    onmouseout="this.style.borderColor='#E8ECF4';this.style.color='#374151'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;">
+                <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+              </svg>
+              Publier
+            </button>
+          </div>
+        </div>
+
+        <!-- Liste projets — cards modernes -->
+        <div x-show="mesProjets.length > 0" class="space-y-2">
+          <template x-for="p in mesProjets.slice(0,4)" :key="p.id">
+            <div class="group flex items-center gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer"
+                 class="item-lift" style="background:#FFFFFF;box-shadow:0 1px 10px rgba(15,23,42,0.07);border:none;"
+                 onmouseover="this.style.borderColor='rgba(0,184,124,0.25)';this.style.background='#FAFFFE'"
+                 onmouseout="this.style.borderColor='#F1F5F9';this.style.background='white'">
+
+              <!-- Point statut coloré -->
+              <div class="flex-shrink-0 w-2.5 h-2.5 rounded-full"
+                   :class="{
+                     'bg-yellow-400': p.statut==='en_attente',
+                     'bg-blue-400':   p.statut==='en_cours',
+                     'bg-[#00B87C]':  p.statut==='termine',
+                     'bg-red-400':    p.statut==='annule'
+                   }"></div>
+
+              <!-- Infos -->
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold truncate" style="color:#0F172A;" x-text="p.titre"></p>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span class="text-[9px] font-semibold"
+                        :style="{
+                          'color': p.statut==='en_attente' ? '#D97706' :
+                                   p.statut==='en_cours'   ? '#3B82F6' :
+                                   p.statut==='termine'    ? '#00B87C' : '#EF4444'
+                        }"
+                        x-text="statutLabel(p.statut)"></span>
+                  <span class="text-[9px]" style="color:#CBD5E1;">·</span>
+                  <span class="text-[9px]" style="color:#94A3B8;"
+                        x-text="p.created_at ? timeAgo(p.created_at) : ''"></span>
+                </div>
+              </div>
+
+              <!-- Budget + actions -->
+              <div class="flex-shrink-0 text-right flex flex-col items-end gap-1.5">
+                <p class="text-sm font-black" style="color:#0F172A;"
+                   x-text="formatBudget(p.budget, p.devise)"></p>
+                <!-- Boutons Modifier/Supprimer — seulement si en_attente -->
+                <template x-if="p.statut === 'en_attente'">
+                  <div class="flex items-center gap-1">
+                    <button @click.stop="ouvrirEditProjet(p)"
+                            class="px-2 py-0.5 rounded-lg text-[9px] font-bold transition"
+                            style="background:#EFF6FF;color:#3B82F6;">✏️ Modifier</button>
+                    <button @click.stop="confirmerSupprimerProjet(p)"
+                            class="px-2 py-0.5 rounded-lg text-[9px] font-bold transition"
+                            style="background:#FEF2F2;color:#EF4444;">🗑️</button>
+                  </div>
+                </template>
+                <template x-if="['en_cours','litige'].includes(p.statut)">
+                  <span class="text-[9px] text-amber-500 font-semibold">🔒 Contrat actif</span>
+                </template>
+                <!-- Boost (Pro only) -->
+                <template x-if="user.is_pro">
+                  <div class="flex items-center gap-1 mt-0.5">
+                    <button @click.stop="boosterProjet(p.id)" x-show="!p.is_boosted"
+                            class="px-2 py-0.5 rounded-lg text-[9px] font-bold transition"
+                            style="background:#fef9c3;color:#b45309;">🚀 Booster</button>
+                    <span x-show="p.is_boosted" class="text-[9px] font-bold" style="color:#b45309;">🚀 Boosté</span>
+                    <button x-show="p.freelance_id" @click.stop="telechargerContrat(p.id)"
+                            class="px-2 py-0.5 rounded-lg text-[9px] font-bold transition"
+                            style="background:#f0fdf4;color:#16a34a;">📄 Contrat</button>
+                  </div>
+                </template>
+              </div>
+
+            </div>
+          </template>
+        </div>
+      </div>
+      <!-- ── Missions recommandées ── -->
+      <div class="dash-block fade-in-5 card-lift rounded-2xl p-4" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <!-- Icône SVG target -->
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                 style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-4 h-4">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6"/>
+                <circle cx="12" cy="12" r="2"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-sm" style="color:#0F172A;">Missions pour toi</h3>
+          </div>
+          <button @click="navigateTo('marketplace')"
+                  class="text-[10px] font-bold hover:underline" style="color:#00B87C;">Voir tout →</button>
+        </div>
+
+        <!-- État vide -->
+        <div x-show="dashRecommended.length === 0"
+             class="rounded-xl p-4 text-center" style="background:#FFFFFF; border:1.5px dashed #E2E0DC; box-shadow:0 2px 12px rgba(15,23,42,0.05);">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="6"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+          </div>
+          <p class="text-xs font-bold mb-0.5" style="color:#0F172A;">Aucune mission trouvée</p>
+          <p class="text-[10px] mb-3" style="color:#94A3B8;">Ajoute des compétences pour voir les missions qui te correspondent</p>
+          <button @click="navigateTo('profil')"
+                  style="padding:9px 20px; border-radius:12px; border:none;
+                         background:linear-gradient(135deg,#00B87C,#059669);
+                         color:white; font-size:11px; font-weight:700; cursor:pointer;
+                         box-shadow:0 4px 12px rgba(0,184,124,0.30); transition:all .2s;"
+                  onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,184,124,0.40)'"
+                  onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(0,184,124,0.30)'">
+            + Ajouter des compétences
+          </button>
+        </div>
+
+        <!-- Liste missions recommandées -->
+        <div x-show="dashRecommended.length > 0" class="space-y-2">
+          <template x-for="proj in dashRecommended.slice(0,4)" :key="proj.id">
+            <div class="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer"
+                 class="item-lift" style="background:#FFFFFF;box-shadow:0 1px 10px rgba(15,23,42,0.07);border:none;"
+                 onmouseover="this.style.borderColor='rgba(0,184,124,0.25)';this.style.background='#FAFFFE'"
+                 onmouseout="this.style.borderColor='#F1F5F9';this.style.background='white'"
+                 @click="navigateTo('marketplace')">
+
+              <!-- Avatar client : photo si dispo, sinon initiale colorée -->
+              <div class="flex-shrink-0 relative">
+                <template x-if="proj.client_photo">
+                  <img :src="proj.client_photo"
+                       class="w-9 h-9 rounded-full object-cover"
+                       @error="$el.style.display='none'"/>
+                </template>
+                <template x-if="!proj.client_photo">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm text-white"
+                       :style="'background:' + avatarColor(proj.client_nom)"
+                       x-text="(proj.client_nom||'?')[0].toUpperCase()"></div>
+                </template>
+                <!-- Badge vérifié -->
+                <span x-show="proj.client_verifie"
+                      class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white flex items-center justify-center"
+                      style="background:#00B87C;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" class="w-2 h-2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                  </svg>
+                </span>
+              </div>
+
+              <!-- Contenu -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 mb-0.5">
+                  <p class="text-xs font-bold truncate" style="color:#0F172A;" x-text="proj.titre"></p>
+                  <!-- Badge Nouveau si < 48h -->
+                  <span x-show="proj.created_at && ((new Date() - new Date(proj.created_at)) / 3600000) < 48"
+                        class="flex-shrink-0 text-[8px] font-black px-1.5 py-0.5 rounded-md"
+                        style="background:#FEF3C7; color:#D97706;">Nouveau</span>
+                </div>
+                <!-- Tags uniquement — plus de description -->
+                <div class="flex flex-wrap gap-1" x-show="proj.tags">
+                  <template x-for="tag in (proj.tags||'').split(',').slice(0,3)" :key="tag">
+                    <span class="text-[9px] font-semibold px-1.5 py-0.5 rounded-md"
+                          style="background:#F0FBF7; color:#00B87C; border:1px solid rgba(0,184,124,0.15);"
+                          x-text="tag.trim()"></span>
+                  </template>
+                </div>
+              </div>
+
+              <!-- Budget compact -->
+              <div class="flex-shrink-0 text-right">
+                <p class="text-sm font-black leading-none" style="color:#0F172A;"
+                   x-text="'$' + (proj.budget||0).toFixed(0)"></p>
+                <p class="text-[9px] mt-0.5 font-medium" style="color:#94A3B8;"
+                   x-text="proj.devise || 'USD'"></p>
+              </div>
+
+            </div>
+          </template>
+        </div>
+      </div>
+      <!-- ── /Missions recommandées ── -->
+      <!-- ── Messages récents ── -->
+      <div class="dash-block d6 fade-in-6 rounded-2xl p-4" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <!-- Icône SVG message -->
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                 style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
+              </svg>
+            </div>
+            <h3 class="font-bold text-sm" style="color:#0F172A;">Messages récents</h3>
+          </div>
+          <button @click="navigateTo('messages')"
+                  class="text-[10px] font-bold hover:underline" style="color:#00B87C;">Voir tout →</button>
+        </div>
+
+        <!-- État vide -->
+        <div x-show="dashMessages.length === 0"
+             class="rounded-xl p-4 text-center" style="background:#FFFFFF; border:1.5px dashed #E2E0DC; box-shadow:0 2px 12px rgba(15,23,42,0.05);">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/>
+            </svg>
+          </div>
+          <p class="text-xs font-bold mb-0.5" style="color:#0F172A;">Aucune conversation</p>
+          <p class="text-[10px] mb-3" style="color:#94A3B8;">Postule à des missions pour démarrer les échanges</p>
+          <button @click="navigateTo('marketplace')"
+                  style="padding:9px 20px; border-radius:12px; border:none;
+                         background:linear-gradient(135deg,#00B87C,#059669);
+                         color:white; font-size:11px; font-weight:700; cursor:pointer;
+                         box-shadow:0 4px 12px rgba(0,184,124,0.30); transition:all .2s;"
+                  onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,184,124,0.40)'"
+                  onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(0,184,124,0.30)'">
+            Voir les missions →
+          </button>
+        </div>
+
+        <!-- Liste messages -->
+        <div x-show="dashMessages.length > 0" class="space-y-2">
+          <template x-for="m in dashMessages.slice(0,3)" :key="m.conversation_id">
+            <div class="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer"
+                 :style="!m.lu ? 'background:#FAFFFE; border:1px solid rgba(0,184,124,0.18);' : 'background:#F5F4F2; border:none;'"
+                 onmouseover="this.style.borderColor='rgba(0,184,124,0.28)';this.style.background='#FAFFFE'"
+                 onmouseout="this.style.borderColor=(!this.__x || this.__x.$data.m && !this.__x.$data.m.lu) ? 'rgba(0,184,124,0.18)' : '#F1F5F9'; this.style.background=(!this.__x) ? '#FAFFFE' : 'white'"
+                 @click="navigateTo('messages')">
+
+              <!-- Avatar : photo ou initiale colorée -->
+              <div class="flex-shrink-0 relative">
+                <template x-if="m.photo_url">
+                  <img :src="m.photo_url"
+                       class="w-9 h-9 rounded-full object-cover"
+                       @error="$el.style.display='none'"/>
+                </template>
+                <template x-if="!m.photo_url">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-sm text-white"
+                       :style="'background:' + avatarColor(m.expediteur)"
+                       x-text="(m.expediteur||'?')[0].toUpperCase()"></div>
+                </template>
+                <!-- Dot non-lu -->
+                <span x-show="!m.lu"
+                      class="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white"
+                      style="background:#00B87C;"></span>
+              </div>
+
+              <!-- Infos -->
+              <div class="flex-1 min-w-0">
+                <p class="text-xs truncate"
+                   :class="!m.lu ? 'font-black' : 'font-semibold'"
+                   style="color:#0F172A;"
+                   x-text="m.expediteur"></p>
+                <p class="text-[10px] truncate mt-0.5"
+                   :class="!m.lu ? 'font-semibold' : 'font-normal'"
+                   style="color:#94A3B8;"
+                   x-text="m.message"></p>
+              </div>
+
+              <!-- Heure -->
+              <div class="flex-shrink-0 flex flex-col items-end gap-1">
+                <span class="text-[9px]" style="color:#CBD5E1;"
+                      x-text="timeAgo(m.created_at)"></span>
+                <!-- Badge count non-lu si > 1 -->
+                <span x-show="m.nb_non_lus > 1"
+                      class="text-[9px] font-black text-white px-1.5 py-0.5 rounded-full"
+                      style="background:#00B87C; min-width:16px; text-align:center;"
+                      x-text="m.nb_non_lus"></span>
+              </div>
+
+            </div>
+          </template>
+        </div>
+      </div>
+      <!-- ── Compétences ── -->
+      <div class="dash-block d7 rounded-2xl p-4" style="background:#FFFFFF;box-shadow:0 2px 16px rgba(15,23,42,0.07);">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#EFF6FF;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l5.653-4.655m5.8-5.8 1.875 1.875M11.42 15.17 5.767 9.517m5.653 5.653-5.653-5.653m8.297-8.297a3.75 3.75 0 1 1 5.304 5.304l-1.875-1.875"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm" style="color:#0F172A;">Mes compétences</h3>
+              <p class="text-[10px]" style="color:#94A3B8;" x-text="dashCompetences.length + ' compétence' + (dashCompetences.length > 1 ? 's' : '')"></p>
+            </div>
+          </div>
+          <button @click="navigateTo('profil')"
+                  class="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-all"
+                  style="background:#EFF6FF;color:#3B82F6;"
+                  onmouseover="this.style.background='#3B82F6';this.style.color='#FFFFFF'"
+                  onmouseout="this.style.background='#EFF6FF';this.style.color='#3B82F6'">Gérer →</button>
+        </div>
+
+        <!-- État vide -->
+        <div x-show="dashCompetences.length === 0"
+             class="rounded-xl p-4 text-center" style="background:#FFFFFF; border:1.5px dashed #E2E0DC; box-shadow:0 2px 12px rgba(15,23,42,0.05);">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l5.653-4.655m5.8-5.8 1.875 1.875M11.42 15.17 5.767 9.517m5.653 5.653-5.653-5.653m8.297-8.297a3.75 3.75 0 1 1 5.304 5.304l-1.875-1.875"/>
+            </svg>
+          </div>
+          <p class="text-xs font-bold mb-0.5" style="color:#0F172A;">Aucune compétence ajoutée</p>
+          <p class="text-[10px] mb-3" style="color:#94A3B8;">Les freelances avec des compétences reçoivent 3x plus de missions</p>
+          <button @click="navigateTo('profil')"
+                  style="padding:9px 20px; border-radius:12px; border:none;
+                         background:linear-gradient(135deg,#00B87C,#059669);
+                         color:white; font-size:11px; font-weight:700; cursor:pointer;
+                         box-shadow:0 4px 12px rgba(0,184,124,0.30); transition:all .2s;"
+                  onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,184,124,0.40)'"
+                  onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(0,184,124,0.30)'">
+            + Ajouter mes compétences
+          </button>
+        </div>
+
+        <!-- Liste compétences — pills modernes -->
+        <div x-show="dashCompetences.length > 0" class="flex flex-wrap gap-2">
+          <template x-for="c in dashCompetences.slice(0,8)" :key="c.id">
+            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all duration-200 cursor-default"
+                 :style="(c.niveau||1) >= 4 ? 'background:#F0FBF7;border:1.5px solid rgba(0,184,124,0.25);' : (c.niveau||1) >= 3 ? 'background:#EFF6FF;border:1.5px solid rgba(59,130,246,0.25);' : 'background:#FFF7ED;border:1.5px solid rgba(245,158,11,0.25);'">
+              <span class="text-sm" x-text="tagEmoji(c.nom||'') || '🔧'"></span>
+              <span class="text-xs font-bold"
+                    :style="(c.niveau||1) >= 4 ? 'color:#00B87C;' : (c.niveau||1) >= 3 ? 'color:#3B82F6;' : 'color:#F59E0B;'"
+                    x-text="c.nom||''"></span>
+              <span class="text-[9px] font-black px-1.5 py-0.5 rounded-md"
+                    :style="(c.niveau||1) >= 4 ? 'background:#00B87C;color:white;' : (c.niveau||1) >= 3 ? 'background:#3B82F6;color:white;' : 'background:#F59E0B;color:white;'"
+                    x-text="(c.niveau||1) >= 4 ? 'Expert' : (c.niveau||1) >= 3 ? 'Pro' : 'Junior'"></span>
+            </div>
+          </template>
+
+          <!-- Bouton ajouter si < 5 compétences -->
+          <button x-show="dashCompetences.length < 5"
+                  @click="navigateTo('profil')"
+                  class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all duration-200"
+                  style="background:#F0EFED; border:1.5px dashed #D4D0CB; color:#94A3B8; font-size:12px; font-weight:600; cursor:pointer;"
+                  onmouseover="this.style.borderColor='#00B87C';this.style.color='#00B87C';this.style.background='#F0FBF7'"
+                  onmouseout="this.style.borderColor='#E8ECF4';this.style.color='#94A3B8';this.style.background='white'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px;">
+              <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+            </svg>
+            Ajouter une compétence
+          </button>
+        </div>
+      </div>
+      <!-- ── Activité récente ── -->
+      <div class="rounded-2xl p-4" style="background:#F5F4F2;box-shadow:0 2px 16px rgba(15,23,42,0.05);border:none;">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2.5" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+            </svg>
+          </div>
+          <h3 class="font-bold text-sm" style="color:#0F172A;">Activité récente</h3>
+        </div>
+
+        <!-- État vide -->
+        <div x-show="!dashActivite || dashActivite.length === 0"
+             class="rounded-xl p-4 text-center" style="background:#FFFFFF; border:1.5px dashed #E2E0DC; box-shadow:0 2px 12px rgba(15,23,42,0.05);">
+          <div class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2"
+               style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00B87C" stroke-width="2" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
+            </svg>
+          </div>
+          <p class="text-xs font-bold mb-0.5" style="color:#0F172A;">Aucune activité pour l'instant</p>
+          <p class="text-[10px] mb-3" style="color:#94A3B8;">Ton activité apparaîtra ici dès que tu postules ou livres une mission</p>
+          <button @click="navigateTo('marketplace')"
+                  style="padding:9px 20px; border-radius:12px; border:none;
+                         background:linear-gradient(135deg,#00B87C,#059669);
+                         color:white; font-size:11px; font-weight:700; cursor:pointer;
+                         box-shadow:0 4px 12px rgba(0,184,124,0.30); transition:all .2s;"
+                  onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(0,184,124,0.40)'"
+                  onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 12px rgba(0,184,124,0.30)'">
+            Explorer les missions
+          </button>
+        </div>
+
+        <!-- Liste activité -->
+        <div x-show="dashActivite && dashActivite.length > 0" class="space-y-2">
+          <template x-for="(a, i) in dashActivite" :key="i">
+            <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200"
+                 style="background:#F8FAFC; border:1px solid #F1F5F9;"
+                 onmouseover="this.style.background='#F0FBF7';this.style.borderColor='rgba(0,184,124,0.20)'"
+                 onmouseout="this.style.background='#F8FAFC';this.style.borderColor='#F1F5F9'">
+
+              <!-- Icône activité dans rond coloré -->
+              <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm"
+                   style="background:#F0FBF7; border:1px solid rgba(0,184,124,0.15);"
+                   x-text="a.icon"></div>
+
+              <!-- Label + sous-titre -->
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold truncate" style="color:#0F172A;" x-text="a.label"></p>
+                <p class="text-[10px] truncate" style="color:#94A3B8;" x-text="a.sub"></p>
+              </div>
+
+              <!-- Heure -->
+              <span class="text-[9px] flex-shrink-0 font-medium" style="color:#CBD5E1;"
+                    x-text="a.time"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+      <!-- ── Inviter amis ── -->
+      <div class="card-hover bg-gradient-to-r from-[#00B87C] to-[#009E6A] rounded-2xl p-3 text-white">
+        <div class="flex items-center gap-3">
+          <div class="text-3xl">🎁</div>
+          <div class="flex-1">
+            <p class="font-black text-sm text-white">Invitez vos amis ! 🎁</p>
+            <p class="text-xs mt-0.5" style="color:rgba(255,255,255,0.65);">Gagnez des bonus pour chaque freelance parrainé</p>
+          </div>
+          <button class="bg-white text-[#00B87C] text-xs font-black px-3 py-2 rounded-xl hover:bg-gray-50 transition flex-shrink-0">
+            Partager
+          </button>
+        </div>
+      </div>
+
+      <!-- spacer bottom nav -->
+      <div class="h-4"></div>
+
+    </div><!-- /p-4 space-y-4 -->
+    </div><!-- /dashboard -->
+  </div>
+
+  <!-- Bottom nav mobile -->
+  <nav style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;display:flex;justify-content:space-around;padding:8px 0;z-index:100;">
+    <a href="/pages/dashboard.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#00B87C;text-decoration:none;font-size:.7rem;font-weight:700;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Accueil
+    </a>
+    <a href="/pages/marketplace.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Trouver
+    </a>
+    <a href="/pages/messages.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Messages
+    </a>
+    <a href="/pages/wallet.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8L2 7h20z"/></svg>
+      Wallet
+    </a>
+    <a href="/pages/profil.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Profil
+    </a>
+  </nav>
+
+  <script>
+    const API = '/api';
+
+    function mosalaApp() {
+      return {
+        // ── Auth ──
+        token: localStorage.getItem('kz_token') || '',
+        user: JSON.parse(localStorage.getItem('kz_user') || 'null'),
+        toast: { show: false, msg: '' },
+
+        // ── Dashboard data ──
+        profileScore: 0,
+        escrow: { bloque: 0, disponible: 0, total: 0 },
+        mesProjets: [],
+        dashStats: { revenus_mois: 0, projets_actifs: 0, projets_termines: 0, taux_reussite: 0, avis_moyen: 0, nb_avis: 0 },
+        dashMessages: [],
+        dashRecommended: [],
+        dashGraphique: { '7j': [], '30j': [] },
+        dashPeriode: '7j',
+        dashChart: null,
+        competences: [],
+        dashLoaded: false,
+        showWelcome: false,
+        presenceActive: false,
+        pulsePresence: false,
+
+        // ── Init ──
+        async initDashboard() {
+          if (!this.token || !this.user) {
+            window.location.href = '/pages/login.html';
+            return;
+          }
+          await this.loadDashboard();
+          lucide.createIcons();
+        },
+
+        showToast(msg, dur = 3000) {
+          this.toast = { show: true, msg };
+          setTimeout(() => { this.toast.show = false; }, dur);
+        },
+
+        navigateTo(page) {
+          const routes = {
+            dashboard: '/pages/dashboard.html',
+            messages: '/pages/messages.html',
+            wallet: '/pages/wallet.html',
+            profil: '/pages/profil.html',
+            marketplace: '/index.html#marketplace',
+          };
+          if (routes[page]) window.location.href = routes[page];
+        },
+
+        logout() {
+          localStorage.removeItem('kz_token');
+          localStorage.removeItem('kz_user');
+          window.location.href = '/';
+        },
+
+                // ── DASHBOARD ──
+        async loadDashboard() {
+          try {
+            // ── Fetch parallèle : overview + compétences + presence en même temps ──
+            const headers = { Authorization: `Bearer ${this.token}` };
+            const [r, rc, rp] = await Promise.all([
+              fetch(`${API}/dashboard/overview`, { headers }),
+              fetch(`${API}/users/${this.user.id}/competences`, { headers }).catch(() => null),
+              fetch(`${API}/dashboard/presence`).catch(() => null),
+            ]);
+
+            if (!r.ok) throw new Error('Erreur dashboard');
+            const d = await r.json();
+
+            // User infos
+            this.dashUser = d.user || {};
+            if (d.user) {
+              this.user = { ...this.user, ...d.user };
+              sessionStorage.setItem('kv_user', JSON.stringify(this.user));
+            }
+
+            // Score profil
+            this.profileScore = d.user?.profile_completion || 0;
+
+            // Wallet escrow
+            if (d.wallet) {
+              const total = (d.wallet.solde || 0) + (d.wallet.solde_bloque || 0);
+              this.escrow = {
+                disponible: d.wallet.solde || 0,
+                bloque:     d.wallet.solde_bloque || 0,
+                total:      total,
+                devise:     d.wallet.devise || 'USD'
+              };
+            }
+
+            // Stats
+            this.dashStats = d.stats || {};
+
+            // Recent projects
+            this.mesProjets   = d.recent_projects || [];
+
+            // Messages récents
+            this.dashMessages = d.messages_recents || [];
+
+            // Projets recommandés
+            this.dashRecommended = d.projets_recommandes || [];
+
+            // Notifs
+            this.dashNotifs = d.notifs_non_lues || 0;
+
+            // Graphique revenus
+            this.dashGraphique = d.graphique || { '7j': [], '30j': [] };
+            this.$nextTick(() => {
+              this.renderEarningsChart();
+              this.revealDashboard();
+              // Force re-render barre completion après animation reveal
+              setTimeout(() => {
+                const score = this.profileScore;
+                this.profileScore = 0;
+                setTimeout(() => { this.profileScore = score; }, 50);
+              }, 100);
+            });
+
+            // Compétences (parallèle — résolu en même temps)
+            try { if (rc?.ok) this.dashCompetences = await rc.json(); } catch {}
+
+            // Presence (parallèle)
+            try { if (rp?.ok) this.presence = await rp.json(); } catch {}
+
+            // Activité récente (simulée à partir des données dispo)
+            this.dashActivite = [];
+            if (d.stats?.revenus_mois > 0) {
+              this.dashActivite.push({ icon: '✅', label: 'Paiement reçu', sub: '+$' + d.stats.revenus_mois.toFixed(2), time: 'ce mois' });
+            }
+            if (d.recent_projects?.length > 0) {
+              this.dashActivite.push({ icon: '📁', label: 'Projet actif', sub: d.recent_projects[0].titre.substring(0,30) + '...', time: 'récemment' });
+            }
+            if (d.messages_recents?.length > 0) {
+              this.dashActivite.push({ icon: '💬', label: 'Message reçu', sub: d.messages_recents[0].expediteur || 'Nouveau message', time: 'récemment' });
+            }
+
+          } catch(e) {
+            console.error('Dashboard error:', e);
+          }
+        },
+
+        async loadMesCandidatures() {
+          try {
+            const r = await fetch(`${API}/candidatures/mes-candidatures`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (r.ok) {
+              const data = await r.json();
+              this.mesCandidatures = data.map(c => c.projet_id || c.id);
+            }
+          } catch {}
+        },
+
+        ouvrirPostuler(projet) {
+          this.selectedProjet = null;  // fermer la modal détail
+          this.postuleProjet = projet;
+          this.postuleForm = { message: '', budget: projet.budget || '', delai: '' };
+          this.modalPostuler = true;
+          this.$nextTick(() => { if (window.lucide) window.lucide.createIcons(); });
+        },
+
+        async envoyerCandidature() {
+          if (!this.postuleForm.message.trim()) {
+            this.showToast('Écris un message pour le client', 'error');
+            return;
+          }
+          this.postuleLoading = true;
+          try {
+            const r = await fetch(`${API}/candidatures/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.token}` },
+              body: JSON.stringify({
+                projet_id: this.postuleProjet.id,
+                message: this.postuleForm.message,
+                budget_propose: this.postuleForm.budget ? parseFloat(this.postuleForm.budget) : null,
+                delai_jours: this.postuleForm.delai ? parseInt(this.postuleForm.delai) : null,
+              })
+            });
+            const data = await r.json();
+            if (r.ok) {
+              this.showToast('✅ Candidature envoyée !', 'success');
+              this.mesCandidatures.push(this.postuleProjet.id);
+              this.modalPostuler = false;
+            } else {
+              this.showToast(data.detail || 'Erreur', 'error');
+            }
+          } catch {
+            this.showToast('Erreur réseau', 'error');
+          } finally {
+            this.postuleLoading = false;
+          }
+        },
+
+        // ── CANDIDATURES ──
+        initierEscrow(projetId) {
+          this.modalEscrow = { show:true, projet_id:projetId, montant:'', devise:'USD', operateur:'airtel', telephone:'', loading:false };
+        },
+
+        async soumettreEscrow() {
+          const m = this.modalEscrow;
+          if (!m.montant || !m.operateur || !m.telephone) return;
+          m.loading = true;
+          // Token depuis toutes les sources Alpine
+          const tok = (typeof token !== 'undefined' ? token : null)
+                   || sessionStorage.getItem('kv_token')
+                   || localStorage.getItem('kv_token');
+          if (!tok) {
+            this.showToast('Session expirée — reconnectez-vous', 'error');
+            m.loading = false;
+            return;
+          }
+          // Normaliser le numéro de téléphone
+          let tel = m.telephone.replace(/\D/g, '');
+          if (tel.startsWith('0') && tel.length === 10) tel = '243' + tel.slice(1);
+          else if (tel.length === 9) tel = '243' + tel;
+          else if (!tel.startsWith('243')) tel = '243' + tel;
+          try {
+            const r = await fetch(`${API}/paiements/escrow/projet`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+              body: JSON.stringify({
+                projet_id: m.projet_id,
+                montant: Number(m.montant),
+                devise: m.devise,
+                telephone: tel,
+                operateur: m.operateur,
+              })
+            });
+            let d = {};
+            try { d = await r.json(); } catch(e) {}
+            if (r.ok) {
+              this.modalEscrow.show = false;
+              this.showAlerte('📲 Vérifiez votre téléphone !', d.message || 'Confirmez le paiement sur votre téléphone Mobile Money.', { type: 'warning', btnLabel: 'OK compris' });
+              // Polling statut escrow (6x toutes les 5s)
+              const _tok = tok;
+              const _pid = m.projet_id;
+              let _polls = 0;
+              const _pt = setInterval(async () => {
+                _polls++;
+                try {
+                  const rp = await fetch(`${API}/paiements/escrow/projet/${_pid}`, { headers: { Authorization: `Bearer ${_tok}` } });
+                  const dp = await rp.json();
+                  if (dp.escrow_statut === 'paye') {
+                    this.showToast('💰 Fonds sécurisés ! Le freelance peut commencer.', 'success');
+                    typeof loadConversations === 'function' && loadConversations();
+                    clearInterval(_pt);
+                  }
+                } catch(e) {}
+                if (_polls >= 6) clearInterval(_pt);
+              }, 5000);
+            } else {
+              this.showToast(d.detail || 'Erreur PawaPay — vérifiez votre numéro', 'error');
+            }
+          } catch(e) {
+            console.error('soumettreEscrow:', e);
+            this.showToast('Erreur réseau — réessayez', 'error');
+          }
+          finally { m.loading = false; }
+        },
+
+        async libererEscrow(escrowId) {
+          if (!confirm('Confirmer la livraison et libérer les fonds au freelance ?')) return;
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/escrow/liberer`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+              body: JSON.stringify({ escrow_id: escrowId })
+            });
+            const d = await r.json();
+            if (r.ok) {
+              this.showToast('🎉 Fonds libérés ! Mission terminée.', 'success');
+            } else {
+              this.showToast(d.detail || 'Erreur', 'error');
+            }
+          } catch { this.showToast('Erreur réseau', 'error'); }
+        },
+
+        async loadCandidaturesRecues() {
+          this.loadingCandidaturesRecues = true;
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/candidatures/projet/all-received`, {
+              headers: { Authorization: `Bearer ${tok}` }
+            });
+            if (r.ok) {
+              this.candidaturesRecues = await r.json();
+              this.unreadCandidatures = this.candidaturesRecues.filter(c => c.statut === 'en_attente').length;
+            }
+          } catch {}
+          finally { this.loadingCandidaturesRecues = false; }
+        },
+
+        async deciderCandidatureAlerte(candId, decision, c) {
+          await this.deciderCandidature(candId, decision);
+          // Rafraîchir la liste alertes
+          await this.loadCandidaturesRecues();
+        },
+
+        async loadCandidaturesProjet(projetId) {
+          this.loadingCandidatures = true;
+          this.candidaturesProjet = [];
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/candidatures/projet/${projetId}`, {
+              headers: { Authorization: `Bearer ${tok}` }
+            });
+            if (r.ok) {
+              this.candidaturesProjet = await r.json();
+            } else {
+              this.showToast('Erreur chargement candidatures', 'error');
+            }
+          } catch {
+            this.showToast('Erreur réseau', 'error');
+          } finally {
+            this.loadingCandidatures = false;
+          }
+        },
+
+        async deciderCandidature(candId, decision) {
+          this.candidatureLoading = candId;
+          this.candidatureDecision = decision;
+          // Récupérer le token depuis sessionStorage en fallback si this.token est null
+          const tok = this.token || sessionStorage.getItem('kv_token');
+          try {
+            const r = await fetch(`${API}/candidatures/${candId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+              body: JSON.stringify({ statut: decision })
+            });
+            const data = await r.json();
+            if (r.ok) {
+              const label = decision === 'acceptee' ? '✅ Candidature acceptée !' : '❌ Candidature refusée';
+              this.showToast(label, decision === 'acceptee' ? 'success' : 'error');
+              if (this.selectedProjet) await this.loadCandidaturesProjet(this.selectedProjet.id);
+              if (decision === 'acceptee' && data.conv_id) {
+                this.selectedProjet = null;
+                this.showAlerte(
+                  'Freelance accepté ! 🎉',
+                  'Une conversation a été ouverte. Allez dans Messages pour coordonner.',
+                  { type: 'warning', btnLabel: 'Voir les messages', action: () => this.navigateTo('messages'), btnAction: null }
+                );
+              }
+            } else {
+              this.showToast(data.detail || 'Erreur', 'error');
+            }
+          } catch {
+            this.showToast('Erreur réseau', 'error');
+          } finally {
+            this.candidatureLoading = null;
+            this.candidatureDecision = null;
+          }
+        },
+
+        async loadPresence() {
+          try {
+            const r = await fetch(`${API}/dashboard/presence`);
+            if (r.ok) this.presence = await r.json();
+          } catch {}
+        },
+
+        revealDashboard() {
+          const blocks = document.querySelectorAll('.dash-block');
+          blocks.forEach(el => el.classList.remove('revealed'));
+          setTimeout(() => {
+            blocks.forEach(el => el.classList.add('revealed'));
+            if (window.lucide) window.lucide.createIcons();
+            // CountUp animé sur le score profil
+            this._countUpScore();
+          }, 30);
+        },
+
+        _countUpScore() {
+          const el = document.getElementById('profileScoreDisplay');
+          if (!el) return;
+          const target = this.profileScore || 0;
+          const duration = 900; // ms
+          const steps = 40;
+          const stepTime = duration / steps;
+          let current = 0;
+          const increment = target / steps;
+          const timer = setInterval(() => {
+            current = Math.min(current + increment, target);
+            el.textContent = Math.round(current) + '%';
+            if (current >= target) clearInterval(timer);
+          }, stepTime);
+        },
+
+        renderEarningsChart() {
+          const canvas = document.getElementById('earningsChart');
+          if (!canvas) return;
+          const data = this.dashGraphique[this.dashPeriode] || [];
+          const labels = data.map(d => d.date);
+          const values = data.map(d => d.montant);
+          const devise = this.escrow.devise || 'USD';
+
+          // Gradient fill
+          const ctx = canvas.getContext('2d');
+          const gradient = ctx.createLinearGradient(0, 0, 0, canvas.offsetHeight || 112);
+          gradient.addColorStop(0, 'rgba(0,184,124,0.25)');
+          gradient.addColorStop(1, 'rgba(0,184,124,0.00)');
+
+          if (this.dashChart) this.dashChart.destroy();
+          this.dashChart = new Chart(canvas, {
+            type: 'line',
+            data: {
+              labels,
+              datasets: [{
+                label: devise,
+                data: values,
+                borderColor: '#00B87C',
+                backgroundColor: gradient,
+                borderWidth: 2,
+                pointRadius: (ctx) => values[ctx.dataIndex] > 0 ? 3 : 0,
+                pointBackgroundColor: '#00B87C',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 1.5,
+                tension: 0.45,
+                fill: true
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: 'index', intersect: false },
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: '#0F172A',
+                  titleColor: '#94a3b8',
+                  bodyColor: '#fff',
+                  titleFont: { size: 10 },
+                  bodyFont: { size: 12, weight: 'bold' },
+                  padding: 8,
+                  cornerRadius: 8,
+                  callbacks: {
+                    label: (ctx) => ' $' + ctx.parsed.y.toFixed(2)
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                  border: { display: false },
+                  ticks: {
+                    font: { size: 9 },
+                    color: '#94a3b8',
+                    maxTicksLimit: 4,
+                    callback: v => v >= 1000 ? '$'+(v/1000).toFixed(0)+'k' : '$'+v
+                  }
+                },
+                x: {
+                  grid: { display: false },
+                  border: { display: false },
+                  ticks: {
+                    font: { size: 9 },
+                    color: '#94a3b8',
+                    maxTicksLimit: this.dashPeriode === '7j' ? 7 : 10,
+                    maxRotation: 0
+                  }
+                }
+              }
+            }
+          });
+        },
+
+        async toggleDispo() {
+          // Valeurs DB : maintenant | cette_semaine | temps_partiel | temps_plein
+          const isAvailable = !!this.user.disponibilite && this.user.disponibilite !== 'temps_partiel';
+          const newVal = isAvailable ? 'temps_partiel' : 'maintenant';
+          this.user.disponibilite = newVal;
+          sessionStorage.setItem('kv_user', JSON.stringify(this.user));
+          this.showToast(newVal === 'maintenant' ? '✅ Tu es maintenant disponible' : '🔴 Statut : Occupé');
+          // Sauvegarder en base
+          try {
+            await fetch(`${API}/users/moi`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.token}` },
+              body: JSON.stringify({ disponibilite: newVal })
+            });
+          } catch(e) {}
+        },
+
+        async generateCV() {
+          if (!this.user.id) return;
+          this.loadingCV = true;
+          try {
+            const r = await fetch(`${API}/users/${this.user.id}/generate-cv`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (r.ok) this.showToast('📄 CV IA en cours de génération ! Revenez dans quelques secondes.');
+            else throw new Error('Erreur génération CV');
+          } catch(e) {
+            this.showToast(e.message, 'error');
+          } finally { this.loadingCV = false; }
+        },
+
+        // ── HELPERS DASHBOARD ──
+        tagEmoji(tag) {
+          const map = {
+            'React':'⚛️','Node.js':'🟢','Python':'🐍','Design':'🎨','UI/UX':'🖌️',
+            'Vidéo':'🎬','Montage':'✂️','SEO':'🔍','Crypto':'₿','Traduction':'🌍',
+            'Réseau':'🔧','Mobile':'📱','Fullstack':'💻','Community':'📢'
+          };
+          for (const [k,v] of Object.entries(map)) {
+            if (tag.includes(k)) return v;
+          }
+          return '🏷️';
+        },
+
+        // ════════ MESSAGES ════════
+        async loadMessages() {
+          this.convLoading = true;
+          try {
+            const r = await fetch(`${API}/messages/conversations`, { headers: { Authorization: `Bearer ${this.token}` } });
+            if (r.ok) {
+              const convs = await r.json();
+              // enrichir nom interlocuteur
+              this.conversations = convs.map(cv => ({
+                ...cv,
+                nom_interlocuteur: cv.client_id === this.user.id
+                  ? (cv.freelance_prenom || '') + ' ' + (cv.freelance_nom || '')
+                  : (cv.client_prenom || '') + ' ' + (cv.client_nom || ''),
+                photo_interlocuteur: cv.client_id === this.user.id ? cv.freelance_photo : cv.client_photo,
+                titre_projet: cv.projet_titre || ''
+              }));
+              this.unreadMessages = this.conversations.reduce((s, cv) => s + (cv.messages_non_lus || 0), 0);
+            }
+          } catch {}
+          this.convLoading = false;
+        },
+
+        async openConversation(conv) {
+          this.activeConv = conv;
+          this.convMessages = [];
+          this.msgLoading = true;
+          if (this._pollTimer) { clearInterval(this._pollTimer); this._pollTimer = null; }
+          try {
+            const r = await fetch(`${API}/messages/conversations/${conv.id}/messages`, { headers: { Authorization: `Bearer ${this.token}` } });
+            if (r.ok) this.convMessages = await r.json();
+          } catch {}
+          this.msgLoading = false;
+          this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+          this.atBottom = true;
+          this._pollTimer = setInterval(() => this.pollMessages(), 5000);
+          this.startTypingPoll();
+          this.loadConvProjet(conv);
+          // Marquer comme lu
+          conv.messages_non_lus = 0;
+          this.unreadMessages = this.conversations.reduce((s, cv) => s + (cv.messages_non_lus || 0), 0);
+        },
+
+        async sendMessage() {
+          const text = this.newMessage.trim();
+          if (!text || this.msgSending || !this.activeConv) return;
+          this.msgSending = true;
+          this.newMessage = '';
+          try {
+            const r = await fetch(`${API}/messages/conversations/${this.activeConv.id}/messages`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: text, type_message: 'texte' })
+            });
+            if (r.ok) {
+              const msg = await r.json();
+              this.convMessages.push(msg);
+              const conv = this.conversations.find(cv => cv.id === this.activeConv.id);
+              if (conv) { conv.dernier_message = text; conv.last_message_at = msg.created_at; this.conversations = [...this.conversations]; }
+              this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+            }
+          } catch {}
+          this.msgSending = false;
+        },
+
+        async uploadFile(event, convId) {
+          const file = event.target.files[0];
+          if (!file || !convId) return;
+          const formData = new FormData();
+          formData.append('file', file);
+          try {
+            const r = await fetch(`${API}/messages/conversations/${convId}/upload`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${this.token}` },
+              body: formData
+      };
+    }
+  </script>
+</body>
+</html>
