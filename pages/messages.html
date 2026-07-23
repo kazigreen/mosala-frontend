@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Messages — Mosala</title>
+  <meta name="robots" content="noindex"/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    [x-cloak]{display:none!important}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#F5F4F2;overflow:hidden;}
+    .msg-bubble-me{background:linear-gradient(135deg,#00B87C,#00D68F);color:#fff;border-radius:18px 18px 4px 18px;}
+    .msg-bubble-other{background:#fff;color:#1e293b;border-radius:18px 18px 18px 4px;border:1px solid #e2e8f0;}
+    #msgZone::-webkit-scrollbar{width:4px;}
+    #msgZone::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:4px;}
+  </style>
+</head>
+<body x-data="mosalaMessages()" x-init="init()" x-cloak>
+
+  <!-- Toast -->
+  <div x-show="toast.show" x-transition
+    style="position:fixed;top:20px;right:20px;z-index:9999;background:#0F172A;color:#fff;padding:12px 20px;border-radius:12px;font-size:.9rem;box-shadow:0 8px 24px rgba(0,0,0,.2);"
+    x-text="toast.msg"></div>
+
+  <!-- Header fixe -->
+  <div style="background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="/pages/dashboard.html" style="color:#64748b;text-decoration:none;">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </a>
+      <span style="font-weight:800;font-size:1.1rem;color:#0F172A;">Messages</span>
+      <span x-show="unreadMessages > 0" x-text="unreadMessages"
+        style="background:#00B87C;color:#fff;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:99px;"></span>
+    </div>
+    <a href="/pages/dashboard.html" style="font-size:1.1rem;font-weight:900;color:#00B87C;text-decoration:none;">Mosala &#x1F9BA;</a>
+  </div>
+
+  <!-- Zone messages -->
+  <div class="flex overflow-hidden" style="height:calc(100vh - 57px - 65px);">
+      <!-- ══ COLONNE GAUCHE : Liste conversations ══ -->
+      <div class="w-full lg:w-80 xl:w-96 border-r border-gray-200 flex flex-col" style="background:#F5F4F2;"
+           :class="activeConv ? 'hidden lg:flex' : 'flex'">
+
+        <!-- Header + onglets -->
+        <div class="border-b border-gray-100" style="background:white;">
+          <div class="px-4 pt-4 pb-0 flex items-center justify-between">
+            <h2 class="text-base font-bold text-gray-900">Messages</h2>
+            <span x-show="unreadMessages > 0"
+                  class="text-[11px] font-semibold px-2 py-0.5 bg-[#00B87C]/10 text-[#00B87C] rounded-full"
+                  x-text="unreadMessages + ' non lus'"></span>
+          </div>
+          <!-- Onglets Messages | Alertes -->
+          <div class="flex px-4 mt-3">
+            <button @click="messageTab='conversations'"
+                    class="flex-1 pb-2.5 text-xs font-bold transition-all border-b-2"
+                    :class="messageTab==='conversations' ? 'border-[#00B87C] text-[#00B87C]' : 'border-transparent text-gray-400'">
+              💬 Messages
+            </button>
+            <button @click="messageTab='alertes'; loadCandidaturesRecues()"
+                    class="flex-1 pb-2.5 text-xs font-bold transition-all border-b-2 relative"
+                    :class="messageTab==='alertes' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-400'">
+              🔔 Candidatures
+              <span x-show="unreadCandidatures > 0"
+                    class="absolute -top-1 right-3 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-black text-white flex items-center justify-center"
+                    style="background:#EF4444;"
+                    x-text="unreadCandidatures"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search + liste conversations -->
+        <div x-show="messageTab==='conversations'" class="flex flex-col flex-1 overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-100">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input x-model="msgSearch" type="text" placeholder="Rechercher..." class="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00B87C]/30 focus:border-[#00B87C]" style="background:white;" />
+          </div>
+        </div>
+
+        <!-- Liste conversations -->
+        <div class="flex-1 overflow-y-auto">
+
+          <!-- Skeleton loading -->
+          <template x-if="convLoading">
+            <div class="p-4 space-y-4">
+              <template x-for="i in 4">
+                <div class="flex items-center gap-3 animate-pulse">
+                  <div class="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3 bg-gray-200 rounded w-2/3"></div>
+                    <div class="h-2 bg-gray-100 rounded w-1/2"></div>
+                    <div class="h-2 bg-gray-100 rounded w-3/4"></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <!-- Vide -->
+          <template x-if="!convLoading && (!conversations || conversations.length === 0)">
+            <div class="flex flex-col items-center justify-center py-6 px-6 text-center">
+              <!-- Icône -->
+              <div class="w-16 h-16 rounded-2xl bg-[#00B87C]/10 flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+              </div>
+              <!-- Titre -->
+              <p class="text-base font-bold text-gray-800 mb-1">💬 Vos conversations</p>
+              <!-- Sous-titre -->
+              <p class="text-sm text-gray-400 mb-5 leading-relaxed text-center">Une fois une candidature acceptée,<br>vos échanges apparaîtront ici.</p>
+              <!-- Mini stats badges — une seule ligne -->
+              <div class="flex items-center justify-center gap-1.5 mb-5 flex-nowrap">
+                <span class="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 bg-white border border-gray-200 text-gray-600 rounded-full font-medium shadow-sm whitespace-nowrap">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#00B87C] flex-shrink-0"></span>
+                  <span x-text="(conversations||[]).length"></span>&nbsp;conv.
+                </span>
+                <span class="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 bg-white border border-gray-200 text-gray-600 rounded-full font-medium shadow-sm whitespace-nowrap">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span>
+                  <span x-text="(conversations||[]).filter(c => c.projet_statut === 'en_cours').length"></span>&nbsp;missions
+                </span>
+                <span class="inline-flex items-center gap-1 text-[11px] px-2.5 py-1 bg-white border border-gray-200 text-gray-600 rounded-full font-medium shadow-sm whitespace-nowrap">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                  <span x-text="(conversations||[]).reduce((s,c) => s + (c.messages_non_lus||0), 0)"></span>&nbsp;non lus
+                </span>
+              </div>
+
+              <!-- Preview fictive grisée -->
+              <div class="w-full mt-4 mb-2 pointer-events-none select-none">
+                <div class="border border-dashed border-gray-200 rounded-2xl p-3 opacity-50">
+                <div class="flex items-center justify-center mb-2">
+                  <span class="text-[10px] text-gray-400 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full">👁 Aperçu</span>
+                </div>
+                <!-- Conv fictive 1 -->
+                <div class="flex items-center gap-3 px-3 py-2.5 bg-white border border-gray-100 rounded-xl mb-2 shadow-sm">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">S</div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-semibold text-gray-700">Sarah K.</span>
+                      <span class="text-[10px] text-gray-400">14:35</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 truncate">📁 Logo Startup</p>
+                    <p class="text-[10px] text-gray-500 truncate">Bonjour, êtes-vous disponible ?</p>
+                  </div>
+                  <span class="w-4 h-4 rounded-full bg-gray-300 text-white text-[9px] flex items-center justify-center font-bold flex-shrink-0">2</span>
+                </div>
+                <!-- Conv fictive 2 -->
+                <div class="flex items-center gap-3 px-3 py-2.5 bg-white border border-gray-100 rounded-xl shadow-sm">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">J</div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-semibold text-gray-700">John M.</span>
+                      <span class="text-[10px] text-gray-400">09:12</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 truncate">📁 App Mobile RDC</p>
+                    <p class="text-[10px] text-gray-500 truncate">Merci pour le devis !</p>
+                  </div>
+                </div>
+                </div>
+              </div>
+
+              <!-- CTA -->
+              <button @click="navigateTo('marketplace')"
+                      class="flex items-center gap-2 px-5 py-2.5 bg-[#00B87C] hover:bg-[#00956a] text-white text-sm font-semibold rounded-xl shadow-md shadow-[#00B87C]/25 transition-all duration-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                Trouver des missions
+              </button>
+            </div>
+          </template>
+
+          <!-- Liste items -->
+          <template x-if="!convLoading && conversations && conversations.length > 0">
+            <div>
+              <template x-for="conv in conversations.filter(c => !msgSearch || (c.nom_interlocuteur||'').toLowerCase().includes(msgSearch.toLowerCase()) || (c.titre_projet||'').toLowerCase().includes(msgSearch.toLowerCase()))" :key="conv.id">
+                <div @click="openConversation(conv)"
+                     class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-50"
+                     :class="activeConv && activeConv.id === conv.id ? 'bg-[#00B87C]/5 border-l-[3px] border-l-[#00B87C]' : 'border-l-[3px] border-l-transparent'">
+                  <!-- Avatar -->
+                  <div class="relative flex-shrink-0">
+                    <template x-if="conv.photo_interlocuteur">
+                      <img :src="conv.photo_interlocuteur"
+                           class="w-12 h-12 rounded-full object-cover"
+                           :alt="conv.nom_interlocuteur"
+                           @error="conv.photo_interlocuteur=null"/>
+                    </template>
+                    <template x-if="!conv.photo_interlocuteur">
+                      <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                           :style="'background:'+avatarColor(conv.nom_interlocuteur||'')+';color:#1e293b;'"
+                           x-text="(conv.nom_interlocuteur||'?').trim().charAt(0).toUpperCase()"></div>
+                    </template>
+                    <!-- Indicateur présence -->
+                    <span class="absolute bottom-0 right-0 w-3 h-3 border-2 border-white rounded-full"
+                          :style="conv.en_ligne ? 'background:#22c55e;' : 'background:#cbd5e1;'"></span>
+                  </div>
+                  <!-- Infos -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                      <span class="font-semibold text-sm text-gray-900 truncate" x-text="conv.nom_interlocuteur || 'Inconnu'"></span>
+                      <span class="text-[11px] text-gray-400 flex-shrink-0 ml-2"
+                            x-text="conv.last_message_at ? new Date(conv.last_message_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : ''"></span>
+                    </div>
+                    <p class="text-xs text-[#00B87C] font-medium truncate mt-0.5" x-text="'📁 ' + (conv.titre_projet || 'Projet')"></p>
+                    <div class="flex items-center justify-between mt-0.5">
+                      <p class="text-xs text-gray-500 truncate flex-1"
+                         :class="conv.messages_non_lus > 0 ? 'font-semibold text-gray-800' : ''"
+                         x-text="conv.dernier_message || '...'"></p>
+                      <span x-show="conv.messages_non_lus > 0"
+                            class="flex-shrink-0 ml-2 bg-[#00B87C] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                            x-text="conv.messages_non_lus"></span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+        </div>
+        </div><!-- /messageTab conversations -->
+
+        <!-- ══ ONGLET ALERTES / CANDIDATURES ══ -->
+        <div x-show="messageTab==='alertes'" class="flex-1 overflow-y-auto">
+
+          <!-- Loading -->
+          <div x-show="loadingCandidaturesRecues" class="flex justify-center items-center py-10">
+            <div class="w-6 h-6 rounded-full border-2 animate-spin" style="border-color:#E8ECF4;border-top-color:#F59E0B;"></div>
+          </div>
+
+          <!-- Vide -->
+          <template x-if="!loadingCandidaturesRecues && candidaturesRecues.length === 0">
+            <div class="flex flex-col items-center justify-center py-12 px-6 text-center">
+              <div class="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center mb-4">
+                <span class="text-3xl">🔔</span>
+              </div>
+              <p class="text-sm font-bold text-gray-700 mb-1">Aucune candidature reçue</p>
+              <p class="text-xs text-gray-400 leading-relaxed">Les candidatures sur vos projets apparaîtront ici avec les boutons Accepter / Refuser.</p>
+            </div>
+          </template>
+
+          <!-- Liste candidatures -->
+          <div x-show="!loadingCandidaturesRecues && candidaturesRecues.length > 0" class="p-4 space-y-3">
+
+            <!-- Compteur -->
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1"
+               x-text="candidaturesRecues.length + ' candidature(s) reçue(s)'"></p>
+
+            <!-- Compteur refusées masquées -->
+            <template x-if="candidaturesRecues.filter(c => c.statut === 'refusee').length > 0">
+              <button @click="showRefusees = !showRefusees"
+                      class="w-full text-center text-[10px] font-bold py-1.5 rounded-lg transition mb-1"
+                      style="color:#9CA3AF; background:#F9FAFB; border:1px dashed #E5E7EB;"
+                      x-text="showRefusees ? '🙈 Masquer les refusées' : '👁 Voir les refusées (' + candidaturesRecues.filter(c => c.statut === 'refusee').length + ')'">
+              </button>
+            </template>
+
+            <template x-for="c in candidaturesRecues.filter(c => c.statut !== 'refusee' || showRefusees)" :key="c.id">
+              <div class="bg-white rounded-2xl shadow-sm overflow-hidden border"
+                   :style="c.statut === 'en_attente' ? 'border-color:#FDE68A;' : c.statut === 'acceptee' ? 'border-color:#A7F3D0;' : 'border-color:#FECACA;'">
+
+                <!-- Header carte -->
+                <div class="px-4 pt-3 pb-2 flex items-center gap-3">
+                  <!-- Avatar -->
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-black text-white text-sm"
+                       style="background:linear-gradient(135deg,#667eea,#764ba2);"
+                       x-text="(c.freelance_prenom || '?').charAt(0).toUpperCase()"></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-black text-gray-900 truncate"
+                       x-text="(c.freelance_prenom || '') + ' ' + (c.freelance_nom || '')"></p>
+                    <p class="text-[10px] text-gray-400 truncate" x-text="'Sur : ' + (c.projet_titre || '—')"></p>
+                  </div>
+                  <!-- Badge statut -->
+                  <span class="text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0"
+                        :class="c.statut==='en_attente' ? 'bg-amber-50 text-amber-600' : c.statut==='acceptee' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'"
+                        x-text="c.statut==='en_attente' ? '⏳ En attente' : c.statut==='acceptee' ? '✅ Acceptée' : '❌ Refusée'"></span>
+                </div>
+
+                <!-- Message candidature -->
+                <div class="px-4 py-2 border-t border-gray-50">
+                  <p class="text-xs text-gray-600 leading-relaxed line-clamp-2" x-text="c.message || '—'"></p>
+                </div>
+
+                <!-- Infos budget / délai -->
+                <div class="px-4 py-2 flex items-center gap-3 border-t border-gray-50">
+                  <template x-if="c.budget_propose">
+                    <span class="text-[10px] font-bold text-gray-700 flex items-center gap-1">
+                      💰 <span x-text="'$' + c.budget_propose"></span>
+                    </span>
+                  </template>
+                  <template x-if="c.delai_jours">
+                    <span class="text-[10px] font-bold text-gray-700 flex items-center gap-1">
+                      ⏱ <span x-text="c.delai_jours + ' jours'"></span>
+                    </span>
+                  </template>
+                  <span class="ml-auto text-[9px] text-gray-400"
+                        x-text="new Date(c.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'short'})"></span>
+                </div>
+
+                <!-- Boutons Accepter / Refuser (seulement si en_attente) -->
+                <template x-if="c.statut === 'en_attente'">
+                  <div class="px-4 pb-3 pt-1 flex gap-2">
+                    <button @click="deciderCandidatureAlerte(c.id, 'acceptee', c)"
+                            :disabled="candidatureLoading === c.id"
+                            class="flex-1 py-2 rounded-xl text-xs font-black text-white transition"
+                            style="background:linear-gradient(135deg,#00B87C,#00D68F);">
+                      <span x-show="candidatureLoading !== c.id">✅ Accepter</span>
+                      <span x-show="candidatureLoading === c.id">...</span>
+                    </button>
+                    <button @click="deciderCandidatureAlerte(c.id, 'refusee', c)"
+                            :disabled="candidatureLoading === c.id"
+                            class="flex-1 py-2 rounded-xl text-xs font-black transition"
+                            style="background:#FEF2F2; color:#EF4444; border:1.5px solid rgba(239,68,68,0.2);">
+                      <span x-show="candidatureLoading !== c.id">❌ Refuser</span>
+                      <span x-show="candidatureLoading === c.id">...</span>
+                    </button>
+                  </div>
+                </template>
+
+              </div>
+            </template>
+          </div>
+
+        </div><!-- /messageTab alertes -->
+
+      </div>
+
+      <!-- ══ COLONNE DROITE : Conversation active ══ -->
+      <div class="flex-1 flex flex-col bg-white"
+           :class="activeConv ? 'flex' : 'hidden lg:flex'">
+
+        <!-- Aucune conv sélectionnée -->
+        <template x-if="!activeConv">
+          <div class="flex-1 flex flex-col items-center justify-center p-10 text-center"
+               style="background: radial-gradient(circle at 60% 40%, rgba(0,184,124,0.04) 0%, transparent 70%);">
+            <!-- Icône légère -->
+            <div class="w-16 h-16 rounded-2xl bg-white shadow-md shadow-gray-200 border border-gray-100 flex items-center justify-center mb-5">
+              <svg class="w-8 h-8 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            </div>
+            <!-- Titre -->
+            <p class="text-lg font-bold text-gray-800 mb-1">Vos conversations</p>
+            <!-- Description -->
+            <p class="text-sm text-gray-400 leading-relaxed mb-6">Discutez avec vos clients et freelances.<br>Une fois une candidature acceptée,<br>vous pourrez échanger ici en temps réel.</p>
+            <!-- Features card -->
+            <div class="bg-white border border-gray-100 rounded-2xl shadow-sm px-5 py-4 w-full max-w-[240px] text-left mb-2">
+              <div class="flex items-center gap-2.5 text-sm text-gray-600 mb-2.5">
+                <span class="w-6 h-6 rounded-full bg-[#00B87C]/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </span>
+                Messages en temps réel
+              </div>
+              <div class="flex items-center gap-2.5 text-sm text-gray-600 mb-2.5">
+                <span class="w-6 h-6 rounded-full bg-[#00B87C]/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </span>
+                Contexte projet visible
+              </div>
+              <div class="flex items-center gap-2.5 text-sm text-gray-600">
+                <span class="w-6 h-6 rounded-full bg-[#00B87C]/10 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </span>
+                Escrow sécurisé intégré
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Conversation ouverte -->
+        <template x-if="activeConv">
+          <div class="flex flex-col h-full">
+
+            <!-- HEADER -->
+            <div class="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100 shadow-sm flex-shrink-0">
+              <!-- Retour mobile -->
+              <button @click="activeConv = null; stopTypingPoll()" class="lg:hidden p-1.5 rounded-full text-gray-500 hover:bg-gray-100 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <!-- Avatar -->
+              <div class="relative flex-shrink-0">
+                <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#00B87C] to-[#00956a] flex items-center justify-center text-white font-bold text-base shadow-md"
+                     x-text="(activeConv.nom_interlocuteur || '?').trim().charAt(0).toUpperCase()"></div>
+                <!-- Point en ligne -->
+                <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></span>
+              </div>
+              <!-- Nom + projet + badge vérifié -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <p class="font-bold text-gray-900 text-sm leading-tight truncate" x-text="activeConv.nom_interlocuteur || 'Inconnu'"></p>
+                  <!-- Badge vérifié -->
+                  <span class="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 bg-amber-50 border border-amber-200 text-amber-600 rounded-full font-semibold flex-shrink-0">
+                    <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    Vérifié
+                  </span>
+                </div>
+                <!-- Projet lié -->
+                <p class="text-xs text-[#00B87C] font-medium truncate mt-0.5"
+                   x-text="'📁 ' + (activeConv.titre_projet || 'Projet')"></p>
+              </div>
+              <!-- Boutons actions -->
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <button class="hidden sm:flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all font-medium">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                  Voir profil
+                </button>
+                <button class="hidden sm:flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl bg-[#00B87C] text-white hover:bg-[#00956a] transition-all font-medium shadow-sm shadow-[#00B87C]/25">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  Voir projet
+                </button>
+              </div>
+            </div>
+
+            <!-- BLOC ESCROW CONTEXTE -->
+            <template x-if="activeConv && (activeConv.escrow_montant || activeConv.date_livraison || activeConv.projet_statut)">
+              <div class="px-4 py-3 bg-gradient-to-r from-[#00B87C]/8 to-[#00B87C]/3 border-b border-[#00B87C]/15 flex-shrink-0">
+                <div class="flex items-center gap-3 flex-wrap">
+
+                  <!-- 💰 Escrow -->
+                  <template x-if="activeConv.escrow_montant">
+                    <div class="flex items-center gap-2 bg-white rounded-xl px-3 py-1.5 shadow-sm border border-[#00B87C]/15">
+                      <span class="text-sm">💰</span>
+                      <div>
+                        <p class="text-[10px] text-gray-400 leading-none">Escrow sécurisé</p>
+                        <p class="text-xs font-bold text-[#00B87C] leading-tight"
+                           x-text="Number(activeConv.escrow_montant).toLocaleString('fr-FR') + ' ' + (activeConv.escrow_devise || 'USD')"></p>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 📅 Livraison -->
+                  <template x-if="activeConv.date_livraison">
+                    <div class="flex items-center gap-2 bg-white rounded-xl px-3 py-1.5 shadow-sm border border-gray-100">
+                      <span class="text-sm">📅</span>
+                      <div>
+                        <p class="text-[10px] text-gray-400 leading-none">Livraison</p>
+                        <p class="text-xs font-bold text-gray-700 leading-tight"
+                           x-text="new Date(activeConv.date_livraison).toLocaleDateString('fr-FR', {day:'numeric', month:'long'})"></p>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 🟢 Statut mission -->
+                  <template x-if="activeConv.projet_statut">
+                    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs"
+                         :class="{
+                           'bg-green-50 border border-green-200 text-green-700':   activeConv.projet_statut === 'en_cours' || activeConv.projet_statut === 'paiement_recu',
+                           'bg-amber-50 border border-amber-200 text-amber-700':   activeConv.projet_statut === 'candidature_acceptee',
+                           'bg-yellow-50 border border-yellow-200 text-yellow-700':activeConv.projet_statut === 'en_attente',
+                           'bg-blue-50 border border-blue-200 text-blue-700':      activeConv.projet_statut === 'livre',
+                           'bg-gray-50 border border-gray-200 text-gray-500':      activeConv.projet_statut === 'termine'
+                         }">
+                      <span x-text="
+                        activeConv.projet_statut === 'en_cours'             ? '🟢' :
+                        activeConv.projet_statut === 'paiement_recu'        ? '✅' :
+                        activeConv.projet_statut === 'candidature_acceptee' ? '💳' :
+                        activeConv.projet_statut === 'livre'                ? '📦' :
+                        activeConv.projet_statut === 'en_attente'           ? '🟡' : '⚫'
+                      "></span>
+                      <span x-text="
+                        activeConv.projet_statut === 'en_cours'             ? 'Mission active' :
+                        activeConv.projet_statut === 'paiement_recu'        ? 'Feu vert — en cours' :
+                        activeConv.projet_statut === 'candidature_acceptee' ? 'En attente du paiement' :
+                        activeConv.projet_statut === 'livre'                ? 'Livré — validation' :
+                        activeConv.projet_statut === 'en_attente'           ? 'En attente' : 'Terminée'
+                      "></span>
+                    </div>
+                  </template>
+
+                </div>
+              </div>
+            </template>
+
+            <!-- ZONE MESSAGES -->
+            <div id="msgZone"
+                 class="flex-1 overflow-y-auto px-4 py-4"
+                 style="background:#f0faf5;">
+
+              <!-- Skeleton -->
+              <template x-if="msgLoading">
+                <div class="space-y-4">
+                  <div class="flex justify-start"><div class="h-10 w-48 bg-gray-200 rounded-2xl animate-pulse"></div></div>
+                  <div class="flex justify-end"><div class="h-10 w-40 bg-green-100 rounded-2xl animate-pulse"></div></div>
+                  <div class="flex justify-start"><div class="h-10 w-52 bg-gray-200 rounded-2xl animate-pulse"></div></div>
+                  <div class="flex justify-end"><div class="h-10 w-36 bg-green-100 rounded-2xl animate-pulse"></div></div>
+                </div>
+              </template>
+
+              <!-- ══ CARTE ESCROW ══ -->
+              <template x-if="activeConv && activeConv.projet_id && activeConv.projet_statut === 'en_cours'">
+                <div x-data="{ _esc: null, _convId: null }"
+                     x-effect="
+                       if (activeConv && activeConv.id !== _convId) {
+                         _convId = activeConv.id;
+                         _esc = null;
+                         const tok = token || sessionStorage.getItem('kv_token');
+                         fetch(`${API}/escrow/projet/${activeConv.projet_id}`, {headers:{Authorization:'Bearer '+tok}})
+                           .then(r=>r.ok?r.json():null)
+                           .then(d=>{ _esc = (d && d.escrow) ? d.escrow : false; })
+                           .catch(()=>{ _esc = false; });
+                       }
+                     "
+                     class="mx-1 mb-2">
+
+                  <!-- Pas d escrow → bouton initier (client seulement) -->
+                  <template x-if="_esc === false && String(user.id) === String(activeConv.client_id)">
+                    <div class="rounded-2xl p-4 border-2 border-dashed border-amber-200 bg-amber-50">
+                      <p class="text-xs font-black text-amber-700 mb-1">💳 Paiement sécurisé requis</p>
+                      <p class="text-[10px] text-amber-600 mb-3 leading-relaxed">Déposez le montant en escrow pour que le freelance puisse commencer en toute confiance.</p>
+                      <button @click="initierEscrow(activeConv.projet_id).then(()=>{ _loaded=false; })"
+                              class="w-full py-2 rounded-xl text-xs font-black text-white"
+                              style="background:linear-gradient(135deg,#F59E0B,#D97706);">
+                        💰 Initier le paiement escrow
+                      </button>
+                    </div>
+                  </template>
+
+                  <!-- Chargement -->
+                  <template x-if="_esc === null">
+                    <div class="flex items-center gap-2 p-3 rounded-xl bg-gray-50">
+                      <div class="w-4 h-4 border-2 border-gray-300 border-t-green-500 rounded-full animate-spin flex-shrink-0"></div>
+                      <span class="text-[10px] text-gray-400">Chargement escrow...</span>
+                    </div>
+                  </template>
+
+                  <!-- En attente confirmation -->
+                  <template x-if="_esc && _esc.statut === 'en_attente'">
+                    <div class="rounded-2xl p-4 bg-amber-50 border border-amber-200">
+                      <p class="text-xs font-black text-amber-700 mb-1">⏳ Paiement en attente de confirmation</p>
+                      <p class="text-[10px] text-amber-600">Référence : <strong x-text="_esc.reference_externe"></strong></p>
+                      <p class="text-[10px] text-amber-600 mt-0.5">Montant : <strong x-text="'$' + _esc.montant"></strong></p>
+                      <p class="text-[9px] text-amber-500 mt-2">Envoyez cette référence à l'admin Mosala pour confirmer la réception.</p>
+                    </div>
+                  </template>
+
+                  <!-- Escrow bloqué → en cours -->
+                  <template x-if="_esc && _esc.statut === 'bloque'">
+                    <div class="rounded-2xl p-4 bg-green-50 border border-green-200">
+                      <p class="text-xs font-black text-green-700 mb-1">🔒 <span x-text="'$' + _esc.montant_net"></span> sécurisés en escrow</p>
+                      <template x-if="String(user.id) === String(activeConv.client_id)">
+                        <div>
+                          <p class="text-[10px] text-green-600 mb-2">Le freelance a été notifié. Validez la livraison pour libérer les fonds.</p>
+                          <button @click="libererEscrow(_esc.id)"
+                                  class="w-full py-2 rounded-xl text-xs font-black text-white"
+                                  style="background:linear-gradient(135deg,#00B87C,#00D68F);">
+                            ✅ Valider la livraison &amp; libérer les fonds
+                          </button>
+                        </div>
+                      </template>
+                      <template x-if="String(user.id) !== String(activeConv.client_id)">
+                        <p class="text-[10px] text-green-600">💪 Les fonds sont sécurisés. Livrez votre travail pour recevoir le paiement.</p>
+                      </template>
+                    </div>
+                  </template>
+
+                  <!-- Escrow libéré -->
+                  <template x-if="_esc && _esc.statut === 'libere'">
+                    <div class="rounded-2xl p-3 bg-gray-50 border border-gray-200 flex items-center gap-2">
+                      <span>🎉</span>
+                      <p class="text-[10px] text-gray-500">Mission terminée · <strong x-text="'$' + (_esc.montant_net || _esc.montant)"></strong> libérés au freelance.</p>
+                    </div>
+                  </template>
+
+                </div>
+              </template>
+
+              <!-- Messages -->
+              <template x-if="!msgLoading">
+                <div class="space-y-1">
+                  <template x-if="!convMessages || convMessages.length === 0">
+                    <div class="flex flex-col items-center justify-center py-12 text-gray-400 text-center">
+                      <p class="text-sm">Aucun message pour l'instant</p>
+                      <p class="text-xs mt-1">Sois le premier à écrire 👋</p>
+                    </div>
+                  </template>
+                  <template x-for="(msg, idx) in (convMessages || [])" :key="msg.id">
+                    <div class="flex mb-1" :class="msg.sender_id === user.id ? 'justify-end' : 'justify-start'">
+                      <div class="max-w-[72%]">
+
+                        <!-- Bulle texte -->
+                        <template x-if="msg.type_message === 'texte' || !msg.type_message">
+                          <div class="px-4 py-2.5 text-sm leading-relaxed shadow-sm"
+                               :class="msg.sender_id === user.id
+                                 ? 'bg-[#00B87C] text-white rounded-t-2xl rounded-bl-2xl rounded-br-sm'
+                                 : 'bg-white text-gray-800 border border-gray-100 rounded-t-2xl rounded-br-2xl rounded-bl-sm'"
+                               x-text="msg.message"></div>
+                        </template>
+
+                        <!-- Bulle image -->
+                        <template x-if="msg.type_message === 'image'">
+                          <div class="overflow-hidden shadow-sm"
+                               :class="msg.sender_id === user.id
+                                 ? 'rounded-t-2xl rounded-bl-2xl rounded-br-sm'
+                                 : 'rounded-t-2xl rounded-br-2xl rounded-bl-sm'">
+                            <img :src="(msg.message||'').split('\n').pop()"
+                                 class="max-w-[220px] block cursor-pointer hover:opacity-95 transition-opacity"
+                                 @click="window.open((msg.message||'').split('\n').pop(), '_blank')" />
+                          </div>
+                        </template>
+
+                        <!-- Bulle fichier -->
+                        <template x-if="msg.type_message === 'fichier'">
+                          <a :href="(msg.message||'').split('\n').pop()" target="_blank"
+                             class="flex items-center gap-3 px-4 py-3 shadow-sm hover:opacity-90 transition-opacity no-underline"
+                             :class="msg.sender_id === user.id
+                               ? 'bg-[#00B87C] text-white rounded-t-2xl rounded-bl-2xl rounded-br-sm'
+                               : 'bg-white border border-gray-100 text-gray-800 rounded-t-2xl rounded-br-2xl rounded-bl-sm'">
+                            <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                                 :class="msg.sender_id === user.id ? 'bg-white/20' : 'bg-gray-100'">
+                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                            </div>
+                            <div class="min-w-0">
+                              <p class="text-xs font-semibold truncate" x-text="(msg.message||'').split('/').pop()"></p>
+                              <p class="text-[10px] opacity-70 mt-0.5">Appuyer pour ouvrir</p>
+                            </div>
+                          </a>
+                        </template>
+
+                        <!-- Heure + lu -->
+                        <div class="flex items-center gap-1 mt-0.5"
+                             :class="msg.sender_id === user.id ? 'justify-end' : 'justify-start'">
+                          <span class="text-[10px] text-gray-400"
+                                x-text="msg.created_at ? new Date(msg.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : ''"></span>
+                          <template x-if="msg.sender_id === user.id">
+                            <svg class="w-3.5 h-3.5" :class="msg.lu ? 'text-[#00B87C]' : 'text-gray-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 12l5 5L19 7"/>
+                            </svg>
+                          </template>
+                        </div>
+
+                      </div>
+                    </div>
+                  </template>
+                  <!-- Indicateur "est en train d'écrire" -->
+                  <div x-show="peerTyping" class="flex justify-start mt-1">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-full bg-gradient-to-br from-[#00B87C] to-[#00956a] flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                           x-text="activeConv ? (activeConv.nom_interlocuteur||'?').trim().charAt(0).toUpperCase() : '?'"></div>
+                      <div class="bg-white border border-gray-100 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+                        <div class="flex items-center gap-1">
+                          <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:0ms"></span>
+                          <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:150ms"></span>
+                          <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay:300ms"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+
+            </div>
+
+            <!-- ZONE SAISIE -->
+            <!-- ZONE SAISIE -->
+            <div class="px-4 py-3 bg-white border-t border-gray-100 flex-shrink-0">
+              <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-2xl px-3 py-2 focus-within:border-[#00B87C] focus-within:ring-2 focus-within:ring-[#00B87C]/20 transition-all">
+
+                <!-- Piece jointe -->
+                <label class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#00B87C] hover:bg-[#00B87C]/10 transition-colors cursor-pointer">
+                  <input type="file" class="hidden" accept="image/*,.pdf,.doc,.docx,.txt" @change="uploadFile($event, activeConv.id)" />
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                </label>
+
+                <!-- Input -->
+                <textarea x-model="newMessage"
+                          @keydown.enter.prevent="if(!$event.shiftKey && newMessage.trim()) sendMessage()"
+                          @input="$el.style.height='28px'; $el.style.height=$el.scrollHeight+'px'; signalTyping()"
+                          rows="1"
+                          placeholder="Ecrire un message..."
+                          class="flex-1 bg-transparent resize-none text-sm text-gray-800 placeholder-gray-400 focus:outline-none"
+                          style="min-height:28px;max-height:120px;"></textarea>
+
+                <!-- Emoji -->
+                <button class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-yellow-500 transition-colors">
+                  <span class="text-lg leading-none">&#x1F60A;</span>
+                </button>
+
+                <!-- Envoyer -->
+                <button @click="sendMessage()"
+                        :disabled="!newMessage || !newMessage.trim() || msgSending"
+                        :class="newMessage && newMessage.trim() && !msgSending ? 'bg-[#00B87C] hover:bg-[#00956a] text-white shadow-sm' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                        class="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full transition-all duration-200">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                </button>
+
+              </div>
+            </div>
+          </div>
+        </template>
+
+      </div>
+    </div>
+      <div class="lg:p-6"><!-- re-open lg:p-6 after messages -->
+
+
+
+    <!-- ══════════════════════════════════════════
+         MODAL — MODIFIER PROFIL
+    ══════════════════════════════════════════ -->
+    <div x-show="showEditProfil"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click.self="showEditProfil = false"
+         style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.6);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;"
+>
+
+      <div @click.stop
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="translate-y-full"
+           x-transition:enter-end="translate-y-0"
+           x-transition:leave="transition ease-in duration-200"
+           x-transition:leave-start="translate-y-0"
+           x-transition:leave-end="translate-y-full"
+           class="w-full max-w-lg bg-white rounded-t-3xl shadow-2xl overflow-y-auto"
+           style="max-height:90vh;">
+
+        <!-- Header modal -->
+        <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+          <div>
+            <h3 class="text-base font-black text-[#0F172A]">Modifier mon profil</h3>
+            <p class="text-xs text-gray-400 mt-0.5">Infos · Email · Mot de passe</p>
+          </div>
+          <button @click="showEditProfil = false" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-all">
+            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Onglets -->
+        <div class="flex gap-1 px-5 pt-3 pb-0">
+          <button @click="editProfilTab='info'"
+                  :class="editProfilTab==='info' ? 'bg-[#00B87C] text-white shadow-sm shadow-[#00B87C]/30' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+                  class="flex-1 py-2 rounded-xl text-xs font-bold transition-all">
+            Infos
+          </button>
+          <button @click="editProfilTab='email'"
+                  :class="editProfilTab==='email' ? 'bg-[#00B87C] text-white shadow-sm shadow-[#00B87C]/30' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+                  class="flex-1 py-2 rounded-xl text-xs font-bold transition-all">
+            Email
+          </button>
+          <button @click="editProfilTab='password'"
+                  :class="editProfilTab==='password' ? 'bg-[#00B87C] text-white shadow-sm shadow-[#00B87C]/30' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+                  class="flex-1 py-2 rounded-xl text-xs font-bold transition-all">
+            Mot de passe
+          </button>
+        </div>
+
+        <!-- Formulaire -->
+        <form x-show="editProfilTab==='info'"
+              @submit.prevent="
+          editProfilLoading = true;
+          fetch(API+'/users/moi', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+token },
+            body: JSON.stringify({ nom: editProfilForm.nom, prenom: editProfilForm.prenom, bio: editProfilForm.bio, ville: editProfilForm.ville })
+          })
+          .then(async r => {
+            const d = await r.json();
+            editProfilLoading = false;
+            if (r.status === 429) {
+              const msg = d.detail || 'Trop de requêtes, attends un moment.';
+              showToast(msg, 'error');
+              return;
+            }
+            if (!r.ok) {
+              showToast(d.detail || 'Erreur lors de la sauvegarde', 'error');
+              return;
+            }
+            if (d.id) {
+              user = { ...user, ...d };
+              sessionStorage.setItem('kv_user', JSON.stringify(user));
+              champsCooldown = d.champs_cooldown || {};
+              editProfilSuccess = true;
+              setTimeout(() => { showEditProfil = false; editProfilSuccess = false; }, 1500);
+            }
+          })
+          .catch(() => { editProfilLoading = false; });
+        " class="px-5 py-4 space-y-4">
+
+          <!-- Prénom + Nom -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-bold text-gray-600 mb-1 block">Prénom</label>
+              <input x-model="editProfilForm.prenom" type="text" placeholder="Clément"
+                     class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+            </div>
+            <div>
+              <label class="text-xs font-bold text-gray-600 mb-1 block">Nom</label>
+              <input x-model="editProfilForm.nom" type="text" placeholder="Kapanga"
+                     class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+            </div>
+          </div>
+
+          <!-- Bio -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Bio / Titre professionnel</label>
+            <textarea x-model="editProfilForm.bio" rows="3"
+                      placeholder="Ex: Développeur Full Stack spécialisé React & FastAPI"
+                      class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all resize-none"></textarea>
+            <p class="text-[10px] text-gray-400 mt-1" x-text="(editProfilForm.bio||'').length + '/200 caractères'"></p>
+          </div>
+
+          <!-- Ville -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Ville</label>
+            <input x-model="editProfilForm.ville" type="text" placeholder="Kinshasa"
+                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+          </div>
+
+          <!-- Succès -->
+          <div x-show="editProfilSuccess" class="flex items-center gap-2 p-3 rounded-xl bg-[#00B87C]/10 border border-[#00B87C]/20">
+            <svg class="w-4 h-4 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-xs font-bold text-[#00B87C]">Profil mis à jour avec succès !</p>
+          </div>
+
+          <!-- Cooldown par champ — design moderne -->
+          <div x-show="['nom','prenom','bio','ville'].some(c => champsCooldown[c] && new Date(new Date(champsCooldown[c]).getTime()+7*24*60*60*1000) > new Date())"
+               class="rounded-2xl overflow-hidden border border-amber-200 shadow-sm">
+
+            <!-- Header bannière -->
+            <div class="flex items-center gap-2.5 px-4 py-3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+              <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              </div>
+              <div>
+                <p class="text-xs font-black text-white">Certains champs sont verrouillés</p>
+                <p class="text-[10px] text-white/80">Modification possible dans 7 jours</p>
+              </div>
+            </div>
+
+            <!-- Liste des champs bloqués -->
+            <div class="bg-amber-50 px-4 py-3 space-y-2">
+              <template x-for="champ in ['nom','prenom','bio','ville']" :key="champ">
+                <div x-show="champsCooldown[champ] && new Date(new Date(champsCooldown[champ]).getTime()+7*24*60*60*1000) > new Date()"
+                     class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <div class="w-5 h-5 rounded-lg bg-amber-200 flex items-center justify-center">
+                      <svg class="w-3 h-3 text-amber-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <span class="text-xs font-black text-amber-800 capitalize" x-text="champ === 'nom' ? 'Nom' : champ === 'prenom' ? 'Prénom' : champ === 'bio' ? 'Bio' : 'Ville'"></span>
+                  </div>
+                  <!-- Compte à rebours -->
+                  <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1 bg-white border border-amber-200 rounded-lg px-2 py-1">
+                      <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <span class="text-[10px] font-black text-amber-700"
+                            x-text="(() => { const next = new Date(new Date(champsCooldown[champ]).getTime()+7*24*60*60*1000); const diff = next - new Date(); const j = Math.ceil(diff/86400000); return j + ' jour' + (j>1?'s':'') + ' restant' + (j>1?'s':''); })()">
+                      </span>
+                    </div>
+                    <div class="text-[10px] text-amber-600 font-semibold"
+                         x-text="'le ' + new Date(new Date(champsCooldown[champ]).getTime()+7*24*60*60*1000).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})">
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+          </div>
+
+          <!-- Bouton submit moderne -->
+          <button type="submit"
+                  :disabled="editProfilLoading"
+                  class="relative w-full py-3.5 rounded-2xl font-black text-sm text-white overflow-hidden transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+                  style="background: linear-gradient(135deg, #00B87C 0%, #00D68F 100%); box-shadow: 0 8px 24px rgba(0,184,124,0.35);">
+            <!-- Shimmer effect -->
+            <div x-show="!editProfilLoading"
+                 class="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity"
+                 style="background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%); pointer-events:none;"></div>
+            <!-- Idle -->
+            <span x-show="!editProfilLoading" class="flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Enregistrer les modifications
+            </span>
+            <!-- Loading -->
+            <span x-show="editProfilLoading" class="flex items-center justify-center gap-2">
+              <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+              Enregistrement en cours...
+            </span>
+          </button>
+
+        </form>
+
+          <!-- KYC_START -->
+          <div x-show="editProfilTab === 'info'" class="mt-4 rounded-2xl overflow-hidden" style="background:#fff;box-shadow:0 2px 12px rgba(15,23,42,0.07);">
+            <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid #f1f5f9;">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:#f0fdf4;"><svg fill="none" viewBox="0 0 24 24" stroke="#00B87C" stroke-width="2" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/></svg></div>
+                <div><p class="font-bold text-[13px]" style="color:#0F172A;">Verification identite</p><p class="text-[11px]" style="color:#94a3b8;">Optionnel - badge Verifie</p></div>
+              </div>
+              <span x-show="kycStatus === 'non_soumis'" class="text-[11px] font-semibold px-2 py-1 rounded-lg" style="background:#f1f5f9;color:#64748b;">Non soumis</span>
+              <span x-show="kycStatus === 'en_attente'" class="text-[11px] font-semibold px-2 py-1 rounded-lg" style="background:#fef9c3;color:#ca8a04;">En attente</span>
+              <span x-show="kycStatus === 'valide'" class="text-[11px] font-semibold px-2 py-1 rounded-lg" style="background:#f0fdf4;color:#16a34a;">Verifie</span>
+              <span x-show="kycStatus === 'rejete'" class="text-[11px] font-semibold px-2 py-1 rounded-lg" style="background:#fef2f2;color:#dc2626;">Rejete</span>
+            </div>
+            <div x-show="kycStatus === 'non_soumis' || kycStatus === 'rejete'" class="p-4">
+              <p x-show="kycStatus === 'rejete'" x-text="'Motif: ' + (kycNote || 'Documents non conformes')" class="text-[12px] mb-3 p-2 rounded-lg" style="background:#fef2f2;color:#dc2626;"></p>
+              <p class="text-[12px] mb-3" style="color:#64748b;">Envoyez votre piece identite recto + verso et un selfie.</p>
+              <div class="space-y-3">
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Nom</label><input type="text" x-model="kycNom" placeholder="Votre nom" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Prénom</label><input type="text" x-model="kycPrenom" placeholder="Votre prénom" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Postnom</label><input type="text" x-model="kycPostnom" placeholder="Votre postnom" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Date de naissance</label><input type="date" x-model="kycDateNaissance" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Recto</label><input type="file" accept="image/*" @change="kycFiles.recto = $event.target.files[0]" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Verso</label><input type="file" accept="image/*" @change="kycFiles.verso = $event.target.files[0]" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+                <div><label class="text-[12px] font-semibold mb-1 block" style="color:#374151;">Selfie</label><input type="file" accept="image/*" @change="kycFiles.selfie = $event.target.files[0]" class="w-full text-[12px] rounded-xl border p-2" style="border-color:#e2e8f0;"></div>
+              </div>
+              <p x-show="kycError" x-text="kycError" class="text-[12px] mt-2" style="color:#dc2626;"></p>
+              <button @click="submitKyc()" :disabled="kycLoading" class="w-full mt-3 py-3 rounded-xl font-bold text-[13px]" style="background:#0F172A;color:#fff;border:none;cursor:pointer;"><span x-show="!kycLoading">Envoyer pour verification</span><span x-show="kycLoading">Envoi en cours...</span></button>
+            </div>
+            <div x-show="kycStatus === 'en_attente'" class="p-4 text-center"><p class="font-semibold text-[13px]" style="color:#0F172A;">Documents recus - verification sous 24-48h</p></div>
+            <div x-show="kycStatus === 'valide'" class="p-4 text-center"><p class="font-semibold text-[13px]" style="color:#16a34a;">Identite verifiee</p></div>
+          </div>
+          <!-- KYC_END -->
+
+        <!-- ── ONGLET EMAIL ── -->
+        <form x-show="editProfilTab==='email'"
+              @submit.prevent="
+                editEmailLoading = true; editEmailError = ''; editEmailSuccess = false;
+                fetch(API+'/users/me/change-email', {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+token },
+                  body: JSON.stringify({ nouvel_email: editEmailForm.nouvel_email })
+                })
+                .then(r => r.json())
+                .then(d => {
+                  editEmailLoading = false;
+                  if (d.email) {
+                    user = { ...user, email: d.email };
+                    sessionStorage.setItem('kv_user', JSON.stringify(user));
+                    editEmailSuccess = true;
+                    editEmailForm.nouvel_email = '';
+                    setTimeout(() => { showEditProfil = false; editEmailSuccess = false; }, 1500);
+                  } else {
+                    editEmailError = d.detail || 'Erreur lors du changement';
+                  }
+                })
+                .catch(() => { editEmailLoading = false; editEmailError = 'Erreur réseau'; });
+              "
+              class="px-5 py-4 space-y-4">
+
+          <!-- Email actuel -->
+          <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <div>
+              <p class="text-[10px] text-gray-400 font-semibold">Email actuel</p>
+              <p class="text-xs font-bold text-[#0F172A]" x-text="user.email || 'Aucun email défini'"></p>
+            </div>
+          </div>
+
+          <!-- Nouvel email -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Nouvel email</label>
+            <input x-model="editEmailForm.nouvel_email" type="email" placeholder="nouveau@email.com" required
+                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+          </div>
+
+          <!-- Erreur -->
+          <div x-show="editEmailError" class="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-100">
+            <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-xs font-bold text-red-600" x-text="editEmailError"></p>
+          </div>
+
+          <!-- Succès -->
+          <div x-show="editEmailSuccess" class="flex items-center gap-2 p-3 rounded-xl bg-[#00B87C]/10 border border-[#00B87C]/20">
+            <svg class="w-4 h-4 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-xs font-bold text-[#00B87C]">Email mis à jour avec succès !</p>
+          </div>
+
+          <button type="submit" :disabled="editEmailLoading"
+                  class="w-full py-3.5 rounded-xl font-black text-sm text-white transition-all shadow-lg shadow-[#00B87C]/25 disabled:opacity-60"
+                  style="background: linear-gradient(135deg, #00B87C, #00D68F);">
+            <span x-show="!editEmailLoading">Changer l'email</span>
+            <span x-show="editEmailLoading" class="flex items-center justify-center gap-2">
+              <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+              Mise à jour...
+            </span>
+          </button>
+        </form>
+
+        <!-- ── ONGLET MOT DE PASSE ── -->
+        <form x-show="editProfilTab==='password'"
+              @submit.prevent="
+                editPassError = ''; editPassSuccess = false;
+                if (editPassForm.nouveau !== editPassForm.confirmer) { editPassError = 'Les mots de passe ne correspondent pas'; return; }
+                if (editPassForm.nouveau.length < 6) { editPassError = 'Minimum 6 caractères'; return; }
+                editPassLoading = true;
+                fetch(API+'/users/me/change-password', {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json', Authorization: 'Bearer '+token },
+                  body: JSON.stringify({ ancien_mot_de_passe: editPassForm.ancien, nouveau_mot_de_passe: editPassForm.nouveau })
+                })
+                .then(r => r.json())
+                .then(d => {
+                  editPassLoading = false;
+                  if (d.message && d.message.includes('succès')) {
+                    editPassSuccess = true;
+                    editPassForm = { ancien: '', nouveau: '', confirmer: '' };
+                    setTimeout(() => { showEditProfil = false; editPassSuccess = false; }, 1500);
+                  } else {
+                    editPassError = d.detail || 'Erreur lors du changement';
+                  }
+                })
+                .catch(() => { editPassLoading = false; editPassError = 'Erreur réseau'; });
+              "
+              class="px-5 py-4 space-y-4">
+
+          <!-- Ancien mot de passe -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Ancien mot de passe</label>
+            <input x-model="editPassForm.ancien" type="password" placeholder="••••••••" required
+                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+          </div>
+
+          <!-- Nouveau mot de passe -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Nouveau mot de passe</label>
+            <input x-model="editPassForm.nouveau" type="password" placeholder="••••••••" required
+                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+          </div>
+
+          <!-- Confirmer -->
+          <div>
+            <label class="text-xs font-bold text-gray-600 mb-1 block">Confirmer le nouveau mot de passe</label>
+            <input x-model="editPassForm.confirmer" type="password" placeholder="••••••••" required
+                   class="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-[#00B87C] focus:ring-2 focus:ring-[#00B87C]/20 transition-all" />
+            <!-- Indicateur match -->
+            <p x-show="editPassForm.confirmer && editPassForm.nouveau !== editPassForm.confirmer"
+               class="text-[10px] text-red-500 font-bold mt-1">⚠ Les mots de passe ne correspondent pas</p>
+            <p x-show="editPassForm.confirmer && editPassForm.nouveau === editPassForm.confirmer && editPassForm.nouveau.length >= 6"
+               class="text-[10px] text-[#00B87C] font-bold mt-1">✓ Mots de passe identiques</p>
+          </div>
+
+          <!-- Erreur -->
+          <div x-show="editPassError" class="flex items-center gap-2 p-3 rounded-xl bg-red-50 border border-red-100">
+            <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-xs font-bold text-red-600" x-text="editPassError"></p>
+          </div>
+
+          <!-- Succès -->
+          <div x-show="editPassSuccess" class="flex items-center gap-2 p-3 rounded-xl bg-[#00B87C]/10 border border-[#00B87C]/20">
+            <svg class="w-4 h-4 text-[#00B87C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-xs font-bold text-[#00B87C]">Mot de passe modifié avec succès !</p>
+          </div>
+
+          <button type="submit" :disabled="editPassLoading"
+                  class="w-full py-3.5 rounded-xl font-black text-sm text-white transition-all shadow-lg shadow-[#00B87C]/25 disabled:opacity-60"
+                  style="background: linear-gradient(135deg, #00B87C, #00D68F);">
+            <span x-show="!editPassLoading">Changer le mot de passe</span>
+            <span x-show="editPassLoading" class="flex items-center justify-center gap-2">
+              <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+              Modification...
+            </span>
+          </button>
+        </form>
+      </div>
+    </div>
+    <!-- FIN MODAL MODIFIER PROFIL -->
+  </div><!-- /app principale -->
+
+
+  <!-- ═══════════════════════════════════════════
+       MODAL : DÉTAIL PROJET
+  ════════════════════════════════════════════ -->
+  <div x-show="selectedProjet" class="fixed inset-0 bg-black/50 z-50 flex items-end"
+       @click.self="selectedProjet=null">
+    <div class="bg-white w-full max-w-lg mx-auto rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto"
+         x-show="selectedProjet" x-transition:enter="transition duration-300"
+         x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0">
+
+      <template x-if="selectedProjet">
+        <div>
+          <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
+          <div class="flex justify-between items-start mb-3">
+            <h3 class="font-black text-kv-dark text-xl flex-1 pr-3" x-text="selectedProjet.titre"></h3>
+            <span :class="{
+              'badge-yellow': selectedProjet.statut==='en_attente',
+              'badge-blue':   selectedProjet.statut==='en_cours',
+              'badge-green':  selectedProjet.statut==='termine'
+            }" x-text="statutLabel(selectedProjet.statut)"></span>
+          </div>
+
+          <p class="text-gray-600 text-sm mb-4" x-text="selectedProjet.description || 'Pas de description'"></p>
+
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-kv-bg rounded-xl p-3">
+              <p class="text-xs text-gray-500">Budget</p>
+              <p class="font-black text-kv-green" x-text="selectedProjet.budget ? formatBudget(selectedProjet.budget, selectedProjet.devise) : 'À négocier'"></p>
+            </div>
+            <div class="bg-kv-bg rounded-xl p-3">
+              <p class="text-xs text-gray-500">Publié le</p>
+              <p class="font-semibold text-gray-700 text-sm" x-text="formatDate(selectedProjet.created_at)"></p>
+            </div>
+          </div>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <nav style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e2e8f0;display:flex;justify-content:space-around;padding:8px 0;z-index:100;">
+    <a href="/pages/dashboard.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Accueil
+    </a>
+    <a href="/index.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Trouver
+    </a>
+    <a href="/pages/messages.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#00B87C;text-decoration:none;font-size:.7rem;font-weight:700;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Messages
+    </a>
+    <a href="/pages/wallet.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8L2 7h20z"/></svg>
+      Wallet
+    </a>
+    <a href="/pages/profil.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;color:#94a3b8;text-decoration:none;font-size:.7rem;">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Profil
+    </a>
+  </nav>
+
+  <script>
+    const API = '/api';
+
+    function mosalaMessages() {
+      return {
+        token: localStorage.getItem('kz_token') || '',
+        user: JSON.parse(localStorage.getItem('kz_user') || 'null'),
+        toast: { show: false, msg: '' },
+        conversations: [],
+        activeConv: null,
+        convMessages: [],
+        convLoading: false,
+        msgLoading: false,
+        msgText: '',
+        unreadMessages: 0,
+        atBottom: true,
+        _pollTimer: null,
+        candidaturesRecues: [],
+        loadingCandidaturesRecues: false,
+        msgTab: 'messages',
+        paymentBlock: null,
+        loadingPayment: false,
+        escrow: { bloque: 0, disponible: 0, total: 0 },
+
+        async init() {
+          if (!this.token || !this.user) {
+            window.location.href = '/pages/login.html';
+            return;
+          }
+          await this.loadMessages();
+          await this.loadCandidaturesRecues();
+          lucide.createIcons();
+        },
+
+        showToast(msg, dur = 3000) {
+          this.toast = { show: true, msg };
+          setTimeout(() => { this.toast.show = false; }, dur);
+        },
+
+        navigateTo(page) {
+          const routes = {
+            dashboard: '/pages/dashboard.html',
+            messages: '/pages/messages.html',
+            wallet: '/pages/wallet.html',
+            profil: '/pages/profil.html',
+          };
+          if (routes[page]) window.location.href = routes[page];
+        },
+
+        formatMsgTime(ts) {
+          if (!ts) return '';
+          const d = new Date(ts);
+          const now = new Date();
+          const diff = now - d;
+          if (diff < 60000) return 'A l instant';
+          if (diff < 3600000) return Math.floor(diff/60000) + ' min';
+          if (diff < 86400000) return d.getHours() + 'h' + String(d.getMinutes()).padStart(2,'0');
+          return d.getDate() + '/' + (d.getMonth()+1);
+        },
+
+        async loadMessages() {
+          this.convLoading = true;
+          try {
+            const r = await fetch(`${API}/messages/conversations`, { headers: { Authorization: `Bearer ${this.token}` } });
+            if (r.ok) {
+              const convs = await r.json();
+              // enrichir nom interlocuteur
+              this.conversations = convs.map(cv => ({
+                ...cv,
+                nom_interlocuteur: cv.client_id === this.user.id
+                  ? (cv.freelance_prenom || '') + ' ' + (cv.freelance_nom || '')
+                  : (cv.client_prenom || '') + ' ' + (cv.client_nom || ''),
+                photo_interlocuteur: cv.client_id === this.user.id ? cv.freelance_photo : cv.client_photo,
+                titre_projet: cv.projet_titre || ''
+              }));
+              this.unreadMessages = this.conversations.reduce((s, cv) => s + (cv.messages_non_lus || 0), 0);
+            }
+          } catch {}
+          this.convLoading = false;
+        },
+
+        async openConversation(conv) {
+          this.activeConv = conv;
+          this.convMessages = [];
+          this.msgLoading = true;
+          if (this._pollTimer) { clearInterval(this._pollTimer); this._pollTimer = null; }
+          try {
+            const r = await fetch(`${API}/messages/conversations/${conv.id}/messages`, { headers: { Authorization: `Bearer ${this.token}` } });
+            if (r.ok) this.convMessages = await r.json();
+          } catch {}
+          this.msgLoading = false;
+          this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+          this.atBottom = true;
+          this._pollTimer = setInterval(() => this.pollMessages(), 5000);
+          this.startTypingPoll();
+          this.loadConvProjet(conv);
+          // Marquer comme lu
+          conv.messages_non_lus = 0;
+          this.unreadMessages = this.conversations.reduce((s, cv) => s + (cv.messages_non_lus || 0), 0);
+        },
+
+        async sendMessage() {
+          const text = this.newMessage.trim();
+          if (!text || this.msgSending || !this.activeConv) return;
+          this.msgSending = true;
+          this.newMessage = '';
+          try {
+            const r = await fetch(`${API}/messages/conversations/${this.activeConv.id}/messages`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: text, type_message: 'texte' })
+            });
+            if (r.ok) {
+              const msg = await r.json();
+              this.convMessages.push(msg);
+              const conv = this.conversations.find(cv => cv.id === this.activeConv.id);
+              if (conv) { conv.dernier_message = text; conv.last_message_at = msg.created_at; this.conversations = [...this.conversations]; }
+              this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+            }
+          } catch {}
+          this.msgSending = false;
+        },
+
+        async uploadFile(event, convId) {
+          const file = event.target.files[0];
+          if (!file || !convId) return;
+          const formData = new FormData();
+          formData.append('file', file);
+          try {
+            const r = await fetch(`${API}/messages/conversations/${convId}/upload`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${this.token}` },
+              body: formData
+            });
+            if (r.ok) {
+              const msg = await r.json();
+              this.convMessages.push(msg);
+              const conv = this.conversations.find(cv => cv.id === convId);
+              if (conv) { conv.dernier_message = msg.type_message === 'image' ? '📷 Image' : '📎 Fichier'; this.conversations = [...this.conversations]; }
+              this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+            } else {
+              this.showToast('Échec upload — vérifiez le format/taille (max 10MB)', 'error');
+            }
+          } catch { this.showToast('Erreur réseau', 'error'); }
+          event.target.value = '';
+        },
+
+        // Signal "je suis en train d'écrire" (throttle 3s)
+        signalTyping() {
+          if (!this.activeConv || !this.token) return;
+          if (this._typingTimer) return; // throttle
+          this._typingTimer = setTimeout(() => { this._typingTimer = null; }, 3000);
+          fetch(`${API}/messages/conversations/${this.activeConv.id}/typing`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${this.token}` }
+          }).catch(() => {});
+        },
+
+        // Poll "l'autre est en train d'écrire" (toutes les 2s quand conv ouverte)
+        startTypingPoll() {
+          if (this._typingPollTimer) clearInterval(this._typingPollTimer);
+          this._typingPollTimer = setInterval(async () => {
+            if (!this.activeConv || !this.token) return;
+            try {
+              const r = await fetch(`${API}/messages/conversations/${this.activeConv.id}/typing`, {
+                headers: { Authorization: `Bearer ${this.token}` }
+              });
+              if (r.ok) {
+                const data = await r.json();
+                this.peerTyping = data.typing;
+                if (this.peerTyping) {
+                  this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+                }
+              }
+            } catch {}
+          }, 2000);
+        },
+
+        stopTypingPoll() {
+          if (this._typingPollTimer) { clearInterval(this._typingPollTimer); this._typingPollTimer = null; }
+          this.peerTyping = false;
+        },
+
+        async pollMessages() {
+          if (!this.activeConv || !this.token) return;
+          try {
+            const last = this.convMessages[this.convMessages.length - 1];
+            const after = last ? `?after=${encodeURIComponent(last.created_at)}` : '';
+            const r = await fetch(`${API}/messages/conversations/${this.activeConv.id}/messages${after}`, { headers: { Authorization: `Bearer ${this.token}` } });
+            if (r.ok) {
+              const all = await r.json();
+              const existing = new Set(this.convMessages.map(m => m.id));
+              const newMsgs = all.filter(m => !existing.has(m.id));
+              if (newMsgs.length > 0) {
+                const incoming = newMsgs.filter(m => m.sender_id !== this.user.id);
+                if (incoming.length > 0) { this.playSound('message'); this.sendBrowserNotif(this.activeConv.nom_interlocuteur || 'Message', incoming[incoming.length-1].message); }
+                this.convMessages.push(...newMsgs);
+                const lastMsg = newMsgs[newMsgs.length-1];
+                const conv = this.conversations.find(cv => cv.id === this.activeConv.id);
+                if (conv) { conv.dernier_message = lastMsg.message; conv.last_message_at = lastMsg.created_at; this.conversations = [...this.conversations]; }
+                if (this.atBottom) this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; });
+              }
+            }
+          } catch {}
+        },
+
+        startGlobalPolling() {
+          if (this._globalPollTimer) return;
+          this._globalPollTimer = setInterval(async () => {
+            if (!this.token) return;
+            try {
+              const r = await fetch(`${API}/messages/conversations`, { headers: { Authorization: `Bearer ${this.token}` } });
+              if (r.ok) {
+                const convs = await r.json();
+                const total = convs.reduce((s, cv) => s + (cv.messages_non_lus || 0), 0);
+                if (total > this.unreadMessages) {
+                  this.playSound('notif');
+                  this.sendBrowserNotif('Mosala', 'Vous avez de nouveaux messages');
+                  if (this.activeTab === 'messages') this.loadMessages();
+                } else {
+                  convs.forEach(nc => {
+                    const ex = this.conversations.find(cv => cv.id === nc.id);
+                    if (ex && nc.last_message_at !== ex.last_message_at) {
+                      ex.dernier_message = nc.dernier_message; ex.last_message_at = nc.last_message_at; ex.messages_non_lus = nc.messages_non_lus;
+                    }
+                  });
+                  this.conversations = [...this.conversations];
+                }
+                this.unreadMessages = total;
+              }
+            } catch {}
+          }, 5000);
+
+          // ── Polling notifications toutes les 30s ──
+          this._notifPollTimer = setInterval(async () => {
+            if (!this.token) return;
+            try {
+              const r = await fetch(`${API}/notifications/count`, {
+                headers: { Authorization: `Bearer ${this.token}` }
+              });
+              if (r.ok) {
+                const data = await r.json();
+                const prev = this.dashNotifs;
+                this.dashNotifs = data.count || 0;
+                // Son + browser notif si nouvelles notifs
+                if (this.dashNotifs > prev) {
+                  this.playSound('notif');
+                  this.sendBrowserNotif('Mosala 🔔', `Vous avez ${this.dashNotifs} notification${this.dashNotifs > 1 ? 's' : ''} non lue${this.dashNotifs > 1 ? 's' : ''}`);
+                }
+              }
+            } catch {}
+          }, 30000);
+        },
+
+        async loadNotifDropdown() {
+          this.loadingNotifDropdown = true;
+          this.notifDropdownList = [];
+          try {
+            const r = await fetch(`${API}/notifications/?limit=20`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            if (r.ok) {
+              const data = await r.json();
+              this.notifDropdownList = Array.isArray(data) ? data : (data.items || []);
+            }
+          } catch(e) {}
+          this.loadingNotifDropdown = false;
+        },
+
+        async markNotifRead(id) {
+          try {
+            await fetch(`${API}/notifications/${id}/lu`, {
+              method: 'PATCH',
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+          } catch(e) {}
+        },
+
+        async markAllNotifsRead() {
+          try {
+            await fetch(`${API}/notifications/tout-lire`, {
+              method: 'PATCH',
+              headers: { Authorization: `Bearer ${this.token}` }
+            });
+            this.notifDropdownList = this.notifDropdownList.map(n => ({...n, lu: true}));
+            this.dashNotifs = 0;
+          } catch(e) {}
+        },
+
+        async initNotifications() {
+          if ('Notification' in window) {
+            if (Notification.permission === 'granted') this.notifPermission = 'granted';
+            else if (Notification.permission !== 'denied') { const p = await Notification.requestPermission(); this.notifPermission = p; }
+            else this.notifPermission = 'denied';
+          }
+          this._msgSound = new Audio('/sounds/message.wav');
+          this._notifSound = new Audio('/sounds/notif.wav');
+          this._msgSound.volume = 0.5; this._notifSound.volume = 0.4;
+        },
+
+        playSound(type = 'message') {
+          if (!this.soundEnabled) return;
+          try { const s = type === 'notif' ? this._notifSound : this._msgSound; if (s) { s.currentTime = 0; s.play().catch(()=>{}); } } catch {}
+        },
+
+        sendBrowserNotif(title, body) {
+          if (this.notifPermission !== 'granted' || document.visibilityState === 'visible') return;
+          try { const n = new Notification(title, { body }); n.onclick = () => { window.focus(); this.navigateTo('messages'); n.close(); }; setTimeout(() => n.close(), 5000); } catch {}
+        },
+
+        onTyping() {
+          if (this._typingTimer) clearTimeout(this._typingTimer);
+          this._typingTimer = setTimeout(() => { this.isTyping = false; }, 2000);
+        },
+
+        checkScrollBottom() {
+          const z = document.getElementById('msgZone');
+          if (z) this.atBottom = z.scrollHeight - z.scrollTop - z.clientHeight < 50;
+        },
+
+        scrollToBottom() { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; this.atBottom = true; },
+
+        getMsgDateLabel(dateStr) {
+          if (!dateStr) return '';
+          const d = new Date(dateStr);
+          const today = new Date(); today.setHours(0,0,0,0);
+          const yesterday = new Date(today); yesterday.setDate(yesterday.getDate()-1);
+          const msgDay = new Date(d); msgDay.setHours(0,0,0,0);
+          if (msgDay.getTime() === today.getTime()) return "Aujourd'hui";
+          if (msgDay.getTime() === yesterday.getTime()) return 'Hier';
+          return d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+        },
+
+        shouldShowDateSep(index) {
+          if (index === 0) return true;
+          const prev = this.convMessages[index-1]; const curr = this.convMessages[index];
+          if (!prev || !curr) return false;
+          const d1 = new Date(prev.created_at); d1.setHours(0,0,0,0);
+          const d2 = new Date(curr.created_at); d2.setHours(0,0,0,0);
+          return d1.getTime() !== d2.getTime();
+        },
+
+        formatMsgTime(dateStr) {
+          if (!dateStr) return '';
+          return new Date(dateStr).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+        },
+
+        async loadConvProjet(conv) {
+          if (!conv.projet_id) return;
+          try {
+            const r = await fetch(`${API}/projets/${conv.projet_id}`, { headers: { Authorization: `Bearer ${this.token}` } });
+            if (r.ok) this.convProjet = await r.json();
+          } catch {}
+        },
+
+        async uploadFile(e) {
+          const file = e.target.files[0]; if (!file || !this.activeConv) return;
+          if (file.size > 10 * 1024 * 1024) { this.showToast('Fichier trop lourd (max 10MB)', 'error'); return; }
+          if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+              try {
+                const r = await fetch(`${API}/messages/conversations/${this.activeConv.id}/messages`, {
+                  method: 'POST', headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ message: ev.target.result, type_message: 'image' })
+                });
+                if (r.ok) { const msg = await r.json(); this.convMessages.push(msg); this.$nextTick(() => { const z = document.getElementById('msgZone'); if (z) z.scrollTop = z.scrollHeight; }); }
+              } catch {}
+            };
+            reader.readAsDataURL(file);
+          } else {
+            const text = `📎 ${file.name}`;
+            try {
+              const r = await fetch(`${API}/messages/conversations/${this.activeConv.id}/messages`, {
+                method: 'POST', headers: { Authorization: `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text, type_message: 'fichier' })
+              });
+              if (r.ok) { const msg = await r.json(); this.convMessages.push(msg); }
+            } catch {}
+          }
+          e.target.value = '';
+        },
+
+        // ════════ FIN MESSAGES ════════
+
+        formatTxDate(dateStr) {
+          if (!dateStr) return '';
+          const d = new Date(dateStr);
+          const now = new Date();
+          const diff = Math.floor((now - d) / 86400000);
+          if (diff === 0) return 'Aujourd\'hui';
+          if (diff === 1) return 'Hier';
+          if (diff < 7) return 'Il y a ' + diff + ' jours';
+          return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+        },
+
+        timeAgo(dateStr) {
+          if (!dateStr) return '';
+          const diff = (Date.now() - new Date(dateStr)) / 1000;
+          if (diff < 3600) return 'il y a ' + Math.round(diff/60) + ' min';
+          if (diff < 86400) return 'il y a ' + Math.round(diff/3600) + 'h';
+          if (diff < 172800) return 'hier';
+          return 'il y a ' + Math.round(diff/86400) + 'j';
+        },
+
+        avatarColor(str) {
+          if (!str) return '#00B87C';
+          let hash = 0;
+          for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+          const colors = [
+            '#CBD5E1','#BAE6FD','#BBF7D0','#E9D5FF','#FBCFE8',
+            '#FED7AA','#A5F3FC','#DDD6FE','#CCFBF1','#E2E8F0'
+          ];
+          return colors[Math.abs(hash) % colors.length];
+        },
+
+        switchPeriode(p) {
+          this.dashPeriode = p;
+          this.$nextTick(() => this.renderEarningsChart());
+        },
+
+        // ── NOUVEAU PROJET ──
+        addJalon() {
+          this.projetForm.jalons.push({ titre: '', montant: '' });
+        },
+
+        async createProjet() {
+          this.loading = true;
+          try {
+            const r = await fetch(`${API}/projets/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${this.token}`
+              },
+              body: JSON.stringify({
+                titre:       this.projetForm.titre,
+                description: this.projetForm.description,
+                budget:      this.projetForm.budget ? Number(this.projetForm.budget) : null,
+                devise:      this.projetForm.devise,
+                tags:        this.projetForm.tags.length ? this.projetForm.tags : null,
+              })
+            });
+            const data = await r.json();
+            if (!r.ok) throw new Error(data.detail || 'Erreur création projet');
+
+            // Créer les jalons si ajoutés
+            for (const j of this.projetForm.jalons) {
+              if (j.titre && j.montant) {
+                await fetch(`${API}/projets/${data.id}/jalons`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${this.token}`
+                  },
+                  body: JSON.stringify({ titre: j.titre, montant: Number(j.montant) })
+                });
+              }
+            }
+
+            this.showToast('🚀 Projet publié avec succès !');
+            this.projetForm = { titre:'', description:'', budget:'', devise:'CDF', jalons:[], tags:[], categorie:'', delai:'' }; this.projetStep = 1;
+            this.activeTab = 'marketplace';
+            await this.loadProjets();
+
+          } catch(e) {
+            // Erreur 403 freelance → modale persistante (pas un toast qui disparaît)
+            if (e.message && e.message.includes('seul projet actif')) {
+              this.showAlerte(
+                'Projet déjà actif',
+                e.message,
+                {
+                  type: 'warning',
+                  btnLabel: 'OK, compris',
+                  btnAction: 'Voir mon projet',
+                  action: () => { this.activeTab = 'marketplace'; }
+                }
+              );
+            } else {
+              this.showToast(e.message, 'error');
+            }
+          } finally { this.loading = false; }
+        },
+      };
+    }
+  </script>
+</body>
+</html>
