@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Centre d'aide — Mosala | Freelance & Emploi RDC</title>
+  <meta name="description" content="Centre d'aide Mosala — Trouvez les réponses à vos questions sur l'inscription, les paiements, les missions et plus encore."/>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #F8FAFC; color: #1e293b; }
+    .faq-item { border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; margin-bottom: 12px; background: #fff; }
+    .faq-question { padding: 18px 20px; font-weight: 700; color: #0F172A; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: .95rem; }
+    .faq-question:hover { background: #f8fafc; }
+    .faq-answer { padding: 0 20px; max-height: 0; overflow: hidden; transition: all .3s ease; font-size: .9rem; line-height: 1.8; color: #374151; }
+    .faq-answer.open { padding: 4px 20px 18px; max-height: 400px; }
+    .faq-arrow { transition: transform .3s; color: #00B87C; font-size: 1.1rem; }
+    .faq-arrow.open { transform: rotate(180deg); }
+    .cat-btn.active { background: #00B87C; color: #fff; border-color: #00B87C; }
+    .card { background: #fff; border-radius: 18px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 2px 12px rgba(0,0,0,.04); }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav style="background:#fff;border-bottom:1px solid #e2e8f0;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;">
+    <a href="/" style="font-size:1.4rem;font-weight:900;color:#00B87C;text-decoration:none;">Mosala 🦺</a>
+    <div style="display:flex;gap:16px;align-items:center;">
+      <a href="/" style="color:#64748b;text-decoration:none;font-size:.9rem;">← Accueil</a>
+      <a href="/pages/register.html" style="background:#00B87C;color:#fff;padding:8px 20px;border-radius:10px;text-decoration:none;font-size:.9rem;font-weight:600;">S'inscrire</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section style="background:linear-gradient(135deg,#0F172A,#1e293b);padding:56px 24px;text-align:center;">
+    <span style="background:rgba(0,184,124,.15);color:#00B87C;font-size:.8rem;font-weight:700;padding:6px 16px;border-radius:99px;">❓ CENTRE D'AIDE</span>
+    <h1 style="font-size:clamp(1.6rem,4vw,2.4rem);font-weight:900;color:#fff;margin:16px 0 12px;">Comment pouvons-nous vous aider ?</h1>
+    <p style="color:rgba(255,255,255,.65);font-size:.95rem;margin-bottom:28px;">Trouvez rapidement une réponse à votre question</p>
+    <!-- Barre de recherche -->
+    <div style="max-width:520px;margin:0 auto;position:relative;">
+      <input id="search-input" type="text" placeholder="Rechercher une question..." oninput="searchFaq(this.value)"
+        style="width:100%;padding:14px 20px 14px 48px;border-radius:14px;border:none;font-size:.95rem;outline:none;box-shadow:0 4px 20px rgba(0,0,0,.2);" />
+      <span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:1.1rem;">🔍</span>
+    </div>
+  </section>
+
+  <!-- Catégories rapides -->
+  <section style="padding:32px 24px;max-width:900px;margin:0 auto;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:32px;">
+      <button onclick="filterCat('all',this)" class="cat-btn active" style="padding:8px 18px;border-radius:99px;border:2px solid #00B87C;background:#00B87C;color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;">Tout</button>
+      <button onclick="filterCat('compte',this)" class="cat-btn" style="padding:8px 18px;border-radius:99px;border:2px solid #e2e8f0;background:#fff;color:#64748b;font-weight:600;font-size:.85rem;cursor:pointer;">👤 Compte</button>
+      <button onclick="filterCat('paiement',this)" class="cat-btn" style="padding:8px 18px;border-radius:99px;border:2px solid #e2e8f0;background:#fff;color:#64748b;font-weight:600;font-size:.85rem;cursor:pointer;">💰 Paiement</button>
+      <button onclick="filterCat('mission',this)" class="cat-btn" style="padding:8px 18px;border-radius:99px;border:2px solid #e2e8f0;background:#fff;color:#64748b;font-weight:600;font-size:.85rem;cursor:pointer;">💼 Missions</button>
+      <button onclick="filterCat('securite',this)" class="cat-btn" style="padding:8px 18px;border-radius:99px;border:2px solid #e2e8f0;background:#fff;color:#64748b;font-weight:600;font-size:.85rem;cursor:pointer;">🔒 Sécurité</button>
+      <button onclick="filterCat('freelance',this)" class="cat-btn" style="padding:8px 18px;border-radius:99px;border:2px solid #e2e8f0;background:#fff;color:#64748b;font-weight:600;font-size:.85rem;cursor:pointer;">🦺 Freelance</button>
+    </div>
+
+    <!-- FAQs -->
+    <div id="faq-container"></div>
+
+    <!-- Message aucun résultat -->
+    <div id="no-result" style="display:none;text-align:center;padding:40px;">
+      <div style="font-size:2.5rem;margin-bottom:12px;">🔍</div>
+      <p style="color:#64748b;">Aucune question trouvée. Contactez-nous directement !</p>
+    </div>
+  </section>
+
+  <!-- Contact direct -->
+  <section style="background:#0F172A;padding:56px 24px;">
+    <div style="max-width:860px;margin:0 auto;">
+      <div style="text-align:center;margin-bottom:36px;">
+        <h2 style="font-size:1.6rem;font-weight:900;color:#fff;margin-bottom:8px;">Vous n'avez pas trouvé votre réponse ?</h2>
+        <p style="color:rgba(255,255,255,.6);">Notre équipe est disponible pour vous aider</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;">
+        <div class="card" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);text-align:center;">
+          <div style="font-size:2rem;margin-bottom:12px;">📧</div>
+          <h3 style="color:#fff;font-weight:700;margin-bottom:6px;">Email</h3>
+          <p style="color:rgba(255,255,255,.6);font-size:.85rem;margin-bottom:12px;">Réponse sous 24h</p>
+          <a href="mailto:support@mosala.io" style="color:#00B87C;font-weight:600;text-decoration:none;font-size:.9rem;">support@mosala.io</a>
+        </div>
+        <div class="card" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);text-align:center;">
+          <div style="font-size:2rem;margin-bottom:12px;">💬</div>
+          <h3 style="color:#fff;font-weight:700;margin-bottom:6px;">WhatsApp</h3>
+          <p style="color:rgba(255,255,255,.6);font-size:.85rem;margin-bottom:12px;">Lun–Sam, 8h–20h</p>
+          <a href="https://wa.me/243000000000" target="_blank" style="color:#00B87C;font-weight:600;text-decoration:none;font-size:.9rem;">Écrire sur WhatsApp</a>
+        </div>
+        <div class="card" style="background:rgba(0,184,124,.12);border-color:rgba(0,184,124,.3);text-align:center;">
+          <div style="font-size:2rem;margin-bottom:12px;">📍</div>
+          <h3 style="color:#fff;font-weight:700;margin-bottom:6px;">Bureau</h3>
+          <p style="color:rgba(255,255,255,.6);font-size:.85rem;margin-bottom:12px;">Kinshasa, RDC</p>
+          <span style="color:#00B87C;font-weight:600;font-size:.9rem;">Mosala Tech SARL</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="background:#0F172A;border-top:1px solid rgba(255,255,255,.08);padding:32px 24px;text-align:center;">
+    <a href="/" style="font-size:1.2rem;font-weight:900;color:#00B87C;text-decoration:none;">Mosala 🦺</a>
+    <p style="color:rgba(255,255,255,.5);font-size:.85rem;margin-top:8px;">🇨🇩 Made in Congo</p>
+    <div style="display:flex;justify-content:center;gap:24px;margin-top:12px;flex-wrap:wrap;">
+      <a href="/pages/a-propos.html" style="color:rgba(255,255,255,.4);font-size:.8rem;text-decoration:none;">À propos</a>
+      <a href="/pages/blog.html" style="color:rgba(255,255,255,.4);font-size:.8rem;text-decoration:none;">Blog</a>
+      <a href="/pages/conditions.html" style="color:rgba(255,255,255,.4);font-size:.8rem;text-decoration:none;">Conditions</a>
+      <a href="/pages/politique-confidentialite.html" style="color:rgba(255,255,255,.4);font-size:.8rem;text-decoration:none;">Confidentialité</a>
+    </div>
+  </footer>
+
+  <script>
+    var faqs = [
+      // COMPTE
+      { cat: "compte", q: "Comment créer un compte sur Mosala ?", a: "Clique sur 'S'inscrire' en haut de la page. Remplis ton nom, email et mot de passe. Tu peux aussi te connecter directement avec Google. L'inscription est gratuite et prend moins de 2 minutes." },
+      { cat: "compte", q: "J'ai oublié mon mot de passe, que faire ?", a: "Clique sur 'Mot de passe oublié' sur la page de connexion. Entre ton adresse email et tu recevras un lien de réinitialisation. Vérifie aussi tes spams si tu ne vois pas l'email." },
+      { cat: "compte", q: "Comment modifier mon profil ?", a: "Connecte-toi, puis va dans la section 'Profil'. Tu peux modifier ta photo, tes compétences, ta bio, ton portfolio et tes tarifs à tout moment." },
+      { cat: "compte", q: "Comment supprimer mon compte ?", a: "Envoie une demande à support@mosala.io avec l'objet 'Suppression de compte'. Ton compte sera supprimé dans les 30 jours. Les données de transaction sont conservées 10 ans pour des raisons légales." },
+      { cat: "compte", q: "Puis-je avoir un compte client et freelance en même temps ?", a: "Oui ! Un même compte peut être utilisé pour poster des projets (client) et candidater à des missions (freelance). Tu peux basculer entre les deux rôles depuis ton profil." },
+
+      // PAIEMENT
+      { cat: "paiement", q: "Quels moyens de paiement acceptez-vous ?", a: "Mosala accepte les paiements Mobile Money : Airtel Money, Orange Money, M-Pesa via PawaPay. D'autres méthodes peuvent être ajoutées progressivement selon les besoins." },
+      { cat: "paiement", q: "Comment fonctionne le système d'escrow ?", a: "Quand un client accepte une candidature, il dépose le montant convenu dans un compte sécurisé (escrow). L'argent est bloqué jusqu'à ce que le client valide la livraison. Ensuite, les fonds sont libérés au freelance. Cela protège les deux parties." },
+      { cat: "paiement", q: "Quels sont les frais de la plateforme ?", a: "Mosala prélève une commission sur chaque transaction complétée. Le taux est affiché clairement avant toute transaction. L'inscription et la candidature sont toujours gratuites." },
+      { cat: "paiement", q: "Quand est-ce que je reçois mon argent après une mission ?", a: "Dès que le client valide la livraison, les fonds sont libérés immédiatement vers ton wallet Mosala. Tu peux ensuite retirer vers ton mobile money à tout moment." },
+      { cat: "paiement", q: "Que se passe-t-il si le client ne valide pas la livraison ?", a: "Si le client ne répond pas dans les 7 jours après ta livraison, les fonds sont automatiquement libérés en ta faveur. Tu peux aussi ouvrir un litige depuis la messagerie." },
+
+      // MISSIONS
+      { cat: "mission", q: "Comment postuler à un projet ?", a: "Va dans la section 'Trouver Travail', trouve un projet qui correspond à tes compétences, clique sur 'Postuler' et envoie ta proposition avec ton tarif et délai estimé." },
+      { cat: "mission", q: "Comment poster un projet en tant que client ?", a: "Va dans 'Publier un projet', décris ta mission (titre, description, budget, délai, compétences requises) et publie. Les freelances qualifiés pourront candidater rapidement." },
+      { cat: "mission", q: "Comment choisir le bon freelance pour mon projet ?", a: "Consulte les profils des candidats : compétences, portfolio, avis des anciens clients, et tarif proposé. Tu peux aussi échanger en message avant de faire ton choix." },
+      { cat: "mission", q: "Puis-je annuler une mission en cours ?", a: "Une mission peut être annulée d'un commun accord entre client et freelance. En cas de désaccord, contacte notre support. Les fonds en escrow sont remboursés selon les conditions de résolution du litige." },
+
+      // SECURITE
+      { cat: "securite", q: "Mes données personnelles sont-elles sécurisées ?", a: "Oui. Toutes les données sont chiffrées en transit (HTTPS) et au repos. Les mots de passe sont hashés avec bcrypt. Consulte notre politique de confidentialité pour plus de détails." },
+      { cat: "securite", q: "Comment signaler un utilisateur suspect ?", a: "Dans le profil de l'utilisateur ou dans la messagerie, clique sur le bouton 'Signaler'. Notre équipe examine tous les signalements sous 24h." },
+      { cat: "securite", q: "Qu'est-ce que la vérification KYC ?", a: "Le KYC (Know Your Customer) est une vérification d'identité optionnelle. En fournissant une pièce d'identité, tu obtiens un badge 'Vérifié' qui rassure les clients et augmente tes chances d'être sélectionné." },
+      { cat: "securite", q: "Comment éviter les arnaques sur Mosala ?", a: "Ne jamais sortir du système de paiement Mosala. Ne jamais envoyer de l'argent avant le début d'une mission. Utilise toujours la messagerie Mosala pour garder une trace. Signale tout comportement suspect." },
+
+      // FREELANCE
+      { cat: "freelance", q: "Comment obtenir mes premiers clients sur Mosala ?", a: "Complète ton profil à 100% (photo, bio, compétences, portfolio). Postule rapidement aux nouveaux projets. Propose un tarif compétitif au départ pour construire ta réputation. Les premiers avis sont essentiels." },
+      { cat: "freelance", q: "Qu'est-ce que le compte Pro Mosala ?", a: "Le compte Pro offre des fonctionnalités avancées : mise en avant du profil, badge Pro visible, accès prioritaire aux nouveaux projets. C'est un abonnement mensuel optionnel." },
+      { cat: "freelance", q: "Comment augmenter ma visibilité sur Mosala ?", a: "Complète entièrement ton profil, ajoute des exemples de travail dans ton portfolio, obtiens de bons avis clients, et active le compte Pro pour apparaître en premier dans les recherches." },
+      { cat: "freelance", q: "Puis-je travailler sur plusieurs missions simultanément ?", a: "Oui, il n'y a pas de limite au nombre de missions actives. Assure-toi cependant de pouvoir gérer les délais de toutes tes missions pour maintenir une bonne réputation." },
+    ];
+
+    function renderFaqs(items) {
+      var container = document.getElementById('faq-container');
+      var noResult = document.getElementById('no-result');
+      if (items.length === 0) {
+        container.innerHTML = '';
+        noResult.style.display = 'block';
+        return;
+      }
+      noResult.style.display = 'none';
+      container.innerHTML = items.map(function(f, i) {
+        return '<div class="faq-item" data-cat="' + f.cat + '">'
+          + '<div class="faq-question" onclick="toggleFaq(' + i + ',this)">'
+          + f.q
+          + '<span class="faq-arrow" id="arrow-' + i + '">▼</span>'
+          + '</div>'
+          + '<div class="faq-answer" id="ans-' + i + '">' + f.a + '</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    function toggleFaq(idx, el) {
+      var ans = document.getElementById('ans-' + idx);
+      var arrow = document.getElementById('arrow-' + idx);
+      var isOpen = ans.classList.contains('open');
+      // Fermer tous
+      document.querySelectorAll('.faq-answer').forEach(function(a) { a.classList.remove('open'); });
+      document.querySelectorAll('.faq-arrow').forEach(function(a) { a.classList.remove('open'); });
+      if (!isOpen) {
+        ans.classList.add('open');
+        arrow.classList.add('open');
+      }
+    }
+
+    function filterCat(cat, btn) {
+      document.querySelectorAll('.cat-btn').forEach(function(b) {
+        b.classList.remove('active');
+        b.style.background = '#fff';
+        b.style.color = '#64748b';
+        b.style.borderColor = '#e2e8f0';
+      });
+      btn.classList.add('active');
+      btn.style.background = '#00B87C';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#00B87C';
+      document.getElementById('search-input').value = '';
+      var filtered = cat === 'all' ? faqs : faqs.filter(function(f) { return f.cat === cat; });
+      renderFaqs(filtered);
+    }
+
+    function searchFaq(val) {
+      var q = val.toLowerCase().trim();
+      if (!q) { renderFaqs(faqs); return; }
+      var filtered = faqs.filter(function(f) {
+        return f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q);
+      });
+      renderFaqs(filtered);
+    }
+
+    // Init
+    renderFaqs(faqs);
+  </script>
+
+</body>
+</html>
